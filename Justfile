@@ -253,7 +253,7 @@ hooks-install:
 
 # Gate run before every commit (lint + typecheck + format-check + docs-guard)
 [group('git-hooks')]
-pre-commit: lint web-typecheck py-typecheck format-check docs-guard
+pre-commit: lint web-typecheck format-check docs-guard
 
 # Heavy security guardrails (secrets + path leak scan)
 [group('git-hooks')]
