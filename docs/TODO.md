@@ -52,39 +52,41 @@ Items remaining to be implemented from the original build plan and additional im
   - [x] ~~`get_grammar_item(id)` function~~ ✅ **DONE**  
   - [x] ~~`get_next_lesson(user_id)` for SRS functionality~~ ✅ **DONE**
 
-- [ ] Add missing content endpoints in `app.py`
-  - [ ] `GET /content/lesson/next` - SRS-based lesson queue
-  - [ ] Integrate grammar lookup in chat responses
-  - [ ] Add drill generation based on error tags
+- [x] ~~Add missing content endpoints in `app.py`~~ ✅ **COMPLETED**
+  - [x] ~~`GET /content/lesson/next` - SRS-based lesson queue~~ ✅ **DONE** (already existed)
+  - [x] ~~Integrate grammar lookup in chat responses~~ ✅ **COMPLETED**
+  - [x] ~~Add drill generation based on error tags~~ ✅ **COMPLETED**
+  - [x] ~~Add `GET /content/drills/{grammar_id}` for grammar-specific drills~~ ✅ **NEW**
+  - [x] ~~Add `POST /content/analyze` for comprehensive text analysis~~ ✅ **NEW**
 
 ## 2) Grammar Rule Detection (Medium Priority)
 
-### Enhanced bg_rules.py
-- [ ] Implement comprehensive Bulgarian grammar detection
-  - [ ] Definite article errors (missing postposed articles)
-  - [ ] Clitic position errors
-  - [ ] Infinitive usage (да + present tense validation)
-  - [ ] Future tense with ще validation
-  - [ ] Agreement errors (noun-adjective, subject-verb)
+### Enhanced bg_rules.py ✅ **COMPLETED**
+- [x] ~~Implement comprehensive Bulgarian grammar detection~~ ✅ **COMPLETED**
+  - [x] ~~Definite article errors (missing postposed articles)~~ ✅ **COMPLETED**
+  - [x] ~~Clitic position errors~~ ✅ **COMPLETED**
+  - [x] ~~Infinitive usage (да + present tense validation)~~ ✅ **COMPLETED**
+  - [x] ~~Future tense with ще validation~~ ✅ **COMPLETED**
+  - [x] ~~Agreement errors (noun-adjective, subject-verb)~~ ✅ **COMPLETED**
 
-- [ ] Error tag system
-  - [ ] Map detected errors to grammar pack IDs
-  - [ ] Generate correction suggestions
-  - [ ] Include position information for highlighting
+- [x] ~~Error tag system~~ ✅ **COMPLETED**
+  - [x] ~~Map detected errors to grammar pack IDs~~ ✅ **COMPLETED**
+  - [x] ~~Generate correction suggestions~~ ✅ **COMPLETED**
+  - [x] ~~Include position information for highlighting~~ ✅ **COMPLETED**
 
 ## 3) Chat Integration & AI Responses
 
-### Process User Input Enhancement
-- [ ] Integrate grammar error detection with chat responses
-- [ ] Generate contextual corrections with before/after examples
-- [ ] Add contrastive notes based on user's L1 background
-- [ ] Implement drill suggestions based on detected errors
+### Process User Input Enhancement ✅ **COMPLETED**
+- [x] ~~Integrate grammar error detection with chat responses~~ ✅ **COMPLETED**
+- [x] ~~Generate contextual corrections with before/after examples~~ ✅ **COMPLETED**
+- [x] ~~Add contrastive notes based on user's L1 background~~ ✅ **COMPLETED**
+- [x] ~~Implement drill suggestions based on detected errors~~ ✅ **COMPLETED**
 
-### CoachResponse Enhancement
-- [ ] Add `drills[]` field population
-- [ ] Implement micro-drill generation
-- [ ] Add grammar chip recommendations
-- [ ] Integrate SRS timing for drill suggestions
+### CoachResponse Enhancement ✅ **COMPLETED**
+- [x] ~~Add `drills[]` field population~~ ✅ **COMPLETED**
+- [x] ~~Implement micro-drill generation~~ ✅ **COMPLETED**
+- [x] ~~Add grammar chip recommendations~~ ✅ **COMPLETED** (via contrastive_note)
+- [x] ~~Integrate SRS timing for drill suggestions~~ ✅ **COMPLETED**
 
 ## 4) Spaced Repetition System (SRS)
 
@@ -236,15 +238,16 @@ Items remaining to be implemented from the original build plan and additional im
 
 ## 📊 Progress Summary
 - **Development Infrastructure**: ✅ **COMPLETE** - Modern tooling, type safety, diagnostics
-- **Core Application Structure**: ✅ **COMPLETE** - FastAPI, WebSocket, basic AI integration  
+- **Core Application Structure**: ✅ **COMPLETE** - FastAPI, WebSocket, AI integration with enhanced endpoints
 - **Content System**: ✅ **COMPLETE** - Grammar packs & scenarios integrated, SRS functional
-- **Grammar Detection**: 🚧 **IN PROGRESS** - Basic structure exists, needs Bulgarian-specific rules
+- **Grammar Detection**: ✅ **COMPLETE** - Enhanced with real Bulgarian rules, content integration
+- **Chat Integration**: ✅ **COMPLETE** - Grammar detection integrated with drill generation
 - **Frontend UX**: 🔄 **PARTIAL** - Audio pipeline working, needs interactive elements
 - **Production Ready**: ❌ **TODO** - Deployment, monitoring, scalability
 
-## 🎯 Next Priority: Grammar Rule Enhancement
-With content system now fully integrated, the next logical priorities are:
-1. Enhance Bulgarian grammar detection with real rules from the content data
-2. Add missing FastAPI endpoints for lesson queuing and drill generation
-3. Integrate grammar error detection with chat responses
-4. Implement interactive frontend elements for drills and grammar chips
+## 🎯 Next Priority: Frontend UX Enhancement
+With grammar detection and content integration now complete, the next logical priorities are:
+1. Implement interactive frontend elements for drills and grammar chips
+2. Add audio optimization and latency improvements
+3. Enhance transcript display with error highlighting
+4. Add user progress tracking and SRS state persistence

@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from content import load_grammar_pack
+
 
 @dataclass
 class GrammarError:
@@ -16,14 +18,36 @@ class GrammarError:
 
 
 class BulgarianGrammarDetector:
-    """Lightweight Bulgarian grammar error detector"""
+    """Enhanced Bulgarian grammar error detector with content integration"""
 
     def __init__(self):
-        # Common Bulgarian patterns and rules
+        # Load grammar rules from content files
+        self.grammar_pack = load_grammar_pack()
+        self._build_content_rules()
+
+        # Fallback to hardcoded patterns if content is unavailable
         self.definite_patterns = self._init_definite_patterns()
         self.infinitive_patterns = self._init_infinitive_patterns()
         self.future_patterns = self._init_future_patterns()
         self.clitic_patterns = self._init_clitic_patterns()
+
+    def _build_content_rules(self):
+        """Build regex patterns from content grammar pack"""
+        self.content_rules = []
+
+        for grammar_id, item in self.grammar_pack.items():
+            if "triggers" not in item:
+                continue
+
+            for trigger in item["triggers"]:
+                if trigger["type"] == "regex":
+                    pattern = trigger["pattern"]
+                    # Skip invalid patterns
+                    if not pattern or pattern.endswith("|"):
+                        continue
+                    self.content_rules.append(
+                        {"pattern": pattern, "grammar_id": grammar_id, "item": item}
+                    )
 
     def _init_definite_patterns(self) -> dict:
         """Initialize definite article patterns"""
@@ -116,7 +140,10 @@ class BulgarianGrammarDetector:
         # Normalize sentence
         normalized = self._normalize_text(sentence)
 
-        # Check for different types of errors
+        # Check content-based rules first
+        errors.extend(self._check_content_rules(normalized))
+
+        # Check for different types of errors (fallback)
         errors.extend(self._check_definite_articles(normalized))
         errors.extend(self._check_infinitive_constructions(normalized))
         errors.extend(self._check_future_tense(normalized))
@@ -135,26 +162,109 @@ class BulgarianGrammarDetector:
 
         return text.lower()
 
+    def _check_content_rules(self, text: str) -> list[GrammarError]:
+        """Check grammar rules loaded from content files"""
+        errors = []
+
+        for rule in self.content_rules:
+            pattern = rule["pattern"]
+            grammar_id = rule["grammar_id"]
+            item = rule["item"]
+
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                # Extract correction suggestion from examples if available
+                before_text = match.group(0)
+                after_text = self._get_correction_from_examples(before_text, item)
+
+                errors.append(
+                    GrammarError(
+                        type=grammar_id.split(".")[1]
+                        if "." in grammar_id
+                        else "grammar",
+                        before=before_text,
+                        after=after_text or before_text,
+                        note=item.get("micro_explanation_bg", "Grammar error detected"),
+                        error_tag=grammar_id,
+                        start_pos=match.start(),
+                        end_pos=match.end(),
+                    )
+                )
+
+        return errors
+
+    def _get_correction_from_examples(
+        self, error_text: str, grammar_item: dict
+    ) -> str | None:
+        """Extract correction suggestion from grammar item examples"""
+        if "examples" not in grammar_item:
+            return None
+
+        error_lower = error_text.lower()
+
+        # Look for matching example
+        for example in grammar_item["examples"]:
+            if "wrong" in example and "right" in example:
+                wrong_lower = example["wrong"].lower()
+                if (
+                    error_lower in wrong_lower
+                    or self._text_similarity(error_lower, wrong_lower) > 0.7
+                ):
+                    # Extract the corrected part
+                    return self._extract_correction_part(
+                        example["wrong"], example["right"], error_text
+                    )
+
+        return None
+
+    def _text_similarity(self, text1: str, text2: str) -> float:
+        """Simple text similarity score (0-1)"""
+        words1 = set(text1.split())
+        words2 = set(text2.split())
+        intersection = words1.intersection(words2)
+        union = words1.union(words2)
+        return len(intersection) / len(union) if union else 0.0
+
+    def _extract_correction_part(
+        self, wrong_example: str, right_example: str, error_text: str
+    ) -> str:
+        """Extract the specific correction for the error text"""
+        # Simple heuristic: find the different part between wrong and right examples
+        wrong_words = wrong_example.lower().split()
+        right_words = right_example.lower().split()
+        error_words = error_text.lower().split()
+
+        # Find position of error in wrong example
+        for i, error_word in enumerate(error_words):
+            if i < len(wrong_words) and error_word in wrong_words[i]:
+                # Try to map to correction
+                if i < len(right_words):
+                    return right_words[i]
+
+        # Fallback: return the right example
+        return right_example
+
     def _check_definite_articles(self, text: str) -> list[GrammarError]:
         """Check definite article usage"""
         errors = []
 
         for pattern_type, patterns in self.definite_patterns.items():
-            for pattern, replacement_or_note in patterns:
+            for pattern_data in patterns:
+                if len(pattern_data) == 3:
+                    pattern, replacement, note = pattern_data
+                else:
+                    pattern, note = pattern_data
+                    replacement = None
+
                 matches = re.finditer(pattern, text)
                 for match in matches:
-                    if pattern_type == "wrong_definite":
-                        replacement, note = (
-                            replacement_or_note,
-                            patterns[0][2]
-                            if len(patterns[0]) > 2
-                            else "definite article error",
-                        )
+                    if pattern_type == "wrong_definite" and replacement:
+                        after_text = re.sub(pattern, replacement, match.group(0))
                         errors.append(
                             GrammarError(
                                 type="definite_article",
                                 before=match.group(0),
-                                after=re.sub(pattern, replacement, match.group(0)),
+                                after=after_text,
                                 note=note,
                                 error_tag="bg.definite.article.postposed",
                                 start_pos=match.start(),
@@ -162,7 +272,6 @@ class BulgarianGrammarDetector:
                             )
                         )
                     else:
-                        note = replacement_or_note
                         errors.append(
                             GrammarError(
                                 type="definite_article",

@@ -123,6 +123,22 @@ Items that have been successfully implemented from the original build plan.
 - [x] Grammar error detection triggers integrated
 - [x] Progress tracking system for user learning state
 
+## 16) Grammar Detection Enhancement ✅ (2025-08-24)
+- [x] Enhanced Bulgarian grammar detector with real content rules
+- [x] Regex pattern integration from grammar pack JSON files
+- [x] Intelligent correction extraction from grammar examples
+- [x] Content rule validation to prevent infinite matching issues
+- [x] Multi-rule processing with proper prioritization
+- [x] Integration with content-based micro-explanations
+
+## 17) Enhanced API Endpoints ✅ (2025-08-24)
+- [x] Added `GET /content/drills/{grammar_id}` for grammar-specific drills
+- [x] Added `POST /content/analyze` for comprehensive text analysis
+- [x] Enhanced `process_user_input` with drill extraction from content
+- [x] Grammar-based drill suggestions (up to 2 drills per error)
+- [x] Contrastive notes integration from micro-explanations
+- [x] Comprehensive error analysis with contextual feedback
+
 ## Enhanced Features (Beyond Original Plan) ✅
 - [x] Modern Python tooling with uv instead of pip/venv
 - [x] Bun runtime for faster JavaScript tooling

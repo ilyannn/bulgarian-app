@@ -124,18 +124,33 @@ async def process_user_input(text: str) -> CoachResponse:
     else:
         reply_bg = "Съжалявам, няма достъпен чат провайдър."
 
-    # Add drills based on corrections
+    # Add drills based on corrections with enhanced logic
     drills = []
+    grammar_notes = []
+
     for correction in corrections:
-        if correction.get("error_tag") in grammar_index:
-            grammar_item = grammar_index[correction["error_tag"]]
+        error_tag = correction.get("error_tag")
+        if error_tag and error_tag in grammar_index:
+            grammar_item = grammar_index[error_tag]
+
+            # Add micro-explanation as note if available
+            if "micro_explanation_bg" in grammar_item:
+                grammar_notes.append(grammar_item["micro_explanation_bg"])
+
+            # Add contextual drills
             if "drills" in grammar_item:
-                drills.extend(grammar_item["drills"][:1])  # Add one drill per error
+                relevant_drills = list(
+                    grammar_item["drills"][:2]
+                )  # Up to 2 drills per error
+                drills.extend(relevant_drills)
+
+    # Combine grammar notes for contrastive explanation
+    contrastive_note = " ".join(set(grammar_notes)) if grammar_notes else None
 
     return CoachResponse(
         reply_bg=reply_bg,
         corrections=corrections,
-        contrastive_note=None,  # TODO: implement based on user's L1
+        contrastive_note=contrastive_note,
         drills=drills,
     )
 
@@ -174,6 +189,52 @@ async def get_grammar(grammar_id: str):
 async def get_next_lesson_endpoint(user_id: str = "default"):
     """Get next lesson based on SRS"""
     return get_next_lesson(user_id)
+
+
+@app.get("/content/drills/{grammar_id}")
+async def get_drills_for_grammar(grammar_id: str):
+    """Get drills for a specific grammar item"""
+    item = get_grammar_item(grammar_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Grammar item not found")
+
+    return {
+        "grammar_id": grammar_id,
+        "drills": item.get("drills", []),
+        "examples": item.get("examples", []),
+        "explanation": item.get("micro_explanation_bg", ""),
+    }
+
+
+@app.post("/content/analyze")
+async def analyze_text(request: dict):
+    """Analyze Bulgarian text for grammar errors and generate drills"""
+    text = request.get("text", "")
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is required")
+
+    # Detect grammar errors
+    corrections = detect_grammar_errors(text)
+
+    # Generate drill suggestions
+    drill_suggestions = []
+    for correction in corrections:
+        error_tag = correction.get("error_tag")
+        if error_tag and error_tag in grammar_index:
+            grammar_item = grammar_index[error_tag]
+            drill_suggestions.append(
+                {
+                    "grammar_id": error_tag,
+                    "explanation": grammar_item.get("micro_explanation_bg", ""),
+                    "drills": grammar_item.get("drills", [])[:2],  # Limit to 2 drills
+                }
+            )
+
+    return {
+        "text": text,
+        "corrections": corrections,
+        "drill_suggestions": drill_suggestions,
+    }
 
 
 # Serve static files in production
