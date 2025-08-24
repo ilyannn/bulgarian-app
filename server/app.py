@@ -1,20 +1,16 @@
-import json
 import os
-from pathlib import Path
-from typing import Dict, List, Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+import uvicorn
+from asr import ASRProcessor
+from bg_rules import detect_grammar_errors
+from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+from llm import DummyProvider
 from pydantic import BaseModel
-import uvicorn
-
-from asr import ASRProcessor
 from tts import TTSProcessor
-from llm import ChatProvider, DummyProvider
-from bg_rules import detect_grammar_errors
-from content import load_grammar_pack, load_scenarios, get_grammar_item, get_next_lesson
 
 app = FastAPI(title="Bulgarian Voice Coach", version="0.1.0")
 
@@ -37,28 +33,30 @@ chat_provider = None
 
 class CoachResponse(BaseModel):
     reply_bg: str
-    corrections: List[Dict]
-    contrastive_note: Optional[str]
-    drills: List[Dict] = []
+    corrections: list[dict]
+    contrastive_note: str | None
+    drills: list[dict] = []
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize processors and load content on startup"""
     global asr_processor, tts_processor, chat_provider, GRAMMAR_INDEX, SCENARIOS
-    
+
     # Initialize processors
     asr_processor = ASRProcessor()
     tts_processor = TTSProcessor()
-    
+
     # Initialize chat provider (dummy for now)
     chat_provider = DummyProvider()
-    
+
     # Load content
     try:
         GRAMMAR_INDEX = load_grammar_pack()
         SCENARIOS = load_scenarios()
-        print(f"Loaded {len(GRAMMAR_INDEX)} grammar items and {len(SCENARIOS)} scenarios")
+        print(
+            f"Loaded {len(GRAMMAR_INDEX)} grammar items and {len(SCENARIOS)} scenarios"
+        )
     except Exception as e:
         print(f"Warning: Could not load content: {e}")
         GRAMMAR_INDEX = {}
@@ -69,38 +67,33 @@ async def startup_event():
 async def websocket_asr_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time ASR"""
     await websocket.accept()
-    
+
     if not asr_processor:
         await websocket.close(code=1000, reason="ASR not initialized")
         return
-    
+
     try:
         while True:
             # Receive binary audio data
             data = await websocket.receive_bytes()
-            
+
             # Process audio through ASR
             result = asr_processor.process_audio_chunk(data)
-            
+
             if result:
                 if result["type"] == "partial":
-                    await websocket.send_json({
-                        "type": "partial",
-                        "text": result["text"]
-                    })
+                    await websocket.send_json(
+                        {"type": "partial", "text": result["text"]}
+                    )
                 elif result["type"] == "final":
-                    await websocket.send_json({
-                        "type": "final",
-                        "text": result["text"]
-                    })
-                    
+                    await websocket.send_json({"type": "final", "text": result["text"]})
+
                     # Process through chat provider
                     coach_response = await process_user_input(result["text"])
-                    await websocket.send_json({
-                        "type": "coach",
-                        "payload": coach_response.dict()
-                    })
-                    
+                    await websocket.send_json(
+                        {"type": "coach", "payload": coach_response.dict()}
+                    )
+
     except WebSocketDisconnect:
         print("WebSocket disconnected")
     except Exception as e:
@@ -110,16 +103,16 @@ async def websocket_asr_endpoint(websocket: WebSocket):
 
 async def process_user_input(text: str) -> CoachResponse:
     """Process user input through the coaching pipeline"""
-    
+
     # Detect grammar errors
     corrections = detect_grammar_errors(text)
-    
+
     # Get response from chat provider
-    system_prompt = """You are a Bulgarian coach for Slavic speakers. Reply ONLY in Bulgarian. 
+    system_prompt = """You are a Bulgarian coach for Slavic speakers. Reply ONLY in Bulgarian.
     Provide corrections and a short contrastive note for the user's L1 if provided."""
-    
+
     reply_bg = await chat_provider.get_response(text, system_prompt)
-    
+
     # Add drills based on corrections
     drills = []
     for correction in corrections:
@@ -127,12 +120,12 @@ async def process_user_input(text: str) -> CoachResponse:
             grammar_item = GRAMMAR_INDEX[correction["error_tag"]]
             if "drills" in grammar_item:
                 drills.extend(grammar_item["drills"][:1])  # Add one drill per error
-    
+
     return CoachResponse(
         reply_bg=reply_bg,
         corrections=corrections,
         contrastive_note=None,  # TODO: implement based on user's L1
-        drills=drills
+        drills=drills,
     )
 
 
@@ -141,15 +134,12 @@ async def text_to_speech(text: str):
     """Convert text to speech and stream audio"""
     if not tts_processor:
         raise HTTPException(status_code=500, detail="TTS not initialized")
-    
+
     def generate_audio():
-        for chunk in tts_processor.synthesize_streaming(text):
-            yield chunk
-    
+        yield from tts_processor.synthesize_streaming(text)
+
     return StreamingResponse(
-        generate_audio(),
-        media_type="audio/wav",
-        headers={"Cache-Control": "no-cache"}
+        generate_audio(), media_type="audio/wav", headers={"Cache-Control": "no-cache"}
     )
 
 

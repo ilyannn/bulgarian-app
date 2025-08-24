@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Enforce formatting + lint and type-check locally before committing
+just pre-commit

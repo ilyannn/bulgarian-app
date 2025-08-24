@@ -8,17 +8,17 @@ export default defineConfig({
       '/ws': {
         target: 'ws://localhost:8000',
         ws: true,
-        changeOrigin: true
+        changeOrigin: true,
       },
       '/tts': {
         target: 'http://localhost:8000',
-        changeOrigin: true
+        changeOrigin: true,
       },
       '/content': {
         target: 'http://localhost:8000',
-        changeOrigin: true
-      }
-    }
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
@@ -26,8 +26,8 @@ export default defineConfig({
     target: 'es2018',
     rollupOptions: {
       input: {
-        main: './index.html'
-      }
-    }
-  }
+        main: './index.html',
+      },
+    },
+  },
 });
