@@ -69,3 +69,18 @@ reportMissingImports = true
 reportMissingTypeStubs = false
 stubPath = ""
 pythonPath = ".venv/bin/python"
+
+[tool.ty.environment]
+# venv at project root (".venv") and Python 3.11
+python = "./.venv"
+python-version = "3.11"
+# treat "server/" as the first-party source root
+root = ["./server"]
+# like Pyright's "extraPaths": additional import roots
+extra-paths = [".", "server"]
+
+[tool.ty.src]
+# only check code under "server/"
+include = ["server"]
+# ignore these directories
+exclude = ["client", "docs"]

@@ -205,6 +205,9 @@ diagnostics:
     @echo "=== Python Diagnostics (ruff) ==="
     uvx ruff check server/ --output-format=full || true
     @echo ""
+    @echo "=== Python Type Diagnostics (ty) ==="
+    uvx ty check server/ || true
+    @echo ""
     @echo "=== Python Type Diagnostics (pyright) ==="
     uvx pyright server/ || true
     @echo ""
@@ -215,6 +218,7 @@ diagnostics:
 # Run all linting: Python + Web + Justfile formatting check
 [group('quality')]
 lint: py-lint web-lint
+    uvx ty check server/ || true
     just --fmt --check --unstable
 
 # Run all formatting: Python + Web + Justfile formatting
