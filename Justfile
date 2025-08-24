@@ -96,6 +96,24 @@ py-build:
 web-install:
     cd client && bun install --frozen-lockfile
 
+# Lint Dockerfiles with hadolint
+[group('docker')]
+[group('quality')]
+docker-lint:
+    @echo "=== Docker linting with hadolint ==="
+    @if command -v hadolint >/dev/null 2>&1; then \
+        find . -name "Dockerfile*" -exec hadolint {} + 2>/dev/null || echo "No Dockerfiles found or hadolint issues detected"; \
+    else \
+        echo "hadolint not installed. Install with: brew install hadolint (macOS) or see https://github.com/hadolint/hadolint"; \
+    fi
+
+# Check prettier formatting
+[group('quality')]
+[group('web')]
+prettier-check:
+    @echo "=== Prettier formatting check ==="
+    cd client && bunx prettier --check .
+
 # Lint JavaScript/TypeScript code with Biome
 [group('lint')]
 [group('web')]
@@ -215,15 +233,22 @@ diagnostics:
     cd client && bun run tsc --noEmit || true
     cd client && bunx @biomejs/biome check . --diagnostic-level=info || true
 
-# Run all linting: Python + Web + Justfile formatting check
+# Run all linting: Docker + Python + Web + Justfile formatting check
 [group('quality')]
-lint: py-lint web-lint
+lint: docker-lint py-lint web-lint
     uvx ty check server/ || true
     just --fmt --check --unstable
 
-# Run all formatting: Python + Web + Justfile formatting
+# Format with prettier
+[group('format')]
+[group('web')]
+prettier-format:
+    @echo "=== Prettier formatting ==="
+    cd client && bunx prettier --write .
+
+# Run all formatting: Python + Web + Prettier + Justfile formatting
 [group('quality')]
-format: py-format web-format
+format: py-format web-format prettier-format
     just --fmt --unstable
 
 # Alias for `format`

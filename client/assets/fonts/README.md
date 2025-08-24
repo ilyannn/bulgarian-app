@@ -15,6 +15,7 @@ Download from [Ysabeau on Google Fonts](https://fonts.google.com/specimen/Ysabea
 ## Font Features
 
 Ysabeau includes:
+
 - Complete Cyrillic support
 - Bulgarian-specific glyph variants
 - OpenType features for localization
@@ -23,8 +24,17 @@ Ysabeau includes:
 ## Usage
 
 The font is referenced in the CSS with:
+
 ```css
-font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+font-family:
+  "Ysabeau",
+  system-ui,
+  -apple-system,
+  Segoe UI,
+  Roboto,
+  Helvetica,
+  Arial,
+  sans-serif;
 ```
 
 Bulgarian text should use the `.bg-text` class or `:lang(bg)` selector for proper rendering.

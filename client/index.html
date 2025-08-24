@@ -1,447 +1,496 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bulgarian Voice Coach</title>
     <style>
-        /* Bulgarian font face (self-hosted). */
-        @font-face {
-            font-family: "Ysabeau";
-            src: url("/assets/fonts/Ysabeau[wght].woff2") format("woff2");
-            font-weight: 100 900;
-            font-style: normal;
-            font-display: swap;
-            unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic + Extended */
-        }
+      /* Bulgarian font face (self-hosted). */
+      @font-face {
+        font-family: "Ysabeau";
+        src: url("/assets/fonts/Ysabeau[wght].woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+        unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic + Extended */
+      }
 
-        /* Mark Bulgarian language spans */
-        :lang(bg) {
-            font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-            font-feature-settings: "locl" 1;
-        }
+      /* Mark Bulgarian language spans */
+      :lang(bg) {
+        font-family:
+          "Ysabeau",
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+        font-feature-settings: "locl" 1;
+      }
 
-        .bg-text {
-            font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-            font-feature-settings: "locl" 1;
-        }
+      .bg-text {
+        font-family:
+          "Ysabeau",
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        font-feature-settings: "locl" 1;
+      }
 
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      /* Reset and base styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #333;
-            line-height: 1.6;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        line-height: 1.6;
+      }
 
+      .app-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        max-width: 800px;
+        width: 90%;
+        margin: 2rem auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      /* Microphone Panel */
+      .mic-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 15px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+      }
+
+      .mic-panel.recording {
+        background: rgba(234, 102, 102, 0.1);
+        border-color: #ea6666;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+      }
+
+      .mic-button {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mic-button:hover {
+        transform: scale(1.1);
+      }
+
+      .mic-button.recording {
+        background: linear-gradient(135deg, #ea6666, #d64545);
+        animation: pulse-button 1s infinite alternate;
+      }
+
+      @keyframes pulse-button {
+        from {
+          box-shadow: 0 0 0 0 rgba(234, 102, 102, 0.7);
+        }
+        to {
+          box-shadow: 0 0 0 20px rgba(234, 102, 102, 0);
+        }
+      }
+
+      .mic-level {
+        width: 200px;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .mic-level-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4ade80, #fbbf24, #f87171);
+        border-radius: 4px;
+        width: 0%;
+        transition: width 0.1s ease;
+      }
+
+      .mic-status {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #666;
+      }
+
+      /* Transcript Panel */
+      .transcript-panel {
+        margin-bottom: 2rem;
+      }
+
+      .transcript-panel h3 {
+        margin-bottom: 1rem;
+        color: #444;
+        font-size: 1.3rem;
+      }
+
+      .transcript-area {
+        min-height: 200px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #e9ecef;
+      }
+
+      .transcript-line {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .transcript-line.partial {
+        background: rgba(102, 126, 234, 0.1);
+        border-left: 4px solid #667eea;
+        color: #667eea;
+        font-style: italic;
+      }
+
+      .transcript-line.final {
+        background: rgba(76, 175, 80, 0.1);
+        border-left: 4px solid #4caf50;
+        color: #2e7d32;
+        font-weight: 500;
+      }
+
+      .transcript-line.coach {
+        background: rgba(156, 39, 176, 0.1);
+        border-left: 4px solid #9c27b0;
+        color: #6a1b9a;
+      }
+
+      /* Corrections */
+      .corrections {
+        margin-top: 1rem;
+      }
+
+      .correction-chip {
+        display: inline-block;
+        background: #ffeaa7;
+        color: #2d3436;
+        padding: 0.3rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin: 0.2rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .correction-chip:hover {
+        background: #fdcb6e;
+        transform: scale(1.05);
+      }
+
+      .correction-details {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+        display: none;
+      }
+
+      .correction-details.visible {
+        display: block;
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Control Panel */
+      .controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* Status indicators */
+      .status-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        font-size: 0.9rem;
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #dc3545;
+      }
+
+      .status-dot.connected {
+        background: #28a745;
+      }
+
+      .status-dot.processing {
+        background: #ffc107;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0.3;
+        }
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
         .app-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            max-width: 800px;
-            width: 90%;
-            margin: 2rem auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
+          margin: 1rem;
+          padding: 1.5rem;
+          width: calc(100% - 2rem);
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        /* Microphone Panel */
-        .mic-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 15px;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .mic-panel.recording {
-            background: rgba(234, 102, 102, 0.1);
-            border-color: #ea6666;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+          font-size: 2rem;
         }
 
         .mic-button {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mic-button:hover {
-            transform: scale(1.1);
-        }
-
-        .mic-button.recording {
-            background: linear-gradient(135deg, #ea6666, #d64545);
-            animation: pulse-button 1s infinite alternate;
-        }
-
-        @keyframes pulse-button {
-            from { box-shadow: 0 0 0 0 rgba(234, 102, 102, 0.7); }
-            to { box-shadow: 0 0 0 20px rgba(234, 102, 102, 0); }
+          width: 70px;
+          height: 70px;
+          font-size: 1.8rem;
         }
 
         .mic-level {
-            width: 200px;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
+          width: 150px;
         }
 
-        .mic-level-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4ade80, #fbbf24, #f87171);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.1s ease;
-        }
-
-        .mic-status {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #666;
-        }
-
-        /* Transcript Panel */
-        .transcript-panel {
-            margin-bottom: 2rem;
-        }
-
-        .transcript-panel h3 {
-            margin-bottom: 1rem;
-            color: #444;
-            font-size: 1.3rem;
-        }
-
-        .transcript-area {
-            min-height: 200px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 2px solid #e9ecef;
-        }
-
-        .transcript-line {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 8px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .transcript-line.partial {
-            background: rgba(102, 126, 234, 0.1);
-            border-left: 4px solid #667eea;
-            color: #667eea;
-            font-style: italic;
-        }
-
-        .transcript-line.final {
-            background: rgba(76, 175, 80, 0.1);
-            border-left: 4px solid #4caf50;
-            color: #2e7d32;
-            font-weight: 500;
-        }
-
-        .transcript-line.coach {
-            background: rgba(156, 39, 176, 0.1);
-            border-left: 4px solid #9c27b0;
-            color: #6a1b9a;
-        }
-
-        /* Corrections */
-        .corrections {
-            margin-top: 1rem;
-        }
-
-        .correction-chip {
-            display: inline-block;
-            background: #ffeaa7;
-            color: #2d3436;
-            padding: 0.3rem 0.6rem;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            margin: 0.2rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .correction-chip:hover {
-            background: #fdcb6e;
-            transform: scale(1.05);
-        }
-
-        .correction-details {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        .correction-details.visible {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Control Panel */
         .controls {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+          flex-direction: column;
+          align-items: center;
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+          width: 100%;
+          max-width: 300px;
         }
+      }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
+      /* Bulgarian text styling */
+      .bg-response {
+        font-size: 1.1rem;
+        line-height: 1.8;
+      }
 
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
+      /* Drills styling */
+      .drills-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(255, 193, 7, 0.1);
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+      }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+      .drill-item {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+      .drill-prompt {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+      }
 
-        /* Status indicators */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #dc3545;
-        }
-
-        .status-dot.connected {
-            background: #28a745;
-        }
-
-        .status-dot.processing {
-            background: #ffc107;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .app-container {
-                margin: 1rem;
-                padding: 1.5rem;
-                width: calc(100% - 2rem);
-            }
-
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .mic-button {
-                width: 70px;
-                height: 70px;
-                font-size: 1.8rem;
-            }
-
-            .mic-level {
-                width: 150px;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-
-        /* Bulgarian text styling */
-        .bg-response {
-            font-size: 1.1rem;
-            line-height: 1.8;
-        }
-
-        /* Drills styling */
-        .drills-section {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 193, 7, 0.1);
-            border-radius: 8px;
-            border-left: 4px solid #ffc107;
-        }
-
-        .drill-item {
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-
-        .drill-prompt {
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-        }
-
-        .drill-answer {
-            color: #28a745;
-            font-weight: 600;
-        }
+      .drill-answer {
+        color: #28a745;
+        font-weight: 600;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="app-container">
-        <header class="header">
-            <h1>Bulgarian Voice Coach</h1>
-            <p>Гласов треньор за славянски говорители</p>
-        </header>
+      <header class="header">
+        <h1>Bulgarian Voice Coach</h1>
+        <p>Гласов треньор за славянски говорители</p>
+      </header>
 
-        <div class="status-bar">
-            <div class="status-indicator">
-                <div class="status-dot" id="connection-status"></div>
-                <span id="connection-text">Connecting...</span>
-            </div>
-            <div class="status-indicator">
-                <div class="status-dot" id="audio-status"></div>
-                <span id="audio-text">Audio: Ready</span>
-            </div>
-            <div class="status-indicator">
-                <span id="latency-text">Latency: --</span>
-            </div>
+      <div class="status-bar">
+        <div class="status-indicator">
+          <div class="status-dot" id="connection-status"></div>
+          <span id="connection-text">Connecting...</span>
         </div>
+        <div class="status-indicator">
+          <div class="status-dot" id="audio-status"></div>
+          <span id="audio-text">Audio: Ready</span>
+        </div>
+        <div class="status-indicator">
+          <span id="latency-text">Latency: --</span>
+        </div>
+      </div>
 
-        <div class="mic-panel" id="mic-panel">
-            <button class="mic-button" id="mic-button" title="Click to start/stop recording">
-                🎤
-            </button>
-            <div class="mic-level">
-                <div class="mic-level-bar" id="mic-level-bar"></div>
-            </div>
-            <div class="mic-status" id="mic-status">Click microphone to start</div>
+      <div class="mic-panel" id="mic-panel">
+        <button
+          class="mic-button"
+          id="mic-button"
+          title="Click to start/stop recording"
+        >
+          🎤
+        </button>
+        <div class="mic-level">
+          <div class="mic-level-bar" id="mic-level-bar"></div>
         </div>
+        <div class="mic-status" id="mic-status">Click microphone to start</div>
+      </div>
 
-        <div class="transcript-panel">
-            <h3>Conversation</h3>
-            <div class="transcript-area" id="transcript-area">
-                <div style="text-align: center; color: #999; padding: 2rem;">
-                    Start speaking to practice Bulgarian...
-                </div>
-            </div>
+      <div class="transcript-panel">
+        <h3>Conversation</h3>
+        <div class="transcript-area" id="transcript-area">
+          <div style="text-align: center; color: #999; padding: 2rem">
+            Start speaking to practice Bulgarian...
+          </div>
         </div>
+      </div>
 
-        <div class="controls">
-            <button class="btn btn-secondary" id="clear-btn">
-                🗑️ Clear Transcript
-            </button>
-            <button class="btn btn-primary" id="play-last-btn" disabled>
-                🔊 Play Last Response
-            </button>
-        </div>
+      <div class="controls">
+        <button class="btn btn-secondary" id="clear-btn">
+          🗑️ Clear Transcript
+        </button>
+        <button class="btn btn-primary" id="play-last-btn" disabled>
+          🔊 Play Last Response
+        </button>
+      </div>
     </div>
 
     <script type="module" src="./main.js"></script>
-</body>
+  </body>
 </html>

@@ -45,10 +45,6 @@ jobs:
         run: |
           find . -name "Dockerfile*" -exec hadolint {} + || echo "No Dockerfiles found"
 
-      - name: Run prettier formatting check
-        run: |
-          cd client && bunx prettier --check .
-
       - name: Run format check
         run: just format-check
 
