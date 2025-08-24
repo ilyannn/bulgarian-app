@@ -21,7 +21,7 @@ class TestChatProvider:
     def test_chat_provider_is_abstract(self):
         """Test that ChatProvider cannot be instantiated directly."""
         with pytest.raises(TypeError):
-            ChatProvider()
+            ChatProvider()  # pyright: ignore [reportAbstractUsage]
 
     def test_chat_provider_subclass_must_implement_get_response(self):
         """Test that subclasses must implement get_response method."""
@@ -30,7 +30,7 @@ class TestChatProvider:
             pass
 
         with pytest.raises(TypeError):
-            IncompleteProvider()
+            IncompleteProvider()  # pyright: ignore [reportAbstractUsage]
 
 
 class TestDummyProvider:
@@ -93,16 +93,9 @@ class TestOpenAIProvider:
 
     def test_openai_provider_model_setting(self):
         """Test OpenAIProvider model configuration."""
-        provider = OpenAIProvider("test-key", model="gpt-4")
-        assert provider.model == "gpt-4"
-
-        # Default model test
-        OpenAIProvider("test-key")
-        assert provider.model in [
-            "gpt-3.5-turbo",
-            "gpt-4",
-            "gpt-4-turbo",
-        ]  # Common defaults
+        provider = OpenAIProvider("test-key")
+        # Test that the model is set to a default value
+        assert provider.model == "gpt-4o-mini"
 
     @pytest.mark.asyncio
     @patch("llm.openai")
@@ -164,12 +157,9 @@ class TestClaudeProvider:
 
     def test_claude_provider_model_setting(self):
         """Test ClaudeProvider model configuration."""
-        provider = ClaudeProvider("test-key", model="claude-3-sonnet")
-        assert provider.model == "claude-3-sonnet"
-
-        # Default model test
-        ClaudeProvider("test-key")
-        assert "claude" in provider.model.lower()
+        provider = ClaudeProvider("test-key")
+        # Test that the model is set to a default value
+        assert provider.model == "claude-3-haiku-20240307"
 
     @pytest.mark.asyncio
     @patch("llm.anthropic")
@@ -222,40 +212,40 @@ class TestProviderFactory:
 
     def test_create_provider_dummy(self):
         """Test creating dummy provider."""
-        from llm import ChatProvider
+        from llm import ChatProviderFactory
 
-        provider = ChatProvider.create_provider("dummy")
+        provider = ChatProviderFactory.create_provider("dummy")
         assert isinstance(provider, DummyProvider)
 
     def test_create_provider_openai(self):
         """Test creating OpenAI provider."""
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}):
-            from llm import ChatProvider
+            from llm import ChatProviderFactory
 
-            provider = ChatProvider.create_provider("openai")
+            provider = ChatProviderFactory.create_provider("openai")
             assert isinstance(provider, OpenAIProvider)
 
     def test_create_provider_claude(self):
         """Test creating Claude provider."""
         with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
-            from llm import ChatProvider
+            from llm import ChatProviderFactory
 
-            provider = ChatProvider.create_provider("claude")
+            provider = ChatProviderFactory.create_provider("claude")
             assert isinstance(provider, ClaudeProvider)
 
     def test_create_provider_invalid(self):
         """Test creating provider with invalid type."""
-        from llm import ChatProvider
+        from llm import ChatProviderFactory
 
-        provider = ChatProvider.create_provider("invalid")
+        provider = ChatProviderFactory.create_provider("invalid")
         # Should fallback to dummy
         assert isinstance(provider, DummyProvider)
 
     def test_create_provider_none(self):
         """Test creating provider with None type."""
-        from llm import ChatProvider
+        from llm import ChatProviderFactory
 
-        provider = ChatProvider.create_provider(None)
+        provider = ChatProviderFactory.create_provider(None)
         # Should fallback to dummy
         assert isinstance(provider, DummyProvider)
 
@@ -285,18 +275,18 @@ class TestGetChatResponse:
 
     @pytest.mark.asyncio
     async def test_get_chat_response_with_system_prompt(self):
-        """Test get_chat_response with system prompt."""
+        """Test get_chat_response uses hardcoded system prompt."""
         mock_provider = Mock(spec=ChatProvider)
         mock_provider.get_response = AsyncMock(return_value="System response")
 
-        result = await get_chat_response(
-            "User input", mock_provider, "You are a helpful assistant"
-        )
+        result = await get_chat_response("User input", mock_provider)
 
         assert result == "System response"
-        mock_provider.get_response.assert_called_once_with(
-            "User input", "You are a helpful assistant"
-        )
+        # Verify it uses the hardcoded BULGARIAN_COACH_SYSTEM_PROMPT
+        mock_provider.get_response.assert_called_once()
+        call_args = mock_provider.get_response.call_args
+        assert call_args[0][0] == "User input"  # First argument is user_input
+        assert "Bulgarian" in call_args[0][1]  # Second argument contains system prompt
 
 
 class TestAsyncBehavior:

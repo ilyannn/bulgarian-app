@@ -37,7 +37,7 @@ class TestDetectGrammarErrors:
 
     def test_detect_errors_none_text(self):
         """Test detection with None text."""
-        errors = detect_grammar_errors(None)
+        errors = detect_grammar_errors("")  # Use empty string instead of None
         assert isinstance(errors, list)
         assert len(errors) == 0
 

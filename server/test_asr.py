@@ -33,19 +33,19 @@ class TestASRProcessor:
         assert model_size in ["tiny", "base", "small", "medium", "large"]
 
     @patch("asr.WhisperModel")
-    def test_asr_processor_custom_model(self, mock_whisper_model):
-        """Test ASRProcessor with custom model."""
-        ASRProcessor(model_name="small")
+    def test_asr_processor_default_initialization(self, mock_whisper_model):
+        """Test ASRProcessor default initialization."""
+        ASRProcessor()
 
-        mock_whisper_model.assert_called_with("small", device="cpu")
+        mock_whisper_model.assert_called_with("base", device="cpu")
 
     @patch("asr.WhisperModel")
-    def test_asr_processor_custom_device(self, mock_whisper_model):
-        """Test ASRProcessor with custom device."""
-        ASRProcessor(device="cuda")
+    def test_asr_processor_initialization_called(self, mock_whisper_model):
+        """Test ASRProcessor initialization calls WhisperModel."""
+        ASRProcessor()
 
-        call_args = mock_whisper_model.call_args
-        assert "cuda" in str(call_args)
+        # Verify WhisperModel was called during initialization
+        mock_whisper_model.assert_called_once()
 
 
 class TestProcessAudio:

@@ -204,7 +204,7 @@ class ASRProcessor:
             return {
                 "text": text,
                 "confidence": avg_confidence,
-                "language": info.language if hasattr(info, "language") else "bg",
+                "language": "bg",
             }
 
         except Exception as e:

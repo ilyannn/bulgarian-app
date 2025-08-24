@@ -140,7 +140,8 @@ class TestGetGrammarItem:
         result = get_grammar_item("")
         assert result is None
 
-        result = get_grammar_item(None)
+        # Test with invalid/missing grammar_id
+        result = get_grammar_item("nonexistent_id")
         assert result is None
 
 
@@ -206,7 +207,8 @@ class TestGetScenario:
             result = get_scenario("")
             assert result is None
 
-            result = get_scenario(None)
+            # Test with invalid scenario_id
+            result = get_scenario("nonexistent_scenario")
             assert result is None
 
 

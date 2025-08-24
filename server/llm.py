@@ -119,7 +119,7 @@ class ClaudeProvider(ChatProvider):
             )
 
             content_block = response.content[0]
-            text = getattr(content_block, 'text', None)
+            text = getattr(content_block, "text", None)
             if text:
                 return text.strip()
             else:
@@ -192,7 +192,9 @@ Key Bulgarian features to focus on:
 Always maintain an encouraging, patient tone suitable for language learning."""
 
 
-async def get_chat_response(user_input: str, provider: ChatProvider | None = None) -> str:
+async def get_chat_response(
+    user_input: str, provider: ChatProvider | None = None
+) -> str:
     """
     Get a chat response using the specified or default provider
 

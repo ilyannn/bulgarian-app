@@ -201,8 +201,9 @@ class TestStartupEvent:
         mock_asr_processor,
     ):
         """Test the lifespan initialization."""
-        from app import lifespan
         from unittest.mock import AsyncMock
+
+        from app import lifespan
 
         # Setup mocks
         mock_load_grammar.return_value = {"test": "grammar"}
