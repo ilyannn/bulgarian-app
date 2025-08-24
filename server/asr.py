@@ -103,7 +103,7 @@ class ASRProcessor:
             audio = audio.astype(np.float32) / 32768.0
 
             # Run Whisper inference
-            segments, info = self.model.transcribe(
+            segments, _ = self.model.transcribe(
                 audio,
                 language="bg",
                 beam_size=1,
@@ -134,7 +134,7 @@ class ASRProcessor:
             audio = audio.astype(np.float32) / 32768.0
 
             # Run final Whisper inference with higher quality settings
-            segments, info = self.model.transcribe(
+            segments, _ = self.model.transcribe(
                 audio,
                 language="bg",
                 beam_size=2,
@@ -180,7 +180,7 @@ class ASRProcessor:
                 audio = audio_data
 
             # Run Whisper inference
-            segments, info = self.model.transcribe(
+            segments, _ = self.model.transcribe(
                 audio,
                 language="bg",
                 beam_size=2,

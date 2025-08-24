@@ -68,19 +68,18 @@ class OpenAIProvider(ChatProvider):
 
             client = openai.AsyncOpenAI(api_key=self.api_key)
 
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_input},
-            ]
-
             response = await client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_input},
+                ],
                 max_tokens=self.max_tokens,
                 temperature=0.7,
             )
 
-            return response.choices[0].message.content.strip()
+            content = response.choices[0].message.content
+            return content.strip() if content else ""
 
         except ImportError as e:
             raise RuntimeError(
@@ -119,7 +118,12 @@ class ClaudeProvider(ChatProvider):
                 messages=[{"role": "user", "content": user_input}],
             )
 
-            return response.content[0].text.strip()
+            content_block = response.content[0]
+            text = getattr(content_block, 'text', None)
+            if text:
+                return text.strip()
+            else:
+                return str(content_block).strip()
 
         except ImportError as e:
             raise RuntimeError(
@@ -137,7 +141,7 @@ class ChatProviderFactory:
     """Factory for creating chat providers"""
 
     @staticmethod
-    def create_provider(provider_type: str = None) -> ChatProvider:
+    def create_provider(provider_type: str | None = None) -> ChatProvider:
         """
         Create a chat provider based on configuration
 
@@ -188,7 +192,7 @@ Key Bulgarian features to focus on:
 Always maintain an encouraging, patient tone suitable for language learning."""
 
 
-async def get_chat_response(user_input: str, provider: ChatProvider = None) -> str:
+async def get_chat_response(user_input: str, provider: ChatProvider | None = None) -> str:
     """
     Get a chat response using the specified or default provider
 

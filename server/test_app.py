@@ -173,7 +173,9 @@ class TestWebSocketConnection:
         routes = []
         for route in app.routes:
             if hasattr(route, "path"):
-                routes.append((route.path, type(route).__name__))
+                path = getattr(route, "path", None)
+                if path:
+                    routes.append((path, type(route).__name__))
 
         # Check that we have a WebSocket route with /ws/asr path
         websocket_routes = [
@@ -190,7 +192,7 @@ class TestStartupEvent:
     @patch("app.DummyProvider")
     @patch("app.load_grammar_pack")
     @patch("app.load_scenarios")
-    async def test_startup_event(
+    async def test_lifespan_initialization(
         self,
         mock_load_scenarios,
         mock_load_grammar,
@@ -198,19 +200,23 @@ class TestStartupEvent:
         mock_tts_processor,
         mock_asr_processor,
     ):
-        """Test the startup event initialization."""
-        from app import startup_event
+        """Test the lifespan initialization."""
+        from app import lifespan
+        from unittest.mock import AsyncMock
 
         # Setup mocks
         mock_load_grammar.return_value = {"test": "grammar"}
         mock_load_scenarios.return_value = {"test": "scenario"}
 
-        await startup_event()
+        # Create a mock FastAPI app
+        mock_app = AsyncMock()
 
-        # Verify processors were instantiated
-        mock_asr_processor.assert_called_once()
-        mock_tts_processor.assert_called_once()
-        mock_dummy_provider.assert_called_once()
+        # Test the lifespan context manager
+        async with lifespan(mock_app):
+            # Verify processors were instantiated
+            mock_asr_processor.assert_called_once()
+            mock_tts_processor.assert_called_once()
+            mock_dummy_provider.assert_called_once()
 
         # Verify content was loaded
         mock_load_grammar.assert_called_once()

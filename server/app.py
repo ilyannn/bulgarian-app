@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from asr import ASRProcessor
@@ -13,36 +14,18 @@ from tts import TTSProcessor
 
 from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
 
-app = FastAPI(title="Bulgarian Voice Coach", version="0.1.0")
-
-# CORS middleware for development
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Global state
-GRAMMAR_INDEX: dict = {}
-SCENARIOS: dict = {}
+grammar_index: dict = {}
+scenarios: dict = {}
 asr_processor: ASRProcessor | None = None
 tts_processor: TTSProcessor | None = None
 chat_provider: DummyProvider | None = None
 
 
-class CoachResponse(BaseModel):
-    reply_bg: str
-    corrections: list[dict]
-    contrastive_note: str | None
-    drills: list[dict] = []
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize processors and load content on startup"""
-    global asr_processor, tts_processor, chat_provider, GRAMMAR_INDEX, SCENARIOS
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize and cleanup resources"""
+    global asr_processor, tts_processor, chat_provider, grammar_index, scenarios
 
     # Initialize processors
     asr_processor = ASRProcessor()
@@ -53,15 +36,39 @@ async def startup_event():
 
     # Load content
     try:
-        GRAMMAR_INDEX = load_grammar_pack()
-        SCENARIOS = load_scenarios()
+        grammar_index = load_grammar_pack()
+        scenarios = load_scenarios()
         print(
-            f"Loaded {len(GRAMMAR_INDEX)} grammar items and {len(SCENARIOS)} scenarios"
+            f"Loaded {len(grammar_index)} grammar items and {len(scenarios)} scenarios"
         )
     except Exception as e:
         print(f"Warning: Could not load content: {e}")
-        GRAMMAR_INDEX = {}
-        SCENARIOS = {}
+        grammar_index = {}
+        scenarios = {}
+
+    yield
+
+    # Cleanup (if needed)
+    print("Shutting down...")
+
+
+class CoachResponse(BaseModel):
+    reply_bg: str
+    corrections: list[dict]
+    contrastive_note: str | None
+    drills: list[dict] = []
+
+
+app = FastAPI(title="Bulgarian Voice Coach", version="0.1.0", lifespan=lifespan)
+
+# CORS middleware for development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.websocket("/ws/asr")
@@ -92,7 +99,7 @@ async def websocket_asr_endpoint(websocket: WebSocket):
                     # Process through chat provider
                     coach_response = await process_user_input(result["text"])
                     await websocket.send_json(
-                        {"type": "coach", "payload": coach_response.dict()}
+                        {"type": "coach", "payload": coach_response.model_dump()}
                     )
 
     except WebSocketDisconnect:
@@ -112,13 +119,16 @@ async def process_user_input(text: str) -> CoachResponse:
     system_prompt = """You are a Bulgarian coach for Slavic speakers. Reply ONLY in Bulgarian.
     Provide corrections and a short contrastive note for the user's L1 if provided."""
 
-    reply_bg = await chat_provider.get_response(text, system_prompt)
+    if chat_provider is not None:
+        reply_bg = await chat_provider.get_response(text, system_prompt)
+    else:
+        reply_bg = "Съжалявам, няма достъпен чат провайдър."
 
     # Add drills based on corrections
     drills = []
     for correction in corrections:
-        if correction.get("error_tag") in GRAMMAR_INDEX:
-            grammar_item = GRAMMAR_INDEX[correction["error_tag"]]
+        if correction.get("error_tag") in grammar_index:
+            grammar_item = grammar_index[correction["error_tag"]]
             if "drills" in grammar_item:
                 drills.extend(grammar_item["drills"][:1])  # Add one drill per error
 
@@ -148,7 +158,7 @@ async def text_to_speech(text: str):
 @app.get("/content/scenarios")
 async def get_scenarios():
     """Get list of available scenarios"""
-    return list(SCENARIOS.values())
+    return list(scenarios.values())
 
 
 @app.get("/content/grammar/{grammar_id}")
