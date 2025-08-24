@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  super-lint:
+  lint-with-just:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,33 +23,44 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install server deps (lint-only)
-        run: |
-          python -m pip install --upgrade pip
-          pip install black isort ruff
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Install client deps (lint-only)
-        run: |
-          cd client
-          npm ci || npm i
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Run local linters (Python + JS/CSS)
-        run: |
-          black --check server
-          isort --check-only server
-          ruff check server
-          cd client && npx prettier -c .
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Install dependencies
+        run: just install
+
+      - name: Run format check
+        run: just format-check
+
+      - name: Run linting
+        run: just lint
+
+      - name: Run type checking
+        run: just py-typecheck
+
+  super-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: GitHub Super-Linter
-        uses: super-linter/super-linter@v6
+        uses: super-linter/super-linter@v7
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_PYTHON_BLACK: true
-          VALIDATE_PYTHON_ISORT: true
+          # Only validate specific file types with ruff
           VALIDATE_PYTHON_RUFF: true
-          VALIDATE_JAVASCRIPT_PRETTIER: true
-          VALIDATE_TYPESCRIPT_PRETTIER: true
           VALIDATE_JSON: true
           VALIDATE_YAML: true
           VALIDATE_MARKDOWN: true
+          VALIDATE_DOCKERFILE: true
+          VALIDATE_BASH: true
