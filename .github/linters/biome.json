@@ -27,7 +27,6 @@
     }
   },
   "files": {
-    "include": ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx", "**/*.json", "**/*.html", "**/*.css"],
-    "ignore": ["node_modules/**", "dist/**", ".venv/**", ".git/**"]
+    "ignoreUnknown": false
   }
 }
