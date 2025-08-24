@@ -8,9 +8,18 @@
       /* Bulgarian font face (self-hosted). */
       @font-face {
         font-family: "Ysabeau";
-        src: url("/assets/fonts/Ysabeau[wght].woff2") format("woff2");
+        src: url("/assets/fonts/Ysabeau-VariableFont_wght.ttf") format("truetype");
         font-weight: 100 900;
         font-style: normal;
+        font-display: swap;
+        unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic + Extended */
+      }
+
+      @font-face {
+        font-family: "Ysabeau";
+        src: url("/assets/fonts/Ysabeau-Italic-VariableFont_wght.ttf") format("truetype");
+        font-weight: 100 900;
+        font-style: italic;
         font-display: swap;
         unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic + Extended */
       }

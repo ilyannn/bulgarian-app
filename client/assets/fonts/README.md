@@ -1,40 +1,39 @@
 # Ysabeau Font Files
 
-Place the Ysabeau font files in this directory for Bulgarian typography support.
+Bulgarian typography support using the Ysabeau font family with full Cyrillic support.
 
-## Required Files
+## Current Files
 
-Download from [Ysabeau on Google Fonts](https://fonts.google.com/specimen/Ysabeau) or [Catharsis Fonts](https://fonts.catharsisweb.com/ysabeau/):
+- `Ysabeau-VariableFont_wght.ttf` - Variable weight font (100-900)
+- `Ysabeau-Italic-VariableFont_wght.ttf` - Variable weight italic font (100-900)
+- `OFL.txt` - Open Font License
 
-- `Ysabeau[wght].woff2` (variable weight version)
-- Or individual weight files like:
-  - `Ysabeau-Regular.woff2`
-  - `Ysabeau-Medium.woff2`
-  - `Ysabeau-Bold.woff2`
-
-## Font Features
+## Features
 
 Ysabeau includes:
+- Full Cyrillic support including Bulgarian-specific glyphs
+- Variable font technology for all weights (100-900)
+- Designed specifically for multi-script typography
+- OpenType features for proper Bulgarian text rendering
 
-- Complete Cyrillic support
-- Bulgarian-specific glyph variants
-- OpenType features for localization
-- Variable font capabilities
+## Font Configuration
 
-## Usage
-
-The font is referenced in the CSS with:
-
+Fonts are configured in `index.html`:
 ```css
-font-family:
-  "Ysabeau",
-  system-ui,
-  -apple-system,
-  Segoe UI,
-  Roboto,
-  Helvetica,
-  Arial,
-  sans-serif;
+@font-face {
+  font-family: "Ysabeau";
+  src: url("/assets/fonts/Ysabeau-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic */
+}
+
+:lang(bg) {
+  font-family: "Ysabeau", system-ui, -apple-system, sans-serif;
+  font-feature-settings: "locl" 1; /* Bulgarian localization */
+}
 ```
 
-Bulgarian text should use the `.bg-text` class or `:lang(bg)` selector for proper rendering.
+## License
+
+Licensed under the SIL Open Font License 1.1 (see OFL.txt)
