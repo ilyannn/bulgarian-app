@@ -9,8 +9,17 @@ node_modules/
 dist/
 build/
 *.min.js
+.venv/
 
-# Let Biome handle configuration files
+# Let Biome handle configuration files and JSON data
 package.json
+package-lock.json
 tsconfig.json
 biome.json
+content/**/*.json
+server/content/**/*.json
+.github/linters/**/*.json
+pyrightconfig.json
+.zed/settings.json
+.claude/settings.local.json
+.vscode/settings.json

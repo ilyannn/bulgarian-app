@@ -16,13 +16,7 @@
         "Числителни и мерки: едно, две; малко мляко; без захар",
         "Модални конструкции: мога да…, бих искал да…"
       ],
-      "target_vocab": [
-        "еспресо",
-        "капучино",
-        "чай",
-        "сметка",
-        "кашон? (avoid)"
-      ],
+      "target_vocab": ["еспресо", "капучино", "чай", "сметка", "кашон? (avoid)"],
       "l1_contrasts": [
         "Няма инфинитив: кажи „Искам да поръчам“, а не *искам поръчвам*.",
         "Определителният член е след съществителното: „сметката“, „кафето“.",
@@ -34,21 +28,14 @@
           "meaning_bg": "chair",
           "looks_like": "стол/stół",
           "meaning_in_l1": "table",
-          "applies_to": [
-            "RU",
-            "PL",
-            "UK",
-            "SR"
-          ]
+          "applies_to": ["RU", "PL", "UK", "SR"]
         },
         {
           "bg": "магазин",
           "meaning_bg": "shop",
           "looks_like": "magazyn",
           "meaning_in_l1": "warehouse",
-          "applies_to": [
-            "PL"
-          ]
+          "applies_to": ["PL"]
         }
       ],
       "success_criteria": [
@@ -68,15 +55,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.definite.article.postposed",
-          "bg.no_infinitive.da_present"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.future.shte",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.definite.article.postposed", "bg.no_infinitive.da_present"],
+        "secondary": ["bg.question.li", "bg.future.shte", "bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -91,13 +71,7 @@
         "Количества и планове: минути, мегабайти, пакет, оферта",
         "Да-формули: Искам да активирам; Трябва да презаредя"
       ],
-      "target_vocab": [
-        "карта",
-        "презареждане",
-        "пакет",
-        "мобилни данни",
-        "оферта"
-      ],
+      "target_vocab": ["карта", "презареждане", "пакет", "мобилни данни", "оферта"],
       "l1_contrasts": [
         "Често се използва „ли“ за общи въпроси: „Имате ли пакет?“",
         "Няма падежи; предлози + основна форма: „с карта“, „за интернет“."
@@ -108,12 +82,7 @@
           "meaning_bg": "offer/deal",
           "looks_like": "oferta",
           "meaning_in_l1": "same/close; beware register differences",
-          "applies_to": [
-            "PL",
-            "RU",
-            "UK",
-            "SR"
-          ]
+          "applies_to": ["PL", "RU", "UK", "SR"]
         }
       ],
       "success_criteria": [
@@ -128,15 +97,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.no_infinitive.da_present",
-          "bg.question.li"
-        ],
-        "secondary": [
-          "bg.future.shte",
-          "bg.definite.article.postposed",
-          "bg.vocative"
-        ],
+        "primary": ["bg.no_infinitive.da_present", "bg.question.li"],
+        "secondary": ["bg.future.shte", "bg.definite.article.postposed", "bg.vocative"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -151,13 +113,7 @@
         "Определителен член при конкретика: хлябът, сиренето (когато са конкретни)",
         "Учтива молба: Може ли да ми сложите…"
       ],
-      "target_vocab": [
-        "сирене",
-        "кашкавал",
-        "хляб",
-        "ябълка",
-        "цена"
-      ],
+      "target_vocab": ["сирене", "кашкавал", "хляб", "ябълка", "цена"],
       "l1_contrasts": [
         "Няма склонение по падежи; числителни + съществително обикновено без член.",
         "Често изречението започва с глагол за учтива молба: „Дайте ми…“"
@@ -168,18 +124,10 @@
           "meaning_bg": "yellow cheese",
           "looks_like": "kashkaval",
           "meaning_in_l1": "not a generic word in some Slavic L1s",
-          "applies_to": [
-            "PL",
-            "RU",
-            "UK",
-            "SR"
-          ]
+          "applies_to": ["PL", "RU", "UK", "SR"]
         }
       ],
-      "success_criteria": [
-        "Правилно изисква количества.",
-        "Проверява общата цена или промоция."
-      ],
+      "success_criteria": ["Правилно изисква количества.", "Проверява общата цена или промоция."],
       "micro_drills": [
         {
           "type": "measure_phrases",
@@ -188,15 +136,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.definite.article.postposed",
-          "bg.clitics.position"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.no_infinitive.da_present",
-          "bg.future.shte"
-        ],
+        "primary": ["bg.definite.article.postposed", "bg.clitics.position"],
+        "secondary": ["bg.question.li", "bg.no_infinitive.da_present", "bg.future.shte"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -211,22 +152,13 @@
         "Настояще и бъдеще с „ще“: Ще минава ли автобус 5?",
         "Предлози за посока: към, до, от"
       ],
-      "target_vocab": [
-        "спирка",
-        "билет",
-        "посока",
-        "център",
-        "разписание"
-      ],
+      "target_vocab": ["спирка", "билет", "посока", "център", "разписание"],
       "l1_contrasts": [
         "Бъдеще: „ще + сегашно“; отрицателно: „няма да + сегашно“.",
         "Без падежни окончания след предлози."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Уточнява спирка и цена.",
-        "Правилно използва „ще“ или „няма да“."
-      ],
+      "success_criteria": ["Уточнява спирка и цена.", "Правилно използва „ще“ или „няма да“."],
       "micro_drills": [
         {
           "type": "future_transform",
@@ -235,10 +167,7 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.question.li"
-        ],
+        "primary": ["bg.future.shte", "bg.question.li"],
         "secondary": [
           "bg.no_infinitive.da_present",
           "bg.definite.article.postposed",
@@ -258,13 +187,7 @@
         "Молба и съвет: Може ли нещо за…; По-добре е да…",
         "Отрицание: не, никакъв/никаква"
       ],
-      "target_vocab": [
-        "таблетки",
-        "сироп",
-        "спрей за нос",
-        "температура",
-        "болка"
-      ],
+      "target_vocab": ["таблетки", "сироп", "спрей за нос", "температура", "болка"],
       "l1_contrasts": [
         "Без падежи; обектното местоимение е след глагол: „боли ме главата“.",
         "Често се използват притежателни местоимения по-малко от други езици."
@@ -275,9 +198,7 @@
           "meaning_bg": "shame/embarrassment",
           "looks_like": "sram",
           "meaning_in_l1": "vulgar in PL; beware",
-          "applies_to": [
-            "PL"
-          ]
+          "applies_to": ["PL"]
         }
       ],
       "success_criteria": [
@@ -292,10 +213,7 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.negation.double",
-          "bg.question.li"
-        ],
+        "primary": ["bg.negation.double", "bg.question.li"],
         "secondary": [
           "bg.no_infinitive.da_present",
           "bg.future.shte",
@@ -315,22 +233,10 @@
         "Описание: късо/дълго, малко по-късо, да измиете",
         "Учтиви форми и молби"
       ],
-      "target_vocab": [
-        "час",
-        "записвам",
-        "подстригване",
-        "бръснар",
-        "оцветяване"
-      ],
-      "l1_contrasts": [
-        "Часовете често се казват с „в“ + число.",
-        "Без падежи при дати."
-      ],
+      "target_vocab": ["час", "записвам", "подстригване", "бръснар", "оцветяване"],
+      "l1_contrasts": ["Часовете често се казват с „в“ + число.", "Без падежи при дати."],
       "false_friends": [],
-      "success_criteria": [
-        "Назовава точен ден и час.",
-        "Дава минимум две уточнения за прическа."
-      ],
+      "success_criteria": ["Назовава точен ден и час.", "Дава минимум две уточнения за прическа."],
       "micro_drills": [
         {
           "type": "time_format",
@@ -339,10 +245,7 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.future.shte", "bg.clitics.position"],
         "secondary": [
           "bg.question.li",
           "bg.no_infinitive.da_present",
@@ -362,13 +265,7 @@
         "Минало време за предишен опит: Гледах няколко апартамента",
         "Относително изречение с „който“"
       ],
-      "target_vocab": [
-        "наем",
-        "депозит",
-        "такса вход",
-        "наемодател",
-        "договор"
-      ],
+      "target_vocab": ["наем", "депозит", "такса вход", "наемодател", "договор"],
       "l1_contrasts": [
         "Често се дублира определен обект с клитика: „Договора го подписахме…“ (естествено, но не задължително).",
         "Миналите времена се употребяват по-свободно спрямо аспект в други славянски езици."
@@ -379,9 +276,7 @@
           "meaning_bg": "factory",
           "looks_like": "zawód",
           "meaning_in_l1": "profession (PL)",
-          "applies_to": [
-            "PL"
-          ]
+          "applies_to": ["PL"]
         }
       ],
       "success_criteria": [
@@ -396,15 +291,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.relative.kojto",
-          "bg.question.li"
-        ],
-        "secondary": [
-          "bg.vocative",
-          "bg.no_infinitive.da_present",
-          "bg.negation.double"
-        ],
+        "primary": ["bg.relative.kojto", "bg.question.li"],
+        "secondary": ["bg.vocative", "bg.no_infinitive.da_present", "bg.negation.double"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -419,21 +307,10 @@
         "Предложения с „нека“/„може ли…“",
         "Директен и учтив регистър"
       ],
-      "target_vocab": [
-        "бойлер",
-        "ремонт",
-        "майстор",
-        "разходи",
-        "гаранция"
-      ],
-      "l1_contrasts": [
-        "Клитиките често стоят пред глагола: „Ще го погледнем“."
-      ],
+      "target_vocab": ["бойлер", "ремонт", "майстор", "разходи", "гаранция"],
+      "l1_contrasts": ["Клитиките често стоят пред глагола: „Ще го погледнем“."],
       "false_friends": [],
-      "success_criteria": [
-        "Ясно обяснява симптоми и предлага 2 часа.",
-        "Уточнява кой плаща."
-      ],
+      "success_criteria": ["Ясно обяснява симптоми и предлага 2 часа.", "Уточнява кой плаща."],
       "micro_drills": [
         {
           "type": "clitic_order",
@@ -442,15 +319,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.clitics.position",
-          "bg.question.li"
-        ],
-        "secondary": [
-          "bg.vocative",
-          "bg.relative.kojto",
-          "bg.no_infinitive.da_present"
-        ],
+        "primary": ["bg.clitics.position", "bg.question.li"],
+        "secondary": ["bg.vocative", "bg.relative.kojto", "bg.no_infinitive.da_present"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -464,20 +334,10 @@
         "Числа и кодове; писмено диктуване",
         "Учтиви въпроси и условни конструкции: ако… може ли…"
       ],
-      "target_vocab": [
-        "пратка",
-        "офис",
-        "доставка",
-        "известие",
-        "самоличност"
-      ],
-      "l1_contrasts": [
-        "Без падежи: „за пратката“, „от офиса“."
-      ],
+      "target_vocab": ["пратка", "офис", "доставка", "известие", "самоличност"],
+      "l1_contrasts": ["Без падежи: „за пратката“, „от офиса“."],
       "false_friends": [],
-      "success_criteria": [
-        "Дава/договаря срок за получаване."
-      ],
+      "success_criteria": ["Дава/договаря срок за получаване."],
       "micro_drills": [
         {
           "type": "if_request",
@@ -486,15 +346,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.question.li",
-          "bg.vocative"
-        ],
-        "secondary": [
-          "bg.relative.kojto",
-          "bg.no_infinitive.da_present",
-          "bg.negation.double"
-        ],
+        "primary": ["bg.question.li", "bg.vocative"],
+        "secondary": ["bg.relative.kojto", "bg.no_infinitive.da_present", "bg.negation.double"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -508,16 +361,8 @@
         "Минало време + „от“ за начало: От вчера ме боли…",
         "Съвет и необходимост: трябва да…, добре е да…"
       ],
-      "target_vocab": [
-        "преглед",
-        "джипи/личен лекар",
-        "препоръка",
-        "направление",
-        "болка"
-      ],
-      "l1_contrasts": [
-        "Отрицанието е двойно: „нямам никаква алергия“ е естествено."
-      ],
+      "target_vocab": ["преглед", "джипи/личен лекар", "препоръка", "направление", "болка"],
+      "l1_contrasts": ["Отрицанието е двойно: „нямам никаква алергия“ е естествено."],
       "false_friends": [],
       "success_criteria": [
         "Посочва продължителност и тежест.",
@@ -531,15 +376,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.no_infinitive.da_present",
-          "bg.clitics.position"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.vocative",
-          "bg.relative.kojto"
-        ],
+        "primary": ["bg.no_infinitive.da_present", "bg.clitics.position"],
+        "secondary": ["bg.question.li", "bg.vocative", "bg.relative.kojto"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -553,20 +391,10 @@
         "Учтиви молби/заявки: може ли; бих взел/а",
         "Сравнение: по-евтино, по-сладко"
       ],
-      "target_vocab": [
-        "праскова",
-        "грозде",
-        "череши",
-        "проба",
-        "намаление"
-      ],
-      "l1_contrasts": [
-        "Често се използва „по-“ за сравнителна степен."
-      ],
+      "target_vocab": ["праскова", "грозде", "череши", "проба", "намаление"],
+      "l1_contrasts": ["Често се използва „по-“ за сравнителна степен."],
       "false_friends": [],
-      "success_criteria": [
-        "Прави сравнение и получава малка отстъпка."
-      ],
+      "success_criteria": ["Прави сравнение и получава малка отстъпка."],
       "micro_drills": [
         {
           "type": "comparative",
@@ -575,15 +403,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.question.li",
-          "bg.definite.article.postposed"
-        ],
-        "secondary": [
-          "bg.clitics.position",
-          "bg.vocative",
-          "bg.relative.kojto"
-        ],
+        "primary": ["bg.question.li", "bg.definite.article.postposed"],
+        "secondary": ["bg.clitics.position", "bg.vocative", "bg.relative.kojto"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -598,22 +419,13 @@
         "Клитики и позиция: „Може ли да ми донесете…“",
         "Смегчители: малко, май, бих предпочел/а"
       ],
-      "target_vocab": [
-        "вегетариански",
-        "без глутен",
-        "сметка разделно",
-        "подмяна",
-        "гарнитура"
-      ],
+      "target_vocab": ["вегетариански", "без глутен", "сметка разделно", "подмяна", "гарнитура"],
       "l1_contrasts": [
         "Клитика след императив/инфинитивна конструкция: „донесете ми“, „да ми донесете“.",
         "Вежливостта често се изразява с условни форми."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Получава алтернатива без конфликт.",
-        "Използва 1 смекчител."
-      ],
+      "success_criteria": ["Получава алтернатива без конфликт.", "Използва 1 смекчител."],
       "micro_drills": [
         {
           "type": "clitic_after_imperative",
@@ -622,15 +434,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.clitics.position",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.evidential.reported",
-          "bg.definite.article.postposed"
-        ],
+        "primary": ["bg.clitics.position", "bg.relative.kojto"],
+        "secondary": ["bg.question.li", "bg.evidential.reported", "bg.definite.article.postposed"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -644,22 +449,13 @@
         "Разказ в минало + резултат: Работил/а съм по…, Имам опит с…",
         "Бъдещи намерения: Бих искал/а да…; Ще се радвам да…"
       ],
-      "target_vocab": [
-        "проект",
-        "срок",
-        "поддръжка",
-        "предизвикателство",
-        "отговорност"
-      ],
+      "target_vocab": ["проект", "срок", "поддръжка", "предизвикателство", "отговорност"],
       "l1_contrasts": [
         "Евиденциални -л форми за опит звучат естествено: „Работил съм…“.",
         "Без падеж – предлози управляват отношенията."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Дава 2–3 примера с роли и резултати.",
-        "Формулира очаквания."
-      ],
+      "success_criteria": ["Дава 2–3 примера с роли и резултати.", "Формулира очаквания."],
       "micro_drills": [
         {
           "type": "evidential_past",
@@ -668,10 +464,7 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.relative.kojto"
-        ],
+        "primary": ["bg.future.shte", "bg.relative.kojto"],
         "secondary": [
           "bg.no_infinitive.da_present",
           "bg.clitics.position",
@@ -691,21 +484,10 @@
         "Условност и отстъпка: ако…, но…",
         "Перефразиране за потвърждение"
       ],
-      "target_vocab": [
-        "среща",
-        "краен срок",
-        "срокове",
-        "отмяна",
-        "потвърждавам"
-      ],
-      "l1_contrasts": [
-        "Без сложни условни времена – формите са прости с „ако“."
-      ],
+      "target_vocab": ["среща", "краен срок", "срокове", "отмяна", "потвърждавам"],
+      "l1_contrasts": ["Без сложни условни времена – формите са прости с „ако“."],
       "false_friends": [],
-      "success_criteria": [
-        "Договаря конкретна дата и място.",
-        "Използва отрицателно бъдеще."
-      ],
+      "success_criteria": ["Договаря конкретна дата и място.", "Използва отрицателно бъдеще."],
       "micro_drills": [
         {
           "type": "neg_future",
@@ -714,15 +496,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.no_infinitive.da_present"
-        ],
-        "secondary": [
-          "bg.relative.kojto",
-          "bg.negation.double",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.future.shte", "bg.no_infinitive.da_present"],
+        "secondary": ["bg.relative.kojto", "bg.negation.double", "bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -736,31 +511,18 @@
         "Времеви изрази: рано, късно, по-рано",
         "Учтиви въпроси за опции: има ли по-ранен/късен автобус"
       ],
-      "target_vocab": [
-        "билет",
-        "перон",
-        "разписание",
-        "връзка",
-        "закъснение"
-      ],
-      "l1_contrasts": [
-        "Внимание PL: „рано“ в BG = early; „rano“ в PL = morning (false friend)."
-      ],
+      "target_vocab": ["билет", "перон", "разписание", "връзка", "закъснение"],
+      "l1_contrasts": ["Внимание PL: „рано“ в BG = early; „rano“ в PL = morning (false friend)."],
       "false_friends": [
         {
           "bg": "рано",
           "meaning_bg": "early",
           "looks_like": "rano (PL)",
           "meaning_in_l1": "morning",
-          "applies_to": [
-            "PL"
-          ]
+          "applies_to": ["PL"]
         }
       ],
-      "success_criteria": [
-        "Назовава час, дата, посока.",
-        "Справя се с промяна."
-      ],
+      "success_criteria": ["Назовава час, дата, посока.", "Справя се с промяна."],
       "micro_drills": [
         {
           "type": "time_words",
@@ -769,15 +531,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.evidential.reported",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.future.shte", "bg.relative.kojto"],
+        "secondary": ["bg.question.li", "bg.evidential.reported", "bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -792,21 +547,12 @@
         "Уточняване: необходимо ли е…, задължително ли е…",
         "Пасивни и безлични конструкции"
       ],
-      "target_vocab": [
-        "удостоверение",
-        "заявление",
-        "такса",
-        "образец",
-        "служител"
-      ],
+      "target_vocab": ["удостоверение", "заявление", "такса", "образец", "служител"],
       "l1_contrasts": [
         "Официалният стил избягва лични глаголи; ползват се безлични/пасивни конструкции."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Изрежда всички документи и срокове.",
-        "Поддържа официален тон."
-      ],
+      "success_criteria": ["Изрежда всички документи и срокове.", "Поддържа официален тон."],
       "micro_drills": [
         {
           "type": "polite_register",
@@ -815,15 +561,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.question.li",
-          "bg.no_infinitive.da_present"
-        ],
-        "secondary": [
-          "bg.evidential.reported",
-          "bg.relative.kojto",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.question.li", "bg.no_infinitive.da_present"],
+        "secondary": ["bg.evidential.reported", "bg.relative.kojto", "bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -837,20 +576,12 @@
         "Опис на действия в минало: рестартирах, проверих",
         "Уточняване/ескалация: бих искал/а да разговарям с…"
       ],
-      "target_vocab": [
-        "рутер",
-        "кабел",
-        "връзка",
-        "неизправност",
-        "обезщетение"
-      ],
+      "target_vocab": ["рутер", "кабел", "връзка", "неизправност", "обезщетение"],
       "l1_contrasts": [
         "Естествени са кратки, ясни изречения; избегни дълги причастни конструкции."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Дава последователен опис и постига решение."
-      ],
+      "success_criteria": ["Дава последователен опис и постига решение."],
       "micro_drills": [
         {
           "type": "past_actions",
@@ -859,14 +590,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.clitics.position",
-          "bg.no_infinitive.da_present"
-        ],
-        "secondary": [
-          "bg.evidential.reported",
-          "bg.relative.kojto"
-        ],
+        "primary": ["bg.clitics.position", "bg.no_infinitive.da_present"],
+        "secondary": ["bg.evidential.reported", "bg.relative.kojto"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -880,20 +605,12 @@
         "Евиденциални форми: казал, видял; Чух, че…; Казват, че…",
         "Свързване на събития: първо, после, накрая"
       ],
-      "target_vocab": [
-        "случка",
-        "разправят",
-        "уж",
-        "ужким",
-        "вероятно"
-      ],
+      "target_vocab": ["случка", "разправят", "уж", "ужким", "вероятно"],
       "l1_contrasts": [
         "Тези форми нямат пряко съответствие в повечето славянски езици; упражнявай контекст."
       ],
       "false_friends": [],
-      "success_criteria": [
-        "Използва поне 3 евиденциални форми контекстуално."
-      ],
+      "success_criteria": ["Използва поне 3 евиденциални форми контекстуално."],
       "micro_drills": [
         {
           "type": "evidential_transform",
@@ -902,13 +619,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.evidential.reported",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.evidential.reported", "bg.relative.kojto"],
+        "secondary": ["bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -922,19 +634,10 @@
         "Официални обръщения и финали",
         "Структура: контекст → молба → данни → благодарност"
       ],
-      "target_vocab": [
-        "обръщение",
-        "приложение",
-        "потвърждение",
-        "срок"
-      ],
-      "l1_contrasts": [
-        "Често и безлични конструкции звучат по-официално."
-      ],
+      "target_vocab": ["обръщение", "приложение", "потвърждение", "срок"],
+      "l1_contrasts": ["Често и безлични конструкции звучат по-официално."],
       "false_friends": [],
-      "success_criteria": [
-        "Съдържа 4-те части и учтив тон."
-      ],
+      "success_criteria": ["Съдържа 4-те части и учтив тон."],
       "micro_drills": [
         {
           "type": "register_choice",
@@ -943,15 +646,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.clitics.position",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.future.shte",
-          "bg.question.li",
-          "bg.evidential.reported"
-        ],
+        "primary": ["bg.clitics.position", "bg.relative.kojto"],
+        "secondary": ["bg.future.shte", "bg.question.li", "bg.evidential.reported"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -961,24 +657,11 @@
       "level": "A2",
       "goal": "Introduce yourself, say where you’re from, ask simple questions.",
       "starter_prompt_bg": "Представи се на нов съсед/колега. Кажи откъде си и какво работиш.",
-      "target_forms": [
-        "Настояще: работя, живея",
-        "Въпроси: откъде си, с какво се занимаваш"
-      ],
-      "target_vocab": [
-        "съсед",
-        "колега",
-        "произход",
-        "занимавам се",
-        "хоби"
-      ],
-      "l1_contrasts": [
-        "„Казвам се…“ е по-често от „Аз съм… (име)“."
-      ],
+      "target_forms": ["Настояще: работя, живея", "Въпроси: откъде си, с какво се занимаваш"],
+      "target_vocab": ["съсед", "колега", "произход", "занимавам се", "хоби"],
+      "l1_contrasts": ["„Казвам се…“ е по-често от „Аз съм… (име)“."],
       "false_friends": [],
-      "success_criteria": [
-        "2–3 въпроса + 2–3 изречения за себе си."
-      ],
+      "success_criteria": ["2–3 въпроса + 2–3 изречения за себе си."],
       "micro_drills": [
         {
           "type": "intro_frame",
@@ -987,10 +670,7 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.future.shte", "bg.clitics.position"],
         "secondary": [
           "bg.question.li",
           "bg.no_infinitive.da_present",
@@ -1009,20 +689,10 @@
         "Минало време за случката: изгубих; блокира се",
         "Искане: бих искал/а нова карта; какви документи трябват"
       ],
-      "target_vocab": [
-        "банкомат",
-        "теглене",
-        "лимит",
-        "замяна",
-        "удостоверение"
-      ],
-      "l1_contrasts": [
-        "Официален тон; конкретни въпроси."
-      ],
+      "target_vocab": ["банкомат", "теглене", "лимит", "замяна", "удостоверение"],
+      "l1_contrasts": ["Официален тон; конкретни въпроси."],
       "false_friends": [],
-      "success_criteria": [
-        "Ясно заявява проблема и следва стъпките."
-      ],
+      "success_criteria": ["Ясно заявява проблема и следва стъпките."],
       "micro_drills": [
         {
           "type": "doc_list",
@@ -1031,15 +701,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.no_infinitive.da_present",
-          "bg.vocative"
-        ],
-        "secondary": [
-          "bg.relative.kojto",
-          "bg.negation.double",
-          "bg.future.shte"
-        ],
+        "primary": ["bg.no_infinitive.da_present", "bg.vocative"],
+        "secondary": ["bg.relative.kojto", "bg.negation.double", "bg.future.shte"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -1049,24 +712,11 @@
       "level": "B1",
       "goal": "Send a parcel; choose service type; fill address.",
       "starter_prompt_bg": "В пощата. Избери „еконт/спиди“ тип услуга, попълни име и адрес и попитай за срок.",
-      "target_forms": [
-        "Попълване на данни; диктовка на адрес",
-        "Въпроси за срок и цена"
-      ],
-      "target_vocab": [
-        "подател",
-        "получател",
-        "адрес",
-        "куриер",
-        "наложен платеж"
-      ],
-      "l1_contrasts": [
-        "Адресният ред е: улица №, вход, етаж, апартамент."
-      ],
+      "target_forms": ["Попълване на данни; диктовка на адрес", "Въпроси за срок и цена"],
+      "target_vocab": ["подател", "получател", "адрес", "куриер", "наложен платеж"],
+      "l1_contrasts": ["Адресният ред е: улица №, вход, етаж, апартамент."],
       "false_friends": [],
-      "success_criteria": [
-        "Коректно изписан адрес и избрана услуга."
-      ],
+      "success_criteria": ["Коректно изписан адрес и избрана услуга."],
       "micro_drills": [
         {
           "type": "address_order",
@@ -1075,15 +725,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.vocative",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.no_infinitive.da_present",
-          "bg.negation.double",
-          "bg.future.shte"
-        ],
+        "primary": ["bg.vocative", "bg.relative.kojto"],
+        "secondary": ["bg.no_infinitive.da_present", "bg.negation.double", "bg.future.shte"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -1093,24 +736,11 @@
       "level": "B2",
       "goal": "Make a structured complaint and agree on compensation.",
       "starter_prompt_bg": "Обясни проблема кратко, предложи решение и попитай за компенсация.",
-      "target_forms": [
-        "Структура на оплакване: факт → ефект → искане",
-        "Условност: ако не…, ще…"
-      ],
-      "target_vocab": [
-        "компенсация",
-        "неудобство",
-        "повреда",
-        "подмяна",
-        "кредит"
-      ],
-      "l1_contrasts": [
-        "Без излишна емоция; ясна структура."
-      ],
+      "target_forms": ["Структура на оплакване: факт → ефект → искане", "Условност: ако не…, ще…"],
+      "target_vocab": ["компенсация", "неудобство", "повреда", "подмяна", "кредит"],
+      "l1_contrasts": ["Без излишна емоция; ясна структура."],
       "false_friends": [],
-      "success_criteria": [
-        "Искане + срок; договорена стъпка."
-      ],
+      "success_criteria": ["Искане + срок; договорена стъпка."],
       "micro_drills": [
         {
           "type": "complaint_frame",
@@ -1119,15 +749,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.future.shte",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.question.li",
-          "bg.evidential.reported",
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.future.shte", "bg.relative.kojto"],
+        "secondary": ["bg.question.li", "bg.evidential.reported", "bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     },
@@ -1137,24 +760,11 @@
       "level": "C1",
       "goal": "Discuss student progress, ask for resources, agree on actions.",
       "starter_prompt_bg": "Попитай за силни/слаби страни, предложи конкретни стъпки за подобрение.",
-      "target_forms": [
-        "Обобщаване и планиране",
-        "Учтиво несъгласие"
-      ],
-      "target_vocab": [
-        "напредък",
-        "обратна връзка",
-        "материали",
-        "домашна работа",
-        "подкрепа"
-      ],
-      "l1_contrasts": [
-        "Учтиво несъгласие чрез смекчаващи фрази."
-      ],
+      "target_forms": ["Обобщаване и планиране", "Учтиво несъгласие"],
+      "target_vocab": ["напредък", "обратна връзка", "материали", "домашна работа", "подкрепа"],
+      "l1_contrasts": ["Учтиво несъгласие чрез смекчаващи фрази."],
       "false_friends": [],
-      "success_criteria": [
-        "Мини план с отговорности и срокове."
-      ],
+      "success_criteria": ["Мини план с отговорности и срокове."],
       "micro_drills": [
         {
           "type": "hedging",
@@ -1163,13 +773,8 @@
         }
       ],
       "grammar_binding": {
-        "primary": [
-          "bg.evidential.reported",
-          "bg.relative.kojto"
-        ],
-        "secondary": [
-          "bg.clitics.position"
-        ],
+        "primary": ["bg.evidential.reported", "bg.relative.kojto"],
+        "secondary": ["bg.clitics.position"],
         "binding_method": "auto-heuristic-v1"
       }
     }

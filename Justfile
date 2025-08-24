@@ -243,11 +243,33 @@ docs-check:
     bunx prettier --config .github/linters/.prettierrc.json --check "docs/**/*.{md,mdx}" --log-level warn || echo "No docs found"
     bunx prettier --config .github/linters/.prettierrc.json --check "README.md" --log-level warn || echo "No README.md found"
 
-# Run all linting: Docker + Python + Web + Docs + Justfile formatting check
+# Check TOML formatting with taplo
 [group('quality')]
-lint: docker-lint py-lint web-lint docs-check
+[group('toml')]
+toml-check:
+    @echo "=== Checking TOML formatting with taplo ==="
+    @if command -v taplo >/dev/null 2>&1; then \
+        taplo format --check **/*.toml; \
+    else \
+        echo "taplo not installed. Install with: cargo install taplo-cli --locked"; \
+    fi
+
+# Run all linting: Docker + Python + Web + Docs + TOML + Justfile formatting check
+[group('quality')]
+lint: docker-lint py-lint web-lint web-typecheck docs-check toml-check
     uvx ty check server/ || true
     just --fmt --check --unstable
+
+# Format TOML files with taplo
+[group('format')]
+[group('toml')]
+toml-format:
+    @echo "=== Formatting TOML files with taplo ==="
+    @if command -v taplo >/dev/null 2>&1; then \
+        taplo format **/*.toml; \
+    else \
+        echo "taplo not installed. Install with: cargo install taplo-cli --locked"; \
+    fi
 
 # Format documentation with Prettier (Markdown, HTML, etc.) using centralized config
 [group('docs')]
@@ -257,9 +279,9 @@ docs-format:
     bunx prettier --config .github/linters/.prettierrc.json --write "docs/**/*.{md,mdx}" --log-level warn
     bunx prettier --config .github/linters/.prettierrc.json --write "README.md" --log-level warn || echo "No README.md found"
 
-# Run all formatting: Python + Web + Docs + Justfile formatting
+# Run all formatting: Python + Web + Docs + TOML + Justfile formatting
 [group('quality')]
-format: py-format web-format docs-format
+format: py-format web-format docs-format toml-format
     just --fmt --unstable
 
 # Alias for `format`

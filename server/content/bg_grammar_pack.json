@@ -6,10 +6,7 @@
     {
       "id": "bg.no_infinitive.da_present",
       "title_bg": "Няма инфинитив: 'да' + сегашно",
-      "level": [
-        "A2",
-        "B1"
-      ],
+      "level": ["A2", "B1"],
       "micro_explanation_bg": "В български няма инфинитив. Използваме 'да' + сегашно: 'Искам да поръчам'.",
       "contrast_notes": {
         "PL": "Po bułgarsku: 'chcę zamówić' → „Искам да поръчам“, nie *искам поръчвам*.",
@@ -50,21 +47,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          3,
-          7,
-          21
-        ]
+        "interval_days": [1, 3, 7, 21]
       }
     },
     {
       "id": "bg.definite.article.postposed",
       "title_bg": "Определителен член след съществителното",
-      "level": [
-        "A2",
-        "B1"
-      ],
+      "level": ["A2", "B1"],
       "micro_explanation_bg": "Когато говорим за конкретно/познато нещо: добавяме член след думата: „сметката“, „кафето“.",
       "contrast_notes": {
         "PL": "W BG jest rodzajnik postpozycyjny: 'smetkata' = 'ta rachunek'.",
@@ -99,29 +88,18 @@
         {
           "type": "choose",
           "prompt_bg": "Къде е ___ (кафе)?",
-          "options": [
-            "кафето",
-            "кафе"
-          ],
+          "options": ["кафето", "кафе"],
           "answer_bg": "кафето"
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          4,
-          10,
-          30
-        ]
+        "interval_days": [1, 4, 10, 30]
       }
     },
     {
       "id": "bg.future.shte",
       "title_bg": "Бъдеще с „ще“ / отрицание „няма да“",
-      "level": [
-        "A2",
-        "B1"
-      ],
+      "level": ["A2", "B1"],
       "micro_explanation_bg": "За бъдеще: „ще + сегашно“; отрицание: „няма да + сегашно“.",
       "contrast_notes": {
         "PL": "Podobnie do 'będę' + bezokolicznik, ale w BG: 'ще' + czas teraźniejszy.",
@@ -160,21 +138,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          3,
-          7,
-          21
-        ]
+        "interval_days": [1, 3, 7, 21]
       }
     },
     {
       "id": "bg.clitics.position",
       "title_bg": "Клитики: място и ред",
-      "level": [
-        "B1",
-        "B2"
-      ],
+      "level": ["B1", "B2"],
       "micro_explanation_bg": "Къси местоимения стоят пред личния глагол: „Ще го видя“. След императив/инфинитив: „Дай ми“, „да ми дадете“",
       "contrast_notes": {
         "PL": "Zaimek krótszy zwykle przed czasownikiem: 'Ще го видя'. Po rozkazie: 'Дай ми'.",
@@ -213,20 +183,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          3,
-          7,
-          21
-        ]
+        "interval_days": [1, 3, 7, 21]
       }
     },
     {
       "id": "bg.question.li",
       "title_bg": "Въпросната частица „ли“",
-      "level": [
-        "A2"
-      ],
+      "level": ["A2"],
       "micro_explanation_bg": "Общ въпрос: глагол + ли… „Имате ли карта?“",
       "contrast_notes": {
         "PL": "Zamiast inwersji często używa się partykuły „ли“ po czasowniku: „Имате ли…?“",
@@ -252,20 +215,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          2,
-          5,
-          14
-        ]
+        "interval_days": [1, 2, 5, 14]
       }
     },
     {
       "id": "bg.negation.double",
       "title_bg": "Отрицание и двойно отрицание",
-      "level": [
-        "B1"
-      ],
+      "level": ["B1"],
       "micro_explanation_bg": "След „не/няма“ често се използват отрицателни местоимения: „Никой не знае“, „Нямам никакви алергии“.",
       "contrast_notes": {
         "PL": "Podwójne przeczenie jest naturalne w BG: „Никой не…“, „Нямам никакви…“.",
@@ -295,20 +251,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          1,
-          3,
-          7,
-          21
-        ]
+        "interval_days": [1, 3, 7, 21]
       }
     },
     {
       "id": "bg.vocative",
       "title_bg": "Вокатив: обръщение по име",
-      "level": [
-        "B1"
-      ],
+      "level": ["B1"],
       "micro_explanation_bg": "При директно обръщение: „Иване, ела!“, „Мария, заповядай.“",
       "contrast_notes": {
         "PL": "Wokatyw występuje, ale formy inne: Ivan → „Иване“.",
@@ -334,20 +283,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          3,
-          7,
-          21
-        ]
+        "interval_days": [3, 7, 21]
       }
     },
     {
       "id": "bg.relative.kojto",
       "title_bg": "Относителни изречения с „който“",
-      "level": [
-        "B1",
-        "B2"
-      ],
+      "level": ["B1", "B2"],
       "micro_explanation_bg": "Свързваме изречения: „Търся апартамент, който е близо до метро.“",
       "contrast_notes": {
         "PL": "Zamiast przypadków używaj 'който/която/което/които'.",
@@ -373,21 +315,13 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          2,
-          5,
-          14,
-          30
-        ]
+        "interval_days": [2, 5, 14, 30]
       }
     },
     {
       "id": "bg.evidential.reported",
       "title_bg": "Евиденциал (-л форми) за чужда информация",
-      "level": [
-        "B2",
-        "C1"
-      ],
+      "level": ["B2", "C1"],
       "micro_explanation_bg": "Когато предаваме чужда информация: „Казали, че утре ще вали.“ / „Той е дошъл.“",
       "contrast_notes": {
         "PL": "Brak prostego odpowiednika; traktuj jako 'podobno/powiedzieli'.",
@@ -413,12 +347,7 @@
         }
       ],
       "srs": {
-        "interval_days": [
-          3,
-          10,
-          30,
-          60
-        ]
+        "interval_days": [3, 10, 30, 60]
       }
     }
   ]
