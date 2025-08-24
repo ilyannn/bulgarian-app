@@ -59,6 +59,4 @@ jobs:
           VALIDATE_MARKDOWN: true
           VALIDATE_DOCKERFILE_HADOLINT: true
           VALIDATE_BASH: true
-          # Disable Prettier on code files - let Biome handle them
-          VALIDATE_JAVASCRIPT_PRETTIER: false
-          VALIDATE_TYPESCRIPT_PRETTIER: false
+          # Note: JavaScript/TypeScript handled by Biome in lint-with-just job
