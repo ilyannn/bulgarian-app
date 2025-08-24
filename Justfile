@@ -120,19 +120,19 @@ prettier-check:
 [group('lint')]
 [group('web')]
 web-lint:
-    cd client && bunx @biomejs/biome ci --config-path ../.github/linters/biome.json
+    bunx @biomejs/biome ci --config-path .github/linters/biome.json client/
 
 # Format JavaScript/TypeScript code with Biome using centralized config
 [group('format')]
 [group('web')]
 web-format:
-    cd client && bunx @biomejs/biome format --write --config-path ../.github/linters/biome.json
+    bunx @biomejs/biome format --config-path .github/linters --write client/
 
 # Auto-fix JavaScript linting issues (including unsafe fixes)
 [group('web')]
 web-fix:
     # Applies both safe and unsafe Biome fixes - use when lint errors can be automatically resolved
-    cd client && bunx @biomejs/biome check --write --unsafe --config-path ../.github/linters/biome.json .
+    bunx @biomejs/biome check --write --unsafe --config-path .github/linters client/
 
 # Type check TypeScript with tsc (no emit) using local config
 [group('typecheck')]
