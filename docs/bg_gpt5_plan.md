@@ -235,7 +235,7 @@ Use a **distinct CSS class** for Bulgarian text and a **Bulgarian‑optimized Cy
 
 ---
 ## 9) CI/CD with GitHub Actions + Super‑Linter
-Mirror the CI style you use in `/Users/in/Code/wallos-mcp` and add a **single lint workflow** that runs on PRs and pushes. Locally, developers run `just lint` and `just format`.
+Add a **single lint workflow** that runs on PRs and pushes. Locally, developers run `just lint` and `just format`.
 
 **GitHub Actions: `.github/workflows/lint.yml`**
 ```yaml
@@ -299,7 +299,7 @@ jobs:
 > Notes
 > - The workflow first runs the **same checks** as `just lint` to keep parity with local dev.
 > - Super‑Linter adds guardrails for other file types (YAML/JSON/Markdown). Tune its `VALIDATE_*` flags as needed.
-> - Follow the folder conventions from `wallos-mcp` (branch names, required checks), but this workflow is portable.
+> - Follow standard conventions (branch names, required checks), but this workflow is portable.
 
 ---
 ## 10) Example data snippets

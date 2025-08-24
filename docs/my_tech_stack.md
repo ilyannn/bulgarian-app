@@ -26,23 +26,24 @@ DEFAULT_BRANCH := "main"
 # All Python commands run via uv (fast project manager)
 # https://docs.astral.sh/uv/
 
-py.sync:
+py-sync:
 	uv python install
-	uv sync --locked
+	uv sync --locked || uv sync --dev
 
-py.lint:
-	uvx ruff check .
+py-lint:
+	uvx ruff check server
 
-py.format:
-	uvx ruff format .
+py-format:
+	uvx ruff format server
 	# Keep imports sorted (Ruff's `I` rules)
-	uvx ruff check --select I --fix .
+	uvx ruff check --select I --fix server
 
-py.typecheck:
-	# Optional: add mypy/pyright if the project uses it
-	@echo "(add mypy/pyright if needed)"
+py-typecheck:
+	# Use ty from Astral - extremely fast Python type checker (experimental)
+	# Note: ty is still in early development, may have breaking changes
+	uvx ty check .
 
-py.build:
+py-build:
 	# Build sdist + wheel with uv
 	uv build
 
@@ -50,28 +51,67 @@ py.build:
 # Bun as runtime & package manager; Biome for lint+format. Bun doesn't type
 # check TypeScript, so we use `tsc --noEmit` for types.
 
-web.install:
-	bun install --frozen-lockfile
+web-install:
+	cd client && bun install --frozen-lockfile
 
-web.lint:
+web-lint:
 	# Biome: fast linter/formatter in one tool
-	bunx @biomejs/biome ci
+	cd client && bunx @biomejs/biome ci
 
-web.format:
-	bunx @biomejs/biome format --write
+web-format:
+	cd client && bunx @biomejs/biome format --write
 
-web.typecheck:
-	tsc --noEmit
+web-typecheck:
+	cd client && bunx tsc --noEmit
 
-web.dev:
-	bun run dev
+web-dev:
+	cd client && bun run dev
+
+# Auto-fix JavaScript linting issues (including unsafe fixes)
+web-fix:
+	cd client && bunx @biomejs/biome check --write --unsafe .
+
+# ---- App-specific tasks ---------------------------------------------------
+# Install all dependencies (Python via uv + client via bun + git hooks)
+# This recipe is IDEMPOTENT - safe to run multiple times:
+#   - uv: skips if Python/packages already installed
+#   - bun: checks packages, skips if no changes needed
+#   - git hooks: silently succeeds if already configured
+
+install: py-sync web-install hooks-install
+
+# Dev servers (backend FastAPI + frontend Vite) with shared lifetime
+# IMPORTANT: This recipe works because `set shell` combines all lines into one command!
+# The shell executes: bash -c "(cd server && ...) & BACK_PID=$! ; (cd client && ...) & ..."
+# This allows:
+#   - Background processes with & to run in parallel
+#   - Variables (BACK_PID, FRONT_PID) to persist across lines
+#   - trap to reference those variables for cleanup
+dev:
+	(cd server && uv run uvicorn app:app --reload) &
+	BACK_PID=$!
+	(cd client && bun run dev) &
+	FRONT_PID=$!
+	trap 'kill $BACK_PID $FRONT_PID' INT TERM
+	wait
+
+# Production-ish serve (api + built frontend)
+# NOTE: Background processes (&) work because all lines run in the same shell session
+serve:
+	(cd server && uv run uvicorn app:app --host 0.0.0.0 --port 8000) &
+	(cd client && bun run build && bun run preview -- --host) &
+	wait
+
+# Tests (server only for now)
+test:
+	cd server && uv run pytest -q
 
 # ---- Observability (OpenTelemetry) ------------------------------------------
 # A local OTel Collector writes OTLP JSON to .otel/otel.jsonl during `just dev`.
 # Collector config file expected at ./otel-collector.dev.yaml (see section below).
 # Docs: Collector config + file exporter.
 
-otel.collector.up:
+otel-collector-up:
 	mkdir -p .otel
 	# Restart collector (ignore errors if it doesn't exist)
 	docker rm -f otel-collector >/dev/null 2>&1 || true
@@ -81,36 +121,41 @@ otel.collector.up:
 	  -v "${PWD}/.otel:/var/lib/otel" \
 	  otel/opentelemetry-collector-contrib:latest
 
-otel.collector.down:
+otel-collector-down:
 	docker rm -f otel-collector >/dev/null 2>&1 || true
 
 # Dev entrypoint: start collector and your app(s) with OTLP env vars set.
 # SDKs read these standardized environment variables.
+# NOTE: This is the template version - actual project uses simpler dev recipe
 
-dev: otel.collector.up
-	# Common OTel env for local dev
-	export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
-	export OTEL_TRACES_EXPORTER="otlp"
-	export OTEL_METRICS_EXPORTER="otlp"
-	export OTEL_LOGS_EXPORTER="otlp"
-	export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME:-local-dev}"
-	# Start your dev processes (edit to suit):
-	# For Python: enable auto-instrumentation via the OTel agent.
-	# uvx opentelemetry-instrument --traces_exporter otlp --metrics_exporter otlp --logs_exporter otlp -- \
-	#   uv run -m your_package
-	# For Web: OTel JS supports Node LTS; Bun compatibility may vary.
-	bun run dev
+# dev-with-otel: otel-collector-up
+#	# Common OTel env for local dev
+#	export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
+#	export OTEL_TRACES_EXPORTER="otlp"
+#	export OTEL_METRICS_EXPORTER="otlp"
+#	export OTEL_LOGS_EXPORTER="otlp"
+#	export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME:-local-dev}"
+#	# Start your dev processes (edit to suit):
+#	# For Python: enable auto-instrumentation via the OTel agent.
+#	# uvx opentelemetry-instrument --traces_exporter otlp --metrics_exporter otlp --logs_exporter otlp -- \
+#	#   uv run -m your_package
+#	# For Web: OTel JS supports Node LTS; Bun compatibility may vary.
+#	bun run dev
 
 # ---- Repo-wide tasks -------------------------------------------------------
 
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
 # See also the GitHub Action below.
 
-lint: py.lint web.lint
+lint: py-lint web-lint
+	just --fmt --check --unstable
 
-format: py.format web.format
+format: py-format web-format
+	just --fmt --unstable
 
-build: py.build
+alias fmt := format
+
+build: py-build
 
 # Fast local "PR" super-lint using the official container (RUN_LOCAL)
 # Lints the whole repo by default. Set VALIDATE_ALL_CODEBASE=false to only check changes.
@@ -128,18 +173,18 @@ superlint-pr:
 # We commit hooks into .githooks and point Git there to keep them versioned.
 # `core.hooksPath` is the supported way to use custom hook directories.
 
-hooks.install:
+hooks-install:
 	git config core.hooksPath .githooks
 	chmod +x .githooks/* || true
 	@echo "Installed hooks to .githooks (core.hooksPath)."
 
 # This is the gate run locally before every commit
-pre-commit: lint web.typecheck py.typecheck format-check docs.guard
+pre-commit: lint web-typecheck py-typecheck format-check docs-guard
 
 # Format *check* (no writes). Fail if not formatted.
 format-check:
-	uvx ruff format --check .
-	bunx @biomejs/biome check --reporter=summary
+	uvx ruff format --check server
+	cd client && bunx @biomejs/biome check --reporter=summary
 
 # Pre-push: heavy security guardrails (secrets + path leak scan)
 pre-push: secrets-scan path-leak-scan
@@ -159,7 +204,7 @@ path-leak-scan:
 
 # Require docs/ updates when code changes (can bypass with SKIP_DOCS_CHECK=1)
 # Uses staged changes; fails if non-docs changed but no docs/ changes are staged.
-docs.guard:
+docs-guard:
 	@non_docs="$(git diff --cached --name-only -- . ':!docs/**' || true)"; \
 	docs_changed="$(git diff --cached --name-only -- 'docs/**' || true)"; \
 	if [ -n "$${non_docs}" ] && [ -z "$${docs_changed}" ] && [ -z "$${SKIP_DOCS_CHECK-}" ]; then \
@@ -170,10 +215,12 @@ docs.guard:
 
 **Notes**
 - `set shell := ["bash", "-euo", "pipefail", "-c"]` enables strict bash, making recipes fail-fast. See `just` shell configuration.
-- `web.lint`/`web.format` use **Biome** (linter + formatter); `web.typecheck` runs `tsc --noEmit` because Bun does not type-check TS.
+- `web-lint`/`web-format` use **Biome** (linter + formatter); `web-typecheck` runs `bunx tsc --noEmit` because Bun does not type-check TS.
 - `superlint-pr` runs the **Super-Linter** container locally with `RUN_LOCAL=true`.
 - `secrets-scan` uses **Gitleaks**. Use a `.gitleaks.toml` to customize allowlists if needed.
-- `hooks.install` uses `core.hooksPath` so hooks are versioned in `.githooks`.
+- `hooks-install` uses `core.hooksPath` so hooks are versioned in `.githooks`.
+- Python commands target `server/` directory specifically, web commands target `client/` directory.
+- `dev` recipe starts both backend (uvicorn) and frontend (bun) with proper process management.
 
 ---
 
@@ -233,10 +280,11 @@ jobs:
 - Super-Linter docs + config env vars.
 - Keep `GITHUB_TOKEN` to **least privilege** using workflow `permissions`. Pin actions to a version/commit SHA for supply-chain safety.
 
-### 2) Build & lint in ci:
+### 2) Build & lint in CI:
 
 - create an action to install just
-- run approproate just commands for specific languages
+- run appropriate just commands for specific languages
+- Example workflow installs Python, Node, and runs `just lint` and `just test`
 
 
 ### 3) Optional: Gitleaks in CI (defense-in-depth)
@@ -347,7 +395,7 @@ For document‑/event‑like, semi‑ or unstructured data, default to **Elastic
 ## Documentation policy (docs/)
 
 - Keep living docs (architecture, goals, runbooks) in `docs/`.
-- The `pre-commit` hook runs `docs.guard`, which **fails** if a commit changes code but not `docs/` (set `SKIP_DOCS_CHECK=1` to bypass when appropriate). Hooks are implemented via `core.hooksPath` so they’re versioned in the repo.
+- The `pre-commit` hook runs `docs-guard`, which **fails** if a commit changes code but not `docs/` (set `SKIP_DOCS_CHECK=1` to bypass when appropriate). Hooks are implemented via `core.hooksPath` so they're versioned in the repo.
 - Optional: wire `docs/` into a site generator (MkDocs/Docusaurus) with `just docs.build` & `docs.serve` and publish via GitHub Pages in CI.
 
 ---
