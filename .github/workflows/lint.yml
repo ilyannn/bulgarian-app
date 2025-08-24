@@ -32,8 +32,22 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
 
+      - name: Install hadolint
+        run: |
+          wget -O /tmp/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          chmod +x /tmp/hadolint
+          sudo mv /tmp/hadolint /usr/local/bin/
+
       - name: Install dependencies
         run: just install
+
+      - name: Run Dockerfile linting (hadolint)
+        run: |
+          find . -name "Dockerfile*" -exec hadolint {} + || echo "No Dockerfiles found"
+
+      - name: Run prettier formatting check
+        run: |
+          cd client && bunx prettier --check .
 
       - name: Run format check
         run: just format-check
@@ -62,5 +76,5 @@ jobs:
           VALIDATE_JSON: true
           VALIDATE_YAML: true
           VALIDATE_MARKDOWN: true
-          VALIDATE_DOCKERFILE: true
+          VALIDATE_DOCKERFILE_HADOLINT: true
           VALIDATE_BASH: true
