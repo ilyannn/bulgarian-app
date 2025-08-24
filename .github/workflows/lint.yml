@@ -30,7 +30,9 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install just
-        uses: extractions/setup-just@v3
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+          echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Run linting
         run: just lint
