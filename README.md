@@ -31,23 +31,19 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 ## Prerequisites
 
 1. **Python 3.11** or later
-2. **Node.js 18** or later  
+2. **Node.js 18** or later
 3. **eSpeak-NG** - Install via package manager:
    ```bash
    # Ubuntu/Debian
    sudo apt-get install espeak-ng
-   
+
    # macOS
    brew install espeak-ng
-   
+
    # Windows (via Chocolatey)
    choco install espeak-ng
    ```
-4. **just** command runner:
-   ```bash
-   # Install just
-   curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
-   ```
+4. **just** command runner
 
 ## Quick Start
 
@@ -128,7 +124,7 @@ The app detects common Bulgarian grammar errors made by Slavic speakers:
 - **Issue:** Missing or incorrect postposed articles (-ът, -та, -то, -те)
 - **Example:** "стол" → "столът" (when referring to a specific chair)
 
-### No Infinitive Construction  
+### No Infinitive Construction
 - **Issue:** Using infinitive-like forms instead of "да" + present
 - **Example:** "Искам поръчвам" → "Искам да поръчам"
 

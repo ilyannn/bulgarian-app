@@ -269,13 +269,11 @@ secrets-scan:
 # Prevent accidental commits of absolute user paths (/Users/<name> or ~)
 [group('security')]
 path-leak-scan:
-    # @ prefix suppresses echo only for the first line; continuation lines are part of that command
     @echo "Scanning for absolute path leaks"
-    # Look for actual path leaks, excluding build tools and documentation
-    @! (git grep -l '/Users/[a-zA-Z]' -- . ':!node_modules' ':!.git' ':!*.sarif' ':!justfile' | head -1) || \
+    @! (git grep -l '/Users/[a-zA-Z]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
       (echo "\nERROR: Found /Users/<name> path leak. Remove absolute user paths." && exit 1)
-    @! (git grep -l '~/[a-zA-Z._]' -- . ':!node_modules' ':!.git' ':!*.sarif' ':!README.md' ':!justfile' | head -1) || \
-      (echo "\nERROR: Found ~/<file> path leak. Remove absolute user paths." && exit 1)
+    @! (git grep -l '~/[a-zA-Z._]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
+      (echo "\nERROR: Found <file> path leak in the ~ folder. Remove absolute user paths." && exit 1)
 
 # Require docs/ updates when code changes (bypass with SKIP_DOCS_CHECK=1)
 [group('git-hooks')]
