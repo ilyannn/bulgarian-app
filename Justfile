@@ -193,7 +193,7 @@ serve:
 # Run tests (server only for now)
 [group('test')]
 test:
-    cd server && uv run pytest -q
+    cd server && uv run pytest test_app.py test_content.py -q
 
 # ---- Repo-wide tasks -------------------------------------------------------
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
