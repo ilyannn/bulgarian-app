@@ -1,0 +1,19 @@
+{
+  "include": ["server"],
+  "exclude": ["client", "docs"],
+  "pythonVersion": "3.11",
+  "pythonPath": ".venv/bin/python",
+  "venv": ".venv",
+  "venvPath": ".",
+  "executionEnvironments": [
+    {
+      "root": "server",
+      "pythonVersion": "3.11",
+      "pythonPath": "../.venv/bin/python",
+      "extraPaths": [".", "server"]
+    }
+  ],
+  "typeCheckingMode": "standard",
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": "none"
+}

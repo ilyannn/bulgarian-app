@@ -164,6 +164,53 @@ class ASRProcessor:
             self.partial_text = ""
             return {"type": "final", "text": ""}
 
+    async def process_audio(self, audio_data: np.ndarray | None) -> dict:
+        """Process audio data and return transcription result (async interface for tests)"""
+        if audio_data is None or len(audio_data) == 0:
+            return {"text": "", "confidence": 0.0, "language": "bg"}
+
+        try:
+            # Normalize audio to float32 if needed
+            if audio_data.dtype != np.float32:
+                if audio_data.dtype == np.int16:
+                    audio = audio_data.astype(np.float32) / 32768.0
+                else:
+                    audio = audio_data.astype(np.float32)
+            else:
+                audio = audio_data
+
+            # Run Whisper inference
+            segments, info = self.model.transcribe(
+                audio,
+                language="bg",
+                beam_size=2,
+                temperature=0.0,
+                no_speech_threshold=0.6,
+                condition_on_previous_text=False,
+            )
+
+            text = " ".join([segment.text.strip() for segment in segments])
+
+            # Calculate confidence from segments
+            confidences = []
+            for segment in segments:
+                if hasattr(segment, "avg_logprob"):
+                    # Convert log probability to confidence score
+                    confidence = min(1.0, max(0.0, (segment.avg_logprob + 1.0) / 1.0))
+                    confidences.append(confidence)
+
+            avg_confidence = sum(confidences) / len(confidences) if confidences else 0.7
+
+            return {
+                "text": text,
+                "confidence": avg_confidence,
+                "language": info.language if hasattr(info, "language") else "bg",
+            }
+
+        except Exception as e:
+            print(f"Error in process_audio: {e}")
+            return {"text": "", "confidence": 0.0, "language": "bg"}
+
     def reset(self):
         """Reset ASR state"""
         with self.lock:

@@ -20,9 +20,12 @@
     "pyright": {
       "settings": {
         "python.defaultInterpreterPath": "./.venv/bin/python",
-        "python.analysis.extraPaths": ["./server"]
+        "python.analysis.extraPaths": ["./server", "."],
+        "python.pythonPath": "./.venv/bin/python",
+        "python.analysis.autoSearchPaths": true,
+        "reportMissingImports": "none",
+        "reportMissingTypeStubs": false
       }
     }
-  },
-  "working_directory": "./server"
+  }
 }

@@ -7,10 +7,13 @@ from collections.abc import Generator
 class TTSProcessor:
     """Text-to-Speech processor using eSpeak-NG for Bulgarian"""
 
-    def __init__(self):
+    def __init__(self, voice: str = "bg", speed: int = 160, pitch: int = 50):
         self.sample_rate = 22050  # eSpeak default
         self.channels = 1  # mono
         self.sample_width = 2  # 16-bit
+        self.voice = voice
+        self.speed = speed
+        self.pitch = pitch
 
         # Test if eSpeak-NG is available
         try:
@@ -22,6 +25,38 @@ class TTSProcessor:
             print("eSpeak-NG initialized successfully")
         except (subprocess.TimeoutExpired, FileNotFoundError) as e:
             raise RuntimeError(f"eSpeak-NG not available: {e}") from e
+
+    def synthesize(self, text: str | None, language: str = "bg") -> bytes:
+        """
+        Synthesize text to speech and return complete WAV audio
+
+        Args:
+            text: Text to synthesize
+            language: Language code (default: "bg" for Bulgarian)
+
+        Returns:
+            bytes: Complete WAV audio data
+        """
+        if not text or not text.strip():
+            return b""
+
+        try:
+            # Create WAV header
+            audio_chunks = [self._create_wav_header()]
+
+            # Synthesize the text
+            audio_data = self._synthesize_chunk(text, language)
+            if audio_data:
+                # Skip the WAV header from eSpeak output (first 44 bytes) if present
+                if audio_data.startswith(b"RIFF"):
+                    audio_data = audio_data[44:]  # Skip WAV header
+                audio_chunks.append(audio_data)
+
+            return b"".join(audio_chunks)
+
+        except Exception as e:
+            print(f"Synthesize error: {e}")
+            return b""
 
     def synthesize_streaming(
         self, text: str, language: str = "bg"
@@ -96,13 +131,13 @@ class TTSProcessor:
             cmd = [
                 "espeak-ng",
                 "-v",
-                language,  # Voice/language
+                self.voice if language == "bg" else language,  # Voice/language
                 "-s",
-                "160",  # Speed (words per minute)
+                str(self.speed),  # Speed (words per minute)
                 "-a",
                 "100",  # Amplitude (volume)
                 "-p",
-                "50",  # Pitch
+                str(self.pitch),  # Pitch
                 "-g",
                 "10",  # Gap between words (10ms)
                 "--stdout",  # Output to stdout

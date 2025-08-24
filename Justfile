@@ -199,6 +199,19 @@ test:
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
 # See also the GitHub Action below.
 
+# Get all diagnostics from LSP servers (same as Zed uses)
+[group('quality')]
+diagnostics:
+    @echo "=== Python Diagnostics (ruff) ==="
+    uvx ruff check server/ --output-format=full || true
+    @echo ""
+    @echo "=== Python Type Diagnostics (pyright) ==="
+    PYTHONPATH=server uvx pyright server/ --venv-path .venv || true
+    @echo ""
+    @echo "=== JavaScript/TypeScript Diagnostics ==="
+    cd client && bun run tsc --noEmit || true
+    cd client && bunx @biomejs/biome check . --diagnostic-level=info || true
+
 # Run all linting: Python + Web + Justfile formatting check
 [group('quality')]
 lint: py-lint web-lint

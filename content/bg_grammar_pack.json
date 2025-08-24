@@ -1,0 +1,425 @@
+{
+  "schema_version": "1.0",
+  "language": "Bulgarian",
+  "audience": "Slavic L1 learners",
+  "items": [
+    {
+      "id": "bg.no_infinitive.da_present",
+      "title_bg": "Няма инфинитив: 'да' + сегашно",
+      "level": [
+        "A2",
+        "B1"
+      ],
+      "micro_explanation_bg": "В български няма инфинитив. Използваме 'да' + сегашно: 'Искам да поръчам'.",
+      "contrast_notes": {
+        "PL": "Po bułgarsku: 'chcę zamówić' → „Искам да поръчам“, nie *искам поръчвам*.",
+        "RU": "По-болгарски: «Хочу заказать» → „Искам да поръчам“, не *искам поръчвам*.",
+        "UK": "Болг.: «Хочу замовити» → „Искам да поръчам“, не *искам поръчвам*.",
+        "SR": "Bug.: „Želim da naručim“ → „Искам да поръчам“, ne *искам поръчвам*."
+      },
+      "triggers": [
+        {
+          "type": "regex",
+          "pattern": "\\b(искам|трябва|може)\\s+(поръчвам|купувам|правя|ходим|говоря)\\b"
+        },
+        {
+          "type": "error_tag",
+          "value": "infinitive_like"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Искам поръчвам кафе.",
+          "right": "Искам да поръчам кафе."
+        },
+        {
+          "wrong": "Трябва ходя в аптеката.",
+          "right": "Трябва да отида в аптеката."
+        }
+      ],
+      "drills": [
+        {
+          "type": "transform",
+          "prompt_bg": "Искам ___ (поръчвам) кафе.",
+          "answer_bg": "да поръчам"
+        },
+        {
+          "type": "transform",
+          "prompt_bg": "Трябва ___ (купувам) билет.",
+          "answer_bg": "да купя"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          3,
+          7,
+          21
+        ]
+      }
+    },
+    {
+      "id": "bg.definite.article.postposed",
+      "title_bg": "Определителен член след съществителното",
+      "level": [
+        "A2",
+        "B1"
+      ],
+      "micro_explanation_bg": "Когато говорим за конкретно/познато нещо: добавяме член след думата: „сметката“, „кафето“.",
+      "contrast_notes": {
+        "PL": "W BG jest rodzajnik postpozycyjny: 'smetkata' = 'ta rachunek'.",
+        "RU": "В BG есть определительный артикль после слова: „сметката“ ('тот самый счёт')."
+      },
+      "triggers": [
+        {
+          "type": "context",
+          "value": "refer_back_known_noun"
+        },
+        {
+          "type": "regex",
+          "pattern": "\\b(сметка|кафе|магазин|билет)\\b(?![аеиоуюяът][\\b\\s])"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Може ли сметка, моля?",
+          "right": "Може ли сметката, моля?"
+        },
+        {
+          "wrong": "Къде е кафе?",
+          "right": "Къде е кафето?"
+        }
+      ],
+      "drills": [
+        {
+          "type": "fill_article",
+          "prompt_bg": "Може ли ___ сметка?",
+          "answer_bg": "сметката"
+        },
+        {
+          "type": "choose",
+          "prompt_bg": "Къде е ___ (кафе)?",
+          "options": [
+            "кафето",
+            "кафе"
+          ],
+          "answer_bg": "кафето"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          4,
+          10,
+          30
+        ]
+      }
+    },
+    {
+      "id": "bg.future.shte",
+      "title_bg": "Бъдеще с „ще“ / отрицание „няма да“",
+      "level": [
+        "A2",
+        "B1"
+      ],
+      "micro_explanation_bg": "За бъдеще: „ще + сегашно“; отрицание: „няма да + сегашно“.",
+      "contrast_notes": {
+        "PL": "Podobnie do 'będę' + bezokolicznik, ale w BG: 'ще' + czas teraźniejszy.",
+        "RU": "В BG: „ще“ + наст. время; отриц.: „няма да“ + наст."
+      },
+      "triggers": [
+        {
+          "type": "regex",
+          "pattern": "\\bутре|следващата седмица|по-късно\\b"
+        },
+        {
+          "type": "error_tag",
+          "value": "future_form"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Аз ще отивам утре.",
+          "right": "Аз ще отида утре."
+        },
+        {
+          "wrong": "Аз не ще мога.",
+          "right": "Няма да мога."
+        }
+      ],
+      "drills": [
+        {
+          "type": "transform",
+          "prompt_bg": "Аз ___ (отивам) утре.",
+          "answer_bg": "ще отида"
+        },
+        {
+          "type": "transform",
+          "prompt_bg": "Аз ___ (мога) утре. (negative future)",
+          "answer_bg": "няма да мога"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          3,
+          7,
+          21
+        ]
+      }
+    },
+    {
+      "id": "bg.clitics.position",
+      "title_bg": "Клитики: място и ред",
+      "level": [
+        "B1",
+        "B2"
+      ],
+      "micro_explanation_bg": "Къси местоимения стоят пред личния глагол: „Ще го видя“. След императив/инфинитив: „Дай ми“, „да ми дадете“",
+      "contrast_notes": {
+        "PL": "Zaimek krótszy zwykle przed czasownikiem: 'Ще го видя'. Po rozkazie: 'Дай ми'.",
+        "RU": "Клитики обычно перед глаголом: „Ще го видя“. После повелит.: „Дай ми“."
+      },
+      "triggers": [
+        {
+          "type": "error_tag",
+          "value": "clitic_position"
+        },
+        {
+          "type": "regex",
+          "pattern": "\\b(го|я|ги|ми|ти|ни|ви|се|си)\\b\\s*$"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Ще видя го утре.",
+          "right": "Ще го видя утре."
+        },
+        {
+          "wrong": "Дай мене вода.",
+          "right": "Дай ми вода."
+        }
+      ],
+      "drills": [
+        {
+          "type": "reorder",
+          "prompt_bg": "___ ___ видя утре. (го/ще)",
+          "answer_bg": "Ще го видя утре."
+        },
+        {
+          "type": "imperative_clitic",
+          "prompt_bg": "___ ___ вода. (дай/ми)",
+          "answer_bg": "Дай ми вода."
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          3,
+          7,
+          21
+        ]
+      }
+    },
+    {
+      "id": "bg.question.li",
+      "title_bg": "Въпросната частица „ли“",
+      "level": [
+        "A2"
+      ],
+      "micro_explanation_bg": "Общ въпрос: глагол + ли… „Имате ли карта?“",
+      "contrast_notes": {
+        "PL": "Zamiast inwersji często używa się partykuły „ли“ po czasowniku: „Имате ли…?“",
+        "RU": "Общий вопрос часто с частицей „ли“: „Имате ли…?“"
+      },
+      "triggers": [
+        {
+          "type": "regex",
+          "pattern": "\\bимате\\s+\\?|"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Ли имате карта?",
+          "right": "Имате ли карта?"
+        }
+      ],
+      "drills": [
+        {
+          "type": "reorder",
+          "prompt_bg": "___ ___ предплатени пакети? (имате/ли)",
+          "answer_bg": "Имате ли предплатени пакети?"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          2,
+          5,
+          14
+        ]
+      }
+    },
+    {
+      "id": "bg.negation.double",
+      "title_bg": "Отрицание и двойно отрицание",
+      "level": [
+        "B1"
+      ],
+      "micro_explanation_bg": "След „не/няма“ често се използват отрицателни местоимения: „Никой не знае“, „Нямам никакви алергии“.",
+      "contrast_notes": {
+        "PL": "Podwójne przeczenie jest naturalne w BG: „Никой не…“, „Нямам никакви…“.",
+        "RU": "Двойное отрицание обычно: „Никой не…“, „Нямам никакви…“."
+      },
+      "triggers": [
+        {
+          "type": "error_tag",
+          "value": "negation_mismatch"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Имам никакви алергии.",
+          "right": "Нямам никакви алергии."
+        },
+        {
+          "wrong": "Кой не знае.",
+          "right": "Никой не знае."
+        }
+      ],
+      "drills": [
+        {
+          "type": "transform",
+          "prompt_bg": "Имам ___ алергии. (none)",
+          "answer_bg": "нямам никакви"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          1,
+          3,
+          7,
+          21
+        ]
+      }
+    },
+    {
+      "id": "bg.vocative",
+      "title_bg": "Вокатив: обръщение по име",
+      "level": [
+        "B1"
+      ],
+      "micro_explanation_bg": "При директно обръщение: „Иване, ела!“, „Мария, заповядай.“",
+      "contrast_notes": {
+        "PL": "Wokatyw występuje, ale formy inne: Ivan → „Иване“.",
+        "RU": "Вокатив как в славянских языках, но формы другие: Иван → „Иване“."
+      },
+      "triggers": [
+        {
+          "type": "context",
+          "value": "direct_address"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Иван, ела!",
+          "right": "Иване, ела!"
+        }
+      ],
+      "drills": [
+        {
+          "type": "transform",
+          "prompt_bg": "___, заповядай! (Иван)",
+          "answer_bg": "Иване, заповядай!"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          3,
+          7,
+          21
+        ]
+      }
+    },
+    {
+      "id": "bg.relative.kojto",
+      "title_bg": "Относителни изречения с „който“",
+      "level": [
+        "B1",
+        "B2"
+      ],
+      "micro_explanation_bg": "Свързваме изречения: „Търся апартамент, който е близо до метро.“",
+      "contrast_notes": {
+        "PL": "Zamiast przypadków używaj 'който/която/което/които'.",
+        "RU": "Относительное: 'который' → BG 'който/която/което/които'."
+      },
+      "triggers": [
+        {
+          "type": "error_tag",
+          "value": "relative_clause"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Търся апартамент, близко до метро.",
+          "right": "Търся апартамент, който е близо до метро."
+        }
+      ],
+      "drills": [
+        {
+          "type": "fill",
+          "prompt_bg": "Това е човек, ___ ми помогна.",
+          "answer_bg": "който"
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          2,
+          5,
+          14,
+          30
+        ]
+      }
+    },
+    {
+      "id": "bg.evidential.reported",
+      "title_bg": "Евиденциал (-л форми) за чужда информация",
+      "level": [
+        "B2",
+        "C1"
+      ],
+      "micro_explanation_bg": "Когато предаваме чужда информация: „Казали, че утре ще вали.“ / „Той е дошъл.“",
+      "contrast_notes": {
+        "PL": "Brak prostego odpowiednika; traktuj jako 'podobno/powiedzieli'.",
+        "RU": "Аналога нет; используйте как 'говорят/якобы'."
+      },
+      "triggers": [
+        {
+          "type": "context",
+          "value": "reported_speech"
+        }
+      ],
+      "examples": [
+        {
+          "wrong": "Каза, че той пристигна.",
+          "right": "Каза, че той е пристигнал."
+        }
+      ],
+      "drills": [
+        {
+          "type": "transform",
+          "prompt_bg": "Казват, че ___ (пристига).",
+          "answer_bg": "е пристигнал."
+        }
+      ],
+      "srs": {
+        "interval_days": [
+          3,
+          10,
+          30,
+          60
+        ]
+      }
+    }
+  ]
+}
