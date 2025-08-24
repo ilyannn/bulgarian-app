@@ -31,8 +31,8 @@ jobs:
 
       - name: Install just
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
-          echo "$HOME/bin" >> $GITHUB_PATH
+          curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ./bin
+          echo "$PWD/bin" >> $GITHUB_PATH
 
       - name: Run linting
         run: just lint
