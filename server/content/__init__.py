@@ -28,10 +28,15 @@ def load_grammar_pack() -> dict[str, Any]:
         with open(grammar_file, encoding="utf-8") as f:
             grammar_data = json.load(f)
 
-        # Convert list to dictionary indexed by ID
-        if isinstance(grammar_data, list):
+        # Handle different JSON formats
+        if isinstance(grammar_data, dict) and "items" in grammar_data:
+            # New format with metadata and items array
+            return {item["id"]: item for item in grammar_data["items"]}
+        elif isinstance(grammar_data, list):
+            # Legacy format - items as array
             return {item["id"]: item for item in grammar_data}
         elif isinstance(grammar_data, dict):
+            # Legacy format - items as dictionary
             return grammar_data
         else:
             raise ValueError("Invalid grammar pack format")
@@ -58,10 +63,15 @@ def load_scenarios() -> dict[str, Any]:
         with open(scenarios_file, encoding="utf-8") as f:
             scenarios_data = json.load(f)
 
-        # Convert list to dictionary indexed by ID
-        if isinstance(scenarios_data, list):
+        # Handle different JSON formats
+        if isinstance(scenarios_data, dict) and "scenarios" in scenarios_data:
+            # New format with metadata and scenarios array
+            return {item["id"]: item for item in scenarios_data["scenarios"]}
+        elif isinstance(scenarios_data, list):
+            # Legacy format - scenarios as array
             return {item["id"]: item for item in scenarios_data}
         elif isinstance(scenarios_data, dict):
+            # Legacy format - scenarios as dictionary
             return scenarios_data
         else:
             raise ValueError("Invalid scenarios format")

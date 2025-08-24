@@ -142,8 +142,8 @@ def reset_global_state():
     """Reset global state before each test."""
     # Patch global variables that might interfere between tests
     with (
-        patch("app.GRAMMAR_INDEX", {}),
-        patch("app.SCENARIOS", {}),
+        patch("app.grammar_index", {}),
+        patch("app.scenarios", {}),
         patch("app.asr_processor", None),
         patch("app.tts_processor", None),
         patch("app.chat_provider", None),

@@ -50,7 +50,7 @@ class TestContentEndpoints:
     """Test content-related endpoints."""
 
     @patch(
-        "app.SCENARIOS",
+        "app.scenarios",
         {"test_scenario": {"id": "test_scenario", "title": "Test Scenario"}},
     )
     def test_get_scenarios(self, client):
@@ -58,7 +58,7 @@ class TestContentEndpoints:
         response = client.get("/content/scenarios")
         assert response.status_code == 200
         data = response.json()
-        # The endpoint returns list(SCENARIOS.values())
+        # The endpoint returns list(scenarios.values())
         assert isinstance(data, list)
         assert len(data) == 1
         assert data[0]["title"] == "Test Scenario"
