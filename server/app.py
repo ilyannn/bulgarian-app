@@ -3,7 +3,6 @@ import os
 import uvicorn
 from asr import ASRProcessor
 from bg_rules import detect_grammar_errors
-from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -11,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from llm import DummyProvider
 from pydantic import BaseModel
 from tts import TTSProcessor
+
+from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
 
 app = FastAPI(title="Bulgarian Voice Coach", version="0.1.0")
 

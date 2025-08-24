@@ -3,10 +3,9 @@ Content loading and management system for Bulgarian grammar and scenarios
 """
 
 import json
-import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Content directory path
 CONTENT_DIR = Path(__file__).parent

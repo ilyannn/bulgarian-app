@@ -40,12 +40,9 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long, handled by ruff format
-    "C901",  # too complex, subjective
+    "E501", # line too long, handled by ruff format
+    "C901", # too complex, subjective
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["server"]
@@ -54,10 +51,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 asyncio_mode = "auto"
+pythonpath = ["server"]
 
 [dependency-groups]
-dev = [
-    "httpx>=0.28.1",
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.1.0",
-]
+dev = ["httpx>=0.28.1", "pytest>=8.4.1", "pytest-asyncio>=1.1.0"]

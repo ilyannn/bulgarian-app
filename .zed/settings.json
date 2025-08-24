@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "Python": {
+      "language_servers": ["ruff", "pyright"],
+      "formatter": {
+        "external": {
+          "command": "uvx",
+          "arguments": ["ruff", "format", "-"]
+        }
+      }
+    }
+  },
+  "lsp": {
+    "ruff": {
+      "settings": {
+        "configuration": "./pyproject.toml",
+        "fixAll": true
+      }
+    },
+    "pyright": {
+      "settings": {
+        "python.defaultInterpreterPath": "./.venv/bin/python",
+        "python.analysis.extraPaths": ["./server"]
+      }
+    }
+  },
+  "working_directory": "./server"
+}
