@@ -1,7 +1,10 @@
 import io
+import logging
 import struct
 import subprocess
 from collections.abc import Generator
+
+logger = logging.getLogger(__name__)
 
 
 class TTSProcessor:
@@ -16,14 +19,23 @@ class TTSProcessor:
         self.pitch = pitch
 
         # Test if eSpeak-NG is available
+        logger.info(
+            f"Initializing TTS with voice: {voice}, speed: {speed}, pitch: {pitch}"
+        )
         try:
             result = subprocess.run(
                 ["espeak-ng", "--version"], capture_output=True, text=True, timeout=5
             )
             if result.returncode != 0:
                 raise RuntimeError("eSpeak-NG not found or not working")
-            print("eSpeak-NG initialized successfully")
+            version_info = (
+                result.stdout.strip().split("\n")[0]
+                if result.stdout
+                else "unknown version"
+            )
+            logger.info(f"✅ eSpeak-NG initialized successfully ({version_info})")
         except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            logger.error(f"❌ eSpeak-NG not available: {e}")
             raise RuntimeError(f"eSpeak-NG not available: {e}") from e
 
     def synthesize(self, text: str | None, language: str = "bg") -> bytes:

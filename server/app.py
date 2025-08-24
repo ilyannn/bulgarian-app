@@ -1,9 +1,11 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
 import uvicorn
 from asr import ASRProcessor
 from bg_rules import detect_grammar_errors
+from config import ConfigError, get_config
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -13,6 +15,8 @@ from pydantic import BaseModel
 from tts import TTSProcessor
 
 from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
+
+logger = logging.getLogger(__name__)
 
 # Global state
 grammar_index: dict = {}
@@ -27,29 +31,52 @@ async def lifespan(app: FastAPI):
     """Initialize and cleanup resources"""
     global asr_processor, tts_processor, chat_provider, grammar_index, scenarios
 
-    # Initialize processors
-    asr_processor = ASRProcessor()
-    tts_processor = TTSProcessor()
-
-    # Initialize chat provider (dummy for now)
-    chat_provider = DummyProvider()
-
-    # Load content
     try:
-        grammar_index = load_grammar_pack()
-        scenarios = load_scenarios()
-        print(
-            f"Loaded {len(grammar_index)} grammar items and {len(scenarios)} scenarios"
-        )
+        # Validate environment configuration
+        config = get_config()
+        logger.info("🚀 Starting Bulgarian Voice Coach server...")
+
+        # Initialize processors
+        logger.info("Initializing ASR processor...")
+        asr_processor = ASRProcessor()
+
+        logger.info("Initializing TTS processor...")
+        tts_processor = TTSProcessor()
+
+        # Initialize chat provider (dummy for now)
+        logger.info(f"Initializing chat provider: {config.chat_provider}")
+        chat_provider = DummyProvider()
+
+        # Load content
+        logger.info("Loading content system...")
+        try:
+            grammar_index = load_grammar_pack()
+            scenarios = load_scenarios()
+            logger.info(
+                f"✅ Loaded {len(grammar_index)} grammar items and {len(scenarios)} scenarios"
+            )
+        except Exception as e:
+            logger.error(f"❌ Could not load content: {e}")
+            grammar_index = {}
+            scenarios = {}
+
+        logger.info("🎉 Server startup complete!")
+
+    except ConfigError as e:
+        logger.error(f"❌ Configuration error: {e}")
+        logger.error("Please check your environment configuration and try again.")
+        raise
     except Exception as e:
-        print(f"Warning: Could not load content: {e}")
-        grammar_index = {}
-        scenarios = {}
+        logger.error(f"❌ Startup error: {e}")
+        raise
 
     yield
 
-    # Cleanup (if needed)
-    print("Shutting down...")
+    # Cleanup
+    logger.info("🔄 Shutting down server...")
+    if asr_processor:
+        # Add cleanup logic if needed
+        pass
 
 
 class CoachResponse(BaseModel):

@@ -154,12 +154,12 @@ Items remaining to be implemented from the original build plan and additional im
 
 ## 7) Typography & Localization
 
-### Font Implementation
+### Font Implementation ✅ **COMPLETED (2025-08-24)**
 
-- [ ] Download and integrate Ysabeau font files
-- [ ] Test Bulgarian-specific glyph rendering
-- [ ] Implement fallback font stack
-- [ ] Add font loading optimization
+- [x] ~~Download and integrate Ysabeau font files~~ ✅ **COMPLETED**
+- [x] ~~Test Bulgarian-specific glyph rendering~~ ✅ **COMPLETED**
+- [x] ~~Implement fallback font stack~~ ✅ **COMPLETED**
+- [x] ~~Add font loading optimization~~ ✅ **COMPLETED**
 
 ### Language Features
 
@@ -168,19 +168,19 @@ Items remaining to be implemented from the original build plan and additional im
 - [ ] Add localized UI elements
 - [ ] Implement proper Bulgarian text normalization
 
-## 8) Environment & Configuration
+## 8) Environment & Configuration ✅ **COMPLETED (2025-08-24)**
 
-### Environment Variables
+### Environment Variables ✅ **COMPLETED**
 
-- [ ] Add `.env.example` file with all required variables
-- [ ] Document model path configuration
-- [ ] Add LLM API key configuration guidance
-- [ ] Implement environment validation on startup
+- [x] ~~Add `.env.example` file with all required variables~~ ✅ **COMPLETED**
+- [x] ~~Document model path configuration~~ ✅ **COMPLETED**
+- [x] ~~Add LLM API key configuration guidance~~ ✅ **COMPLETED**
+- [x] ~~Implement environment validation on startup~~ ✅ **COMPLETED**
 
-### Installation Scripts
+### Installation Scripts ✅ **COMPLETED**
 
-- [ ] Add eSpeak NG installation instructions per platform
-- [ ] Create setup verification script
+- [x] ~~Add eSpeak NG installation instructions per platform~~ ✅ **COMPLETED** (in justfile)
+- [x] ~~Create setup verification script~~ ✅ **COMPLETED**
 - [ ] Add troubleshooting guide for common issues
 
 ## 9) Advanced Features
@@ -252,8 +252,8 @@ Items remaining to be implemented from the original build plan and additional im
 ### Code Quality
 
 - [ ] Improve error handling consistency across modules
-- [ ] Add comprehensive logging throughout the system
-- [ ] Implement proper configuration management
+- [x] ~~Add comprehensive logging throughout the system~~ ✅ **COMPLETED** (2025-08-24)
+- [x] ~~Implement proper configuration management~~ ✅ **COMPLETED** (2025-08-24)
 - [ ] Add API documentation with OpenAPI specs
 - [x] ~~Add comprehensive type checking with pyright/ty integration~~ ✅ **COMPLETED**
 - [x] ~~Fix all diagnostic warnings and type errors~~ ✅ **COMPLETED**

@@ -1,6 +1,9 @@
 import asyncio
+import logging
 import os
 from abc import ABC, abstractmethod
+
+logger = logging.getLogger(__name__)
 
 
 class ChatProvider(ABC):

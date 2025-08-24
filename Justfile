@@ -357,3 +357,19 @@ superlint-pr:
       -e IGNORE_GITIGNORED_FILES=true \
       -v "${PWD}:/tmp/lint" \
       ghcr.io/super-linter/super-linter:latest
+
+# Verify development environment setup
+[group('setup')]
+verify:
+    @echo "🔍 Verifying development environment setup..."
+    python3 scripts/verify-setup.py
+
+# Quick setup verification (essential checks only)
+[group('setup')]
+verify-quick:
+    @echo "⚡ Quick setup verification..."
+    @python3 -c "import sys; print(f'✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
+    @uv --version && echo "✅ uv package manager"
+    @bun --version && echo "✅ bun runtime" 
+    @just --version && echo "✅ just command runner"
+    @echo "🎉 Basic tools are available!"

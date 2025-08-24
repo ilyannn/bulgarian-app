@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 from collections import deque
@@ -5,6 +6,8 @@ from collections import deque
 import numpy as np
 import webrtcvad
 from faster_whisper import WhisperModel
+
+logger = logging.getLogger(__name__)
 
 
 class ASRProcessor:
@@ -29,7 +32,13 @@ class ASRProcessor:
 
         # Initialize Whisper model
         model_path = os.getenv("WHISPER_MODEL_PATH", "medium")
-        self.model = WhisperModel(model_path, device="cpu", compute_type="int8")
+        logger.info(f"Initializing Whisper model: {model_path}")
+        try:
+            self.model = WhisperModel(model_path, device="cpu", compute_type="int8")
+            logger.info("✅ Whisper model initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Whisper model: {e}")
+            raise
 
         self.partial_text = ""
         self.lock = threading.Lock()
