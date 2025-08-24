@@ -1,4 +1,4 @@
-#!/usr/bin/env just --justfile
+#!/usr/bin/env -S just --justfile
 # ==============================================================================
 # IMPORTANT: How `just` differs from Make
 # ==============================================================================
@@ -28,7 +28,7 @@
 
 # Default recipe to display help information
 _default:
-    @just --list --unsorted
+    @just --list --unsorted --list-prefix ····
 
 # Configure shell for all recipes - THIS IS CRITICAL!
 # This setting wraps ALL recipe lines into a single bash command:
@@ -53,47 +53,57 @@ DEFAULT_BRANCH := "main"
 # All Python commands run via uv (fast project manager)
 # https://docs.astral.sh/uv/
 
+# Install Python and sync dependencies using uv
 py-sync:
     uv python install
     uv sync --locked || uv sync --dev
 
+# Check Python code with ruff linter
 py-lint:
     uvx ruff check server
 
+# Format Python code with ruff (includes import sorting)
 py-format:
     uvx ruff format server
     # Keep imports sorted (Ruff's `I` rules)
     uvx ruff check --select I --fix server
 
+# Type checking with ty from Astral (experimental - fast Python type checker)
 py-typecheck:
-    # Optional: add mypy/pyright if the project uses it
-    @echo "(add mypy/pyright if needed)"
+    # Note: ty is still in early development, may have breaking changes
+    # Allow ty to fail without stopping the build (experimental tool)
+    uvx ty check server || echo "ty type checking completed with issues (experimental tool)"
 
+# Build Python package (sdist + wheel) with uv
 py-build:
-    # Build sdist + wheel with uv
     uv build
 
 # ---- Web (TypeScript + Bun + Biome) --------------------------------------
 # Bun as runtime & package manager; Biome for lint+format. Bun doesn't type
 # check TypeScript, so we use `tsc --noEmit` for types.
 
+# Install JavaScript dependencies with bun (frozen lockfile)
 web-install:
     cd client && bun install --frozen-lockfile
 
+# Lint JavaScript/TypeScript code with Biome
 web-lint:
-    # Biome: fast linter/formatter in one tool
     cd client && bunx @biomejs/biome ci
 
+# Format JavaScript/TypeScript code with Biome
 web-format:
     cd client && bunx @biomejs/biome format --write
 
 # Auto-fix JavaScript linting issues (including unsafe fixes)
 web-fix:
+    # Applies both safe and unsafe Biome fixes - use when lint errors can be automatically resolved
     cd client && bunx @biomejs/biome check --write --unsafe .
 
+# Type check TypeScript with tsc (no emit)
 web-typecheck:
     cd client && bunx tsc --noEmit
 
+# Start frontend development server only
 web-dev:
     cd client && bun run dev
 
@@ -130,7 +140,7 @@ serve:
     (cd client && bun run build && bun run preview -- --host) &
     wait
 
-# Tests (server only for now)
+# Run tests (server only for now)
 test:
     cd server && uv run pytest -q
 
@@ -138,17 +148,22 @@ test:
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
 # See also the GitHub Action below.
 
+# Run all linting: Python + Web + Justfile formatting check
 lint: py-lint web-lint
     just --fmt --check --unstable
 
+# Run all formatting: Python + Web + Justfile formatting
 format: py-format web-format
     just --fmt --unstable
 
+# Alias for `format`
+
 alias fmt := format
 
+# Build all packages (currently just Python)
 build: py-build
 
-# Format *check* (no writes). Fail if not formatted.
+# Check if code is formatted correctly (fails if not)
 format-check:
     uvx ruff format --check server
     cd client && bunx @biomejs/biome check --reporter=summary
@@ -157,18 +172,19 @@ format-check:
 # We commit hooks into .githooks and point Git there to keep them versioned.
 # `core.hooksPath` is the supported way to use custom hook directories.
 
+# Install git hooks from .githooks directory
 hooks-install:
     git config core.hooksPath .githooks
     chmod +x .githooks/* || true
     @echo "Installed hooks to .githooks (core.hooksPath)."
 
-# This is the gate run locally before every commit
+# Gate run before every commit (lint + typecheck + format-check + docs-guard)
 pre-commit: lint web-typecheck py-typecheck format-check docs-guard
 
-# Pre-push: heavy security guardrails (secrets + path leak scan)
+# Heavy security guardrails (secrets + path leak scan)
 pre-push: secrets-scan path-leak-scan
 
-# Secret scan with Gitleaks (containerized). Fails on findings.
+# Scan for secrets using Gitleaks (containerized)
 # Docs: https://github.com/gitleaks/gitleaks
 
 # NOTE: Backslash (\) continuation keeps this as one logical line
@@ -176,7 +192,7 @@ secrets-scan:
     docker run --rm -v "${PWD}:/repo" ghcr.io/gitleaks/gitleaks:latest \
       git --no-banner --redact --report-format sarif --report-path gitleaks.sarif /repo
 
-# Block accidental absolute paths like /Users/<name> or ~ checked into the repo
+# Block accidental absolute paths like /Users/<name> in commits
 # Skip common directories; extend as needed.
 
 # NOTE: @ prefix only affects the first line; continuation is part of that line
@@ -185,7 +201,7 @@ path-leak-scan:
     ! git grep -nI -e '/Users/' -e '~/' -- . ':!node_modules' ':!.git' ':!*.sarif' || \
       (echo "\nERROR: Found potential path leaks. Remove absolute user paths (/Users/<you> or ~)." && exit 1)
 
-# Require docs/ updates when code changes (can bypass with SKIP_DOCS_CHECK=1)
+# Require docs/ updates when code changes (bypass with SKIP_DOCS_CHECK=1)
 # Uses staged changes; fails if non-docs changed but no docs/ changes are staged.
 # IMPORTANT: Backslash continuation (\) keeps this as ONE command
 
@@ -198,7 +214,7 @@ docs-guard:
       exit 1; \
     fi
 
-# Fast local "PR" super-lint using the official container (RUN_LOCAL)
+# Run Super-Linter container for comprehensive code quality checks
 # Lints the whole repo by default. Set VALIDATE_ALL_CODEBASE=false to only check changes.
 # Docs: https://github.com/super-linter/super-linter
 
