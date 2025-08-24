@@ -206,7 +206,7 @@ diagnostics:
     uvx ruff check server/ --output-format=full || true
     @echo ""
     @echo "=== Python Type Diagnostics (pyright) ==="
-    PYTHONPATH=server uvx pyright server/ --venv-path .venv || true
+    uvx pyright server/ || true
     @echo ""
     @echo "=== JavaScript/TypeScript Diagnostics ==="
     cd client && bun run tsc --noEmit || true

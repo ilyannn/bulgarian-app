@@ -25,11 +25,11 @@ app.add_middleware(
 )
 
 # Global state
-GRAMMAR_INDEX = {}
-SCENARIOS = {}
-asr_processor = None
-tts_processor = None
-chat_provider = None
+GRAMMAR_INDEX: dict = {}
+SCENARIOS: dict = {}
+asr_processor: ASRProcessor | None = None
+tts_processor: TTSProcessor | None = None
+chat_provider: DummyProvider | None = None
 
 
 class CoachResponse(BaseModel):
@@ -137,6 +137,7 @@ async def text_to_speech(text: str):
         raise HTTPException(status_code=500, detail="TTS not initialized")
 
     def generate_audio():
+        assert tts_processor is not None
         yield from tts_processor.synthesize_streaming(text)
 
     return StreamingResponse(
