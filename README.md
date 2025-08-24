@@ -14,17 +14,20 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 ## Tech Stack
 
 **Backend:**
+
 - Python 3.11 with FastAPI
 - faster-whisper (CTranslate2) for ASR
 - eSpeak-NG for TTS
 - WebSocket for real-time communication
 
 **Frontend:**
+
 - Vanilla JavaScript with Vite
 - AudioWorklet for low-latency audio processing
 - Modern CSS with Bulgarian typography support
 
 **Grammar Engine:**
+
 - Lightweight rule-based Bulgarian grammar detection
 - Focus on definite articles, infinitive constructions, future tense, clitics
 
@@ -33,6 +36,7 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 1. **Python 3.11** or later
 2. **Node.js 18** or later
 3. **eSpeak-NG** - Install via package manager:
+
    ```bash
    # Ubuntu/Debian
    sudo apt-get install espeak-ng
@@ -43,11 +47,13 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
    # Windows (via Chocolatey)
    choco install espeak-ng
    ```
+
 4. **just** command runner
 
 ## Quick Start
 
 1. **Clone and setup:**
+
    ```bash
    git clone <repository-url>
    cd bulgarian-app
@@ -55,12 +61,14 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
    ```
 
 2. **Configure environment** (optional):
+
    ```bash
    cp .env.example .env
    # Edit .env with your API keys and model paths
    ```
 
 3. **Run development servers:**
+
    ```bash
    just dev
    ```
@@ -121,33 +129,40 @@ just serve
 The app detects common Bulgarian grammar errors made by Slavic speakers:
 
 ### Definite Articles
+
 - **Issue:** Missing or incorrect postposed articles (-ът, -та, -то, -те)
 - **Example:** "стол" → "столът" (when referring to a specific chair)
 
 ### No Infinitive Construction
+
 - **Issue:** Using infinitive-like forms instead of "да" + present
 - **Example:** "Искам поръчвам" → "Искам да поръчам"
 
 ### Future Tense
+
 - **Issue:** Missing "ще" for future actions
 - **Example:** "Утре ходя" → "Утре ще ходя"
 
 ### Clitic Positioning
+
 - **Issue:** Incorrect placement of clitic pronouns
 - **Example:** Proper positioning after "не" and certain particles
 
 ## Audio Configuration
 
 ### Sample Rates
+
 - **Input:** 48kHz (browser default) → resampled to 16kHz
 - **Processing:** 16kHz mono PCM Int16 frames
 - **Output:** 22kHz (eSpeak default)
 
 ### Latency Budget
+
 - 20-40ms frames → 200-400ms VAD → 0.5-1.0s ASR → ~0.2s TTS
 - **Target:** 1.2-2.0s total latency
 
 ### Browser Support
+
 - **Primary:** AudioWorklet (Chrome 64+, Firefox 76+, Safari 14.1+)
 - **Fallback:** ScriptProcessor for older browsers
 
@@ -162,6 +177,7 @@ Bulgarian text uses the **Ysabeau** font family optimized for Cyrillic:
 ## Deployment
 
 ### Production Build
+
 ```bash
 # Build frontend
 cd client && npm run build
@@ -171,6 +187,7 @@ just serve
 ```
 
 ### Docker (Optional)
+
 ```dockerfile
 FROM python:3.11-slim
 RUN apt-get update && apt-get install -y espeak-ng
@@ -182,6 +199,7 @@ CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0"]
 ```
 
 ### Environment Variables
+
 - `WHISPER_MODEL_PATH` - Path to Whisper model or model name
 - `CHAT_PROVIDER` - LLM provider (auto/openai/claude/dummy)
 - `OPENAI_API_KEY` - OpenAI API key (if using)
@@ -195,6 +213,7 @@ CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0"]
 4. Update documentation as needed
 
 ### Code Style
+
 - **Python:** Black formatting, isort imports, Ruff linting
 - **JavaScript:** Prettier formatting
 - **Commits:** Conventional commits preferred
@@ -204,6 +223,7 @@ CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0"]
 ### Common Issues
 
 **eSpeak-NG not found:**
+
 ```bash
 # Install eSpeak-NG for your system
 sudo apt-get install espeak-ng  # Ubuntu/Debian
@@ -211,16 +231,19 @@ brew install espeak-ng          # macOS
 ```
 
 **Microphone not working:**
+
 - Ensure HTTPS in production (required for getUserMedia)
 - Check browser permissions
 - Test with different browsers
 
 **WebSocket connection fails:**
+
 - Check if backend is running on port 8000
 - Verify firewall settings
 - Check proxy configuration in `vite.config.js`
 
 **Audio quality issues:**
+
 - Verify 16kHz processing chain
 - Check VAD sensitivity settings
 - Test with different microphones
@@ -228,11 +251,13 @@ brew install espeak-ng          # macOS
 ### Performance Tuning
 
 **ASR Latency:**
+
 - Use smaller Whisper model (tiny/base vs medium/large)
 - Adjust VAD parameters
 - Reduce beam size and temperature
 
 **Memory Usage:**
+
 - Monitor Whisper model size
 - Adjust audio buffer sizes
 - Use model quantization (int8/int16)

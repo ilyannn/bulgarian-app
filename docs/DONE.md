@@ -3,9 +3,10 @@
 Items that have been successfully implemented from the original build plan.
 
 ## 1) Project Layout ✅
+
 - [x] `/server` directory structure implemented
 - [x] `app.py` - FastAPI entry with WebSocket and REST endpoints
-- [x] `asr.py` - faster-whisper ASR integration 
+- [x] `asr.py` - faster-whisper ASR integration
 - [x] `tts.py` - eSpeak NG text-to-speech with streaming
 - [x] `llm.py` - ChatProvider interface with Dummy, Claude, and OpenAI providers
 - [x] `bg_rules.py` - Bulgarian grammar rule detection
@@ -15,7 +16,8 @@ Items that have been successfully implemented from the original build plan.
 - [x] Root-level `Justfile` for build automation
 - [x] `README.md` with setup instructions
 
-## 2) Justfile Implementation ✅ 
+## 2) Justfile Implementation ✅
+
 - [x] Modern Justfile with comprehensive recipe system (enhanced beyond original plan)
 - [x] `install` - Dependencies installation using uv and bun
 - [x] `dev` - Development servers with process management
@@ -26,6 +28,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Enhanced with groups, security scanning, and git hooks
 
 ## 3) Core Backend Implementation ✅
+
 - [x] FastAPI application with WebSocket support (`/ws/asr`)
 - [x] CORS middleware configuration
 - [x] Content endpoints (`/content/scenarios`, `/content/grammar/{id}`)
@@ -34,6 +37,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Startup event handler for processor initialization
 
 ## 4) ASR Implementation ✅
+
 - [x] faster-whisper integration with language="bg"
 - [x] WebRTC VAD for voice activity detection
 - [x] 16kHz PCM processing pipeline
@@ -41,6 +45,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Error handling and graceful fallbacks
 
 ## 5) TTS Implementation ✅
+
 - [x] eSpeak NG subprocess integration
 - [x] Bulgarian voice synthesis
 - [x] Streaming audio generation
@@ -48,6 +53,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Custom voice, speed, and pitch parameters
 
 ## 6) LLM Provider System ✅
+
 - [x] Abstract ChatProvider interface
 - [x] DummyProvider for development/testing
 - [x] OpenAI provider with API integration
@@ -56,6 +62,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Error handling and fallback responses
 
 ## 7) Frontend Implementation ✅
+
 - [x] Vite-based build system with modern tooling
 - [x] WebSocket client for real-time ASR
 - [x] AudioWorklet for high-performance audio capture
@@ -64,6 +71,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Mic controls and transcript display
 
 ## 8) Bulgarian Typography ✅
+
 - [x] Ysabeau font integration setup
 - [x] CSS classes for Bulgarian text (`.bg-text`)
 - [x] HTML lang="bg" configuration
@@ -71,6 +79,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Self-hosted font files directory structure
 
 ## 9) Development Tooling ✅
+
 - [x] Modern Python tooling with uv package manager
 - [x] JavaScript tooling with Bun runtime
 - [x] Ruff for Python linting and formatting
@@ -79,6 +88,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Git hooks for pre-commit and pre-push
 
 ## 10) Testing Infrastructure ✅
+
 - [x] Comprehensive pytest test suite (31 tests)
 - [x] FastAPI endpoint testing with TestClient
 - [x] Mock-based testing for external dependencies
@@ -87,12 +97,14 @@ Items that have been successfully implemented from the original build plan.
 - [x] Integration and unit test separation
 
 ## 11) CI/CD Foundation ✅
+
 - [x] GitHub Actions workflow for linting
 - [x] Local and CI parity for code quality checks
 - [x] Super-Linter integration for additional validation
 - [x] Automated dependency management with Dependabot
 
 ## 12) Security & Code Quality ✅
+
 - [x] Git hooks for code quality enforcement
 - [x] Secret scanning with Gitleaks
 - [x] Path leak prevention in commits
@@ -100,6 +112,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Documentation sync enforcement
 
 ## 13) Project Documentation ✅
+
 - [x] Comprehensive CLAUDE.md project guide
 - [x] Architecture documentation
 - [x] Development workflow documentation
@@ -107,6 +120,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Tech stack documentation
 
 ## 14) Core Audio Pipeline ✅
+
 - [x] 16kHz mono PCM processing
 - [x] Binary WebSocket communication
 - [x] Ring buffer for audio streaming
@@ -114,6 +128,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Partial and final transcript handling
 
 ## 15) Content System Integration ✅ (2025-08-24)
+
 - [x] Content files moved to proper `server/content/` location
 - [x] Grammar pack loading with 9 comprehensive Bulgarian grammar rules
 - [x] Scenarios loading with 24 A2-B2 conversational scenarios
@@ -124,6 +139,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Progress tracking system for user learning state
 
 ## 16) Grammar Detection Enhancement ✅ (2025-08-24)
+
 - [x] Enhanced Bulgarian grammar detector with real content rules
 - [x] Regex pattern integration from grammar pack JSON files
 - [x] Intelligent correction extraction from grammar examples
@@ -132,6 +148,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Integration with content-based micro-explanations
 
 ## 17) Enhanced API Endpoints ✅ (2025-08-24)
+
 - [x] Added `GET /content/drills/{grammar_id}` for grammar-specific drills
 - [x] Added `POST /content/analyze` for comprehensive text analysis
 - [x] Enhanced `process_user_input` with drill extraction from content
@@ -140,6 +157,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Comprehensive error analysis with contextual feedback
 
 ## Enhanced Features (Beyond Original Plan) ✅
+
 - [x] Modern Python tooling with uv instead of pip/venv
 - [x] Bun runtime for faster JavaScript tooling
 - [x] Enhanced Justfile with recipe groups and security features

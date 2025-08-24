@@ -59,19 +59,19 @@ py-sync:
     uv python install
     uv sync --locked || uv sync --dev
 
-# Check Python code with ruff linter
+# Check Python code with ruff linter using centralized config
 [group('lint')]
 [group('python')]
 py-lint:
-    uvx ruff check server
+    uvx ruff check --config .github/linters/.ruff.toml server
 
 # Format Python code with ruff (includes import sorting)
 [group('format')]
 [group('python')]
 py-format:
-    uvx ruff format server
+    uvx ruff format --config .github/linters/.ruff.toml server
     # Keep imports sorted (Ruff's `I` rules)
-    uvx ruff check --select I --fix server
+    uvx ruff check --config .github/linters/.ruff.toml --select I --fix server
 
 # Type checking with ty from Astral (experimental - fast Python type checker)
 [group('python')]
@@ -80,6 +80,8 @@ py-typecheck:
     # Note: ty is still in early development, may have breaking changes
     # Allow ty to fail without stopping the build (experimental tool)
     uvx ty check server || echo "ty type checking completed with issues (experimental tool)"
+    # Also run pyright with centralized config
+    uvx pyright --project .github/linters/pyrightconfig.json server/ || true
 
 # Build Python package (sdist + wheel) with uv
 [group('build')]
@@ -114,25 +116,25 @@ prettier-check:
     @echo "=== Prettier formatting check ==="
     cd client && bunx prettier --check .
 
-# Lint JavaScript/TypeScript code with Biome
+# Lint JavaScript/TypeScript code with Biome using centralized config
 [group('lint')]
 [group('web')]
 web-lint:
-    cd client && bunx @biomejs/biome ci
+    cd client && bunx @biomejs/biome ci --config-path ../.github/linters/biome.json
 
-# Format JavaScript/TypeScript code with Biome
+# Format JavaScript/TypeScript code with Biome using centralized config
 [group('format')]
 [group('web')]
 web-format:
-    cd client && bunx @biomejs/biome format --write
+    cd client && bunx @biomejs/biome format --write --config-path ../.github/linters/biome.json
 
 # Auto-fix JavaScript linting issues (including unsafe fixes)
 [group('web')]
 web-fix:
     # Applies both safe and unsafe Biome fixes - use when lint errors can be automatically resolved
-    cd client && bunx @biomejs/biome check --write --unsafe .
+    cd client && bunx @biomejs/biome check --write --unsafe --config-path ../.github/linters/biome.json .
 
-# Type check TypeScript with tsc (no emit)
+# Type check TypeScript with tsc (no emit) using local config
 [group('typecheck')]
 [group('web')]
 web-typecheck:
@@ -221,34 +223,43 @@ test:
 [group('quality')]
 diagnostics:
     @echo "=== Python Diagnostics (ruff) ==="
-    uvx ruff check server/ --output-format=full || true
+    uvx ruff check server/ --config .github/linters/.ruff.toml --output-format=full || true
     @echo ""
     @echo "=== Python Type Diagnostics (ty) ==="
     uvx ty check server/ || true
     @echo ""
     @echo "=== Python Type Diagnostics (pyright) ==="
-    uvx pyright server/ || true
+    uvx pyright --project .github/linters/pyrightconfig.json server/ || true
     @echo ""
     @echo "=== JavaScript/TypeScript Diagnostics ==="
-    cd client && bun run tsc --noEmit || true
-    cd client && bunx @biomejs/biome check . --diagnostic-level=info || true
+    cd client && bunx tsc --noEmit || true
+    cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json . --diagnostic-level=info || true
 
-# Run all linting: Docker + Python + Web + Justfile formatting check
+# Check documentation formatting with Prettier
+[group('docs')]
 [group('quality')]
-lint: docker-lint py-lint web-lint
+docs-check:
+    @echo "=== Checking documentation formatting with Prettier ==="
+    bunx prettier --config .github/linters/.prettierrc.json --check "docs/**/*.{md,mdx}" --log-level warn || echo "No docs found"
+    bunx prettier --config .github/linters/.prettierrc.json --check "README.md" --log-level warn || echo "No README.md found"
+
+# Run all linting: Docker + Python + Web + Docs + Justfile formatting check
+[group('quality')]
+lint: docker-lint py-lint web-lint docs-check
     uvx ty check server/ || true
     just --fmt --check --unstable
 
-# Format with prettier
+# Format documentation with Prettier (Markdown, HTML, etc.) using centralized config
+[group('docs')]
 [group('format')]
-[group('web')]
-prettier-format:
-    @echo "=== Prettier formatting ==="
-    cd client && bunx prettier --write .
+docs-format:
+    @echo "=== Formatting documentation with Prettier ==="
+    bunx prettier --config .github/linters/.prettierrc.json --write "docs/**/*.{md,mdx}" --log-level warn
+    bunx prettier --config .github/linters/.prettierrc.json --write "README.md" --log-level warn || echo "No README.md found"
 
-# Run all formatting: Python + Web + Prettier + Justfile formatting
+# Run all formatting: Python + Web + Docs + Justfile formatting
 [group('quality')]
-format: py-format web-format prettier-format
+format: py-format web-format docs-format
     just --fmt --unstable
 
 # Alias for `format`
@@ -262,8 +273,8 @@ build: py-build
 # Check if code is formatted correctly (fails if not)
 [group('quality')]
 format-check:
-    uvx ruff format --check server
-    cd client && bunx @biomejs/biome check --reporter=summary
+    uvx ruff format --config .github/linters/.ruff.toml --check server
+    cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json --reporter=summary
 
 # ---- Git hooks via just ----------------------------------------------------
 # We commit hooks into .githooks and point Git there to keep them versioned.

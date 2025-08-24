@@ -5,6 +5,7 @@ Items remaining to be implemented from the original build plan and additional im
 ## 🎉 Recently Completed (2025-08-24)
 
 ### Development Tooling & Code Quality ✅
+
 - [x] **Enhanced diagnostics integration**: Added `just diagnostics` command matching Zed editor LSP behavior
 - [x] **Type safety overhaul**: Fixed 40+ diagnostic errors, achieved 0 errors/0 warnings with pyright
 - [x] **FastAPI modernization**: Migrated from deprecated `on_event` to modern `lifespan` context manager
@@ -14,12 +15,14 @@ Items remaining to be implemented from the original build plan and additional im
 - [x] **OpenAI/Anthropic API compatibility**: Fixed type-safe message formatting and content block access
 
 ### Development Workflow Improvements ✅
+
 - [x] **Enhanced Justfile**: Added comprehensive diagnostics, improved recipe organization
 - [x] **pyright configuration**: Strict type checking mode with comprehensive reporting rules
 - [x] **Git hooks integration**: Versioned hooks in `.githooks/` with proper documentation
 - [x] **Multi-checker setup**: Both pyright (reference) and ty (fast) type checkers configured
 
 ### Content System Discovery ✅
+
 - [x] **Grammar pack exists**: Found comprehensive `content/bg_grammar_pack.json` with Bulgarian grammar rules
 - [x] **Scenarios exist**: Found `content/bg_scenarios_with_grammar.json` with A2-B2 conversational scenarios
 - [x] **L1 contrast notes**: All files include Polish/Russian/Ukrainian/Serbian language contrasts
@@ -30,6 +33,7 @@ Items remaining to be implemented from the original build plan and additional im
 ## 1) Content System (High Priority)
 
 ### Grammar Pack & Scenarios ✅ **PARTIALLY COMPLETE**
+
 - [x] ~~Create `server/content/bg_grammar_pack.json` with grammar items~~ ✅ **EXISTS** (in `content/`)
   - [x] ~~Implement grammar items with `id`, `micro_explanation_bg`, `contrast_notes`~~ ✅ **DONE**
   - [x] ~~Add L1-specific contrast notes (Polish, Russian, Ukrainian, Serbian)~~ ✅ **DONE**
@@ -42,14 +46,16 @@ Items remaining to be implemented from the original build plan and additional im
   - [x] ~~Add conversational scenarios for A2-B2 levels~~ ✅ **DONE**
 
 ### Content Integration ✅ **COMPLETED**
+
 - [x] ~~**Move content files to correct location**: `content/*.json` → `server/content/*.json`~~ ✅ **DONE**
 - [x] ~~**Fix path references**: Update content loading to handle new JSON format~~ ✅ **DONE**
 
-### Content Loading & Endpoints ✅ **PARTIALLY COMPLETE** 
+### Content Loading & Endpoints ✅ **PARTIALLY COMPLETE**
+
 - [x] ~~Implement content loading functions in `server/content/__init__.py`~~ ✅ **DONE**
   - [x] ~~`load_grammar_pack()` function~~ ✅ **DONE**
   - [x] ~~`load_scenarios()` function~~ ✅ **DONE**
-  - [x] ~~`get_grammar_item(id)` function~~ ✅ **DONE**  
+  - [x] ~~`get_grammar_item(id)` function~~ ✅ **DONE**
   - [x] ~~`get_next_lesson(user_id)` for SRS functionality~~ ✅ **DONE**
 
 - [x] ~~Add missing content endpoints in `app.py`~~ ✅ **COMPLETED**
@@ -62,6 +68,7 @@ Items remaining to be implemented from the original build plan and additional im
 ## 2) Grammar Rule Detection (Medium Priority)
 
 ### Enhanced bg_rules.py ✅ **COMPLETED**
+
 - [x] ~~Implement comprehensive Bulgarian grammar detection~~ ✅ **COMPLETED**
   - [x] ~~Definite article errors (missing postposed articles)~~ ✅ **COMPLETED**
   - [x] ~~Clitic position errors~~ ✅ **COMPLETED**
@@ -77,12 +84,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 3) Chat Integration & AI Responses
 
 ### Process User Input Enhancement ✅ **COMPLETED**
+
 - [x] ~~Integrate grammar error detection with chat responses~~ ✅ **COMPLETED**
 - [x] ~~Generate contextual corrections with before/after examples~~ ✅ **COMPLETED**
 - [x] ~~Add contrastive notes based on user's L1 background~~ ✅ **COMPLETED**
 - [x] ~~Implement drill suggestions based on detected errors~~ ✅ **COMPLETED**
 
 ### CoachResponse Enhancement ✅ **COMPLETED**
+
 - [x] ~~Add `drills[]` field population~~ ✅ **COMPLETED**
 - [x] ~~Implement micro-drill generation~~ ✅ **COMPLETED**
 - [x] ~~Add grammar chip recommendations~~ ✅ **COMPLETED** (via contrastive_note)
@@ -91,12 +100,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 4) Spaced Repetition System (SRS)
 
 ### User Progress Tracking
+
 - [ ] Implement user state persistence (SQLite for MVP)
 - [ ] Add user mastery counters per grammar item
 - [ ] Implement SRS interval progression `[1,3,7,21]` days
 - [ ] Add next-due timestamp tracking
 
 ### Drill System
+
 - [ ] Implement drill types: `transform`, `fill`, `reorder`
 - [ ] Add drill correctness validation
 - [ ] Update SRS intervals based on user performance
@@ -105,18 +116,21 @@ Items remaining to be implemented from the original build plan and additional im
 ## 5) Frontend UX Enhancement
 
 ### Interactive Elements
+
 - [ ] Add grammar chips with tap-to-expand functionality
 - [ ] Implement inline drill interface (10-20 seconds each)
 - [ ] Add mini-lesson display (2-3 minutes) for repeated errors
 - [ ] Create level meter for audio input
 
 ### Audio Playback
+
 - [ ] Enhance MediaSource integration for progressive audio
 - [ ] Add audio playback controls
 - [ ] Implement latency indicator
 - [ ] Add "Play reply" button functionality
 
 ### Transcript Enhancement
+
 - [ ] Improve partial transcript display
 - [ ] Add finalized transcript bubbles
 - [ ] Implement error highlighting in transcripts
@@ -125,12 +139,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 6) Performance & Latency Optimization
 
 ### Audio Pipeline
+
 - [ ] Optimize for 1.2-2.0s end-to-end latency target
 - [ ] Fine-tune VAD tail timing (200-400ms)
 - [ ] Optimize ASR model selection and parameters
 - [ ] Improve WebSocket frame handling
 
 ### ASR Configuration
+
 - [ ] Implement environment-based model path configuration
 - [ ] Add `no_speech_threshold` tuning
 - [ ] Optimize beam_size and temperature parameters
@@ -139,12 +155,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 7) Typography & Localization
 
 ### Font Implementation
+
 - [ ] Download and integrate Ysabeau font files
 - [ ] Test Bulgarian-specific glyph rendering
 - [ ] Implement fallback font stack
 - [ ] Add font loading optimization
 
 ### Language Features
+
 - [ ] Add per-L1 selector (Polish/Russian/Ukrainian/Serbian)
 - [ ] Implement contrast note switching based on L1
 - [ ] Add localized UI elements
@@ -153,12 +171,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 8) Environment & Configuration
 
 ### Environment Variables
+
 - [ ] Add `.env.example` file with all required variables
 - [ ] Document model path configuration
 - [ ] Add LLM API key configuration guidance
 - [ ] Implement environment validation on startup
 
 ### Installation Scripts
+
 - [ ] Add eSpeak NG installation instructions per platform
 - [ ] Create setup verification script
 - [ ] Add troubleshooting guide for common issues
@@ -166,18 +186,21 @@ Items remaining to be implemented from the original build plan and additional im
 ## 9) Advanced Features
 
 ### TTS Enhancement
+
 - [ ] Research Piper TTS integration as eSpeak alternative
 - [ ] Add voice selection options
 - [ ] Implement cloud TTS fallback options
 - [ ] Add prosody and emotion controls
 
 ### Data Privacy & Analytics
+
 - [ ] Implement local transcript persistence
 - [ ] Add opt-in analytics system
 - [ ] Create progress export functionality
 - [ ] Add GDPR-compliant data handling
 
 ### Content Management
+
 - [ ] Add grammar pack validation tools
 - [ ] Create content authoring interface
 - [ ] Implement A/B testing for drill effectiveness
@@ -186,12 +209,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 10) Production Readiness
 
 ### Deployment
+
 - [ ] Create Docker configuration
 - [ ] Add production environment setup guide
 - [ ] Implement health checks and monitoring
 - [ ] Add logging and error tracking
 
 ### Scalability
+
 - [ ] Add database migration system
 - [ ] Implement user authentication
 - [ ] Add multi-user support
@@ -200,6 +225,7 @@ Items remaining to be implemented from the original build plan and additional im
 ## 11) Acceptance Criteria Validation
 
 ### Core Functionality Tests
+
 - [ ] Validate `just dev` launches with hot reload
 - [ ] Test short Bulgarian utterance processing (<1s partials, ~1s final)
 - [ ] Verify error detection shows chips and micro-drills
@@ -208,6 +234,7 @@ Items remaining to be implemented from the original build plan and additional im
 - [ ] Ensure Bulgarian text renders with Ysabeau font
 
 ### Performance Benchmarks
+
 - [ ] Measure end-to-end latency under various conditions
 - [ ] Test ASR accuracy with different Bulgarian dialects
 - [ ] Validate grammar detection precision and recall
@@ -216,12 +243,14 @@ Items remaining to be implemented from the original build plan and additional im
 ## 12) Bug Fixes & Technical Debt
 
 ### Known Issues
+
 - [x] ~~Fix FastAPI deprecation warnings (on_event → lifespan)~~ ✅ **COMPLETED**
 - [x] ~~Resolve Pydantic model.dict() deprecation~~ ✅ **COMPLETED**
 - [ ] Address WebSocket connection handling edge cases
 - [x] ~~Fix import resolution issues in test modules~~ ✅ **COMPLETED**
 
 ### Code Quality
+
 - [ ] Improve error handling consistency across modules
 - [ ] Add comprehensive logging throughout the system
 - [ ] Implement proper configuration management
@@ -232,11 +261,13 @@ Items remaining to be implemented from the original build plan and additional im
 ---
 
 ## Priority Levels:
+
 - **🔥 High Priority**: Content system, grammar detection, basic SRS
-- **⚡ Medium Priority**: Frontend UX, audio optimization, environment setup  
+- **⚡ Medium Priority**: Frontend UX, audio optimization, environment setup
 - **🌟 Low Priority**: Advanced features, production deployment, analytics
 
 ## 📊 Progress Summary
+
 - **Development Infrastructure**: ✅ **COMPLETE** - Modern tooling, type safety, diagnostics
 - **Core Application Structure**: ✅ **COMPLETE** - FastAPI, WebSocket, AI integration with enhanced endpoints
 - **Content System**: ✅ **COMPLETE** - Grammar packs & scenarios integrated, SRS functional
@@ -246,7 +277,9 @@ Items remaining to be implemented from the original build plan and additional im
 - **Production Ready**: ❌ **TODO** - Deployment, monitoring, scalability
 
 ## 🎯 Next Priority: Frontend UX Enhancement
+
 With grammar detection and content integration now complete, the next logical priorities are:
+
 1. Implement interactive frontend elements for drills and grammar chips
 2. Add audio optimization and latency improvements
 3. Enhance transcript display with error highlighting

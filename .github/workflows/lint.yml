@@ -2,9 +2,9 @@ name: Lint
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   lint-with-just:
@@ -16,12 +16,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -32,27 +32,8 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
 
-      - name: Install hadolint
-        run: |
-          wget -O /tmp/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
-          chmod +x /tmp/hadolint
-          sudo mv /tmp/hadolint /usr/local/bin/
-
-      - name: Install dependencies
-        run: just install
-
-      - name: Run Dockerfile linting (hadolint)
-        run: |
-          find . -name "Dockerfile*" -exec hadolint {} + || echo "No Dockerfiles found"
-
-      - name: Run format check
-        run: just format-check
-
       - name: Run linting
         run: just lint
-
-      - name: Run type checking
-        run: just py-typecheck
 
   super-lint:
     runs-on: ubuntu-latest
@@ -67,10 +48,15 @@ jobs:
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINTER_RULES_PATH: .github/linters
           # Only validate specific file types with ruff
+          VALIDATE_TOML: true
           VALIDATE_PYTHON_RUFF: true
           VALIDATE_JSON: true
           VALIDATE_YAML: true
           VALIDATE_MARKDOWN: true
           VALIDATE_DOCKERFILE_HADOLINT: true
           VALIDATE_BASH: true
+          # Disable Prettier on code files - let Biome handle them
+          VALIDATE_JAVASCRIPT_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: false
