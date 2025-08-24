@@ -109,7 +109,7 @@ GitHub Actions workflow (`.github/workflows/lint.yml`) runs:
 ## Security
 
 - **Secret Scanning**: Gitleaks in pre-push hooks and optional CI
-- **Path Leak Prevention**: Blocks `/Users/` and `~/` paths in commits
+- **Path Leak Prevention**: Blocks absolute user paths in commits
 - **Dependencies**: Regular security updates via Dependabot
 - **Containers**: Prefers Chainguard minimal base images
 
@@ -145,7 +145,7 @@ The project follows "secure by default, fast local feedback, automation first" p
 - **GitHub Actions restrictions**: Organizations may block third-party actions not from verified publishers or same organization
 - **startup_failure diagnosis**: Indicates workflow syntax/permission issues, not runtime errors
 - **Direct installation approach**: Official tool installers (curl + official scripts) often more reliable than GitHub Actions
-- **Path leak prevention**: Security scanners apply to CI workflow files, requiring relative paths (`./bin` vs `~/bin`)
+- **Path leak prevention**: Security scanners apply to CI workflow files, requiring relative paths
 - **Alternative debugging**: When GitHub Actions fail with organizational restrictions, investigate direct installation methods
 
 ### Security-First Development
