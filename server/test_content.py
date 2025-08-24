@@ -6,6 +6,7 @@ import json
 from unittest.mock import mock_open, patch
 
 import pytest
+
 from content import (
     get_grammar_item,
     get_next_lesson,
