@@ -307,3 +307,27 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Better maintainability**: No hidden global shell configuration affecting all recipes
 - [x] **Flexible execution**: Simple recipes run faster without shell wrapper overhead
 - [x] **Consistent error handling**: Each recipe explicitly defines its error handling behavior
+
+## 23) TOML Linting Configuration ✅ (2025-08-25)
+
+### Taplo Integration for Super-Linter
+
+- [x] **TOML validation enablement**: Confirmed VALIDATE_TOML: true already in Super-Linter workflow
+- [x] **Taplo configuration creation**: Added .github/linters/.taplo.toml for formatting standards
+- [x] **Formatting standards**: Configured 2-space indentation matching project conventions
+- [x] **Array and table formatting**: Set rules for inline tables, trailing commas, and array expansion
+- [x] **Comment alignment**: Enabled consecutive comment alignment for readability
+- [x] **Blank line management**: Configured section and table separation with max 1 blank line
+- [x] **Directory exclusions**: Excluded node_modules, .venv, target, and other build directories
+
+### TOML Files Formatted
+
+- [x] **pyproject.toml**: Formatted with consistent 2-space indentation
+- [x] **.github/linters/.ruff.toml**: Applied consistent formatting standards
+- [x] **.github/linters/.taplo.toml**: Self-formatted configuration file
+
+### CI/CD Integration
+
+- [x] **Super-Linter compatibility**: Configuration works with Super-Linter's taplo integration
+- [x] **Local development parity**: Same formatting rules apply locally via `just toml-format`
+- [x] **Pre-commit validation**: TOML formatting checked in pre-commit hooks

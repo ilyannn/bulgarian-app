@@ -1,0 +1,54 @@
+# Taplo TOML formatter configuration
+# Used by Super-Linter and local development
+
+# Include all TOML files
+include = ["**/*.toml"]
+
+# Exclude common directories
+exclude = ["target/**", "node_modules/**", ".venv/**", "venv/**"]
+
+[formatting]
+# Use 2 spaces for indentation (matching our other configs)
+indent_string = "  "
+
+# Always use inline tables when they fit on one line
+inline_table_expand = false
+
+# Maximum width of each line
+column_width = 100
+
+# Align consecutive entries
+align_entries = false
+
+# Align consecutive comments
+align_comments = true
+
+# Put trailing commas for multi-line arrays
+array_trailing_comma = true
+
+# Put trailing commas for multi-line inline tables
+inline_table_trailing_comma = true
+
+# Preserve or add trailing newline at the end of the file
+trailing_newline = true
+
+# Formatting for arrays
+array_auto_expand = true
+array_auto_collapse = false
+
+# Compact arrays when they fit on one line
+compact_arrays = true
+
+# Compact inline tables when they fit on one line
+compact_inline_tables = true
+
+# Keep blank lines between sections
+[formatting.blank_lines]
+# Maximum number of consecutive blank lines
+max_blank_lines = 1
+
+# Add blank line after section
+after_section = true
+
+# Add blank line after table
+after_table = true
