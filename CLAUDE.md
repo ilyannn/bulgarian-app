@@ -70,6 +70,7 @@ just dev         # Start development servers
 - **JavaScript**: Biome for linting/formatting, TypeScript checking via tsc
 - **Commits**: Must pass pre-commit hooks (format, lint, typecheck)
 - **Documentation**: Code changes require docs/ updates (bypass with SKIP_DOCS_CHECK=1)
+- **CI Parity**: Always test `just lint` in a clean environment to match CI behavior
 
 ### Git Hooks
 Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `git config core.hooksPath .githooks`. They enforce:
@@ -101,8 +102,9 @@ Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `g
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/lint.yml`) runs:
-- Local linting tools (ruff, Biome, Prettier)
-- Super-Linter for additional validation  
+- Local linting tools (ruff, Biome, Prettier) 
+- Super-Linter for additional validation (uses markdownlint, different from local Prettier)
+- **Dependency installation**: Runs `uv sync` and `bun install` before linting to ensure clean environment parity
 - Runs on PRs and pushes to main branch
 - **Direct tool installation**: Uses official installers (curl) instead of third-party GitHub Actions to avoid organizational restrictions
 
@@ -147,6 +149,7 @@ The project follows "secure by default, fast local feedback, automation first" p
 - **Direct installation approach**: Official tool installers (curl + official scripts) often more reliable than GitHub Actions
 - **Path leak prevention**: Security scanners apply to CI workflow files, requiring relative paths
 - **Alternative debugging**: When GitHub Actions fail with organizational restrictions, investigate direct installation methods
+- **Clean environment testing**: CI failures often stem from missing dependencies that exist locally - always install dependencies explicitly in workflows
 
 ### Security-First Development
 - Path leak scanning applies to all files, including CI workflows

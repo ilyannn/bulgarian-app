@@ -279,6 +279,15 @@ lint: docker-lint py-lint web-lint web-typecheck docs-check toml-check
     uvx ty check server/ || true
     just --fmt --check --unstable
 
+# Simulate CI environment by testing lint with fresh dependencies
+[group('lint')]
+ci-test:
+    @echo "=== Testing in clean CI-like environment ==="
+    @echo "This simulates CI by removing node_modules and reinstalling"
+    rm -rf client/node_modules client/bun.lock
+    cd client && bun install
+    just lint
+
 # Format TOML files with taplo
 [group('format')]
 [group('toml')]
