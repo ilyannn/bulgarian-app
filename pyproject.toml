@@ -31,6 +31,7 @@ dev = [
     "ruff>=0.1.0",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
     "httpx>=0.27.0",
 ]
 
@@ -63,7 +64,7 @@ asyncio_mode = "auto"
 pythonpath = ["server"]
 
 [dependency-groups]
-dev = ["httpx>=0.28.1", "pytest>=8.4.1", "pytest-asyncio>=1.1.0"]
+dev = ["httpx>=0.28.1", "pytest>=8.4.1", "pytest-asyncio>=1.1.0", "pytest-cov>=4.0.0"]
 
 [tool.pyright]
 pythonVersion = "3.11"
