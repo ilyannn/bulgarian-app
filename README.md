@@ -74,8 +74,8 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
    ```
 
 4. **Open browser:**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
+   - Frontend: <http://localhost:3000>
+   - Backend API: <http://localhost:8000>
 
 ## Configuration
 

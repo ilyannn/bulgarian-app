@@ -268,7 +268,7 @@ Items remaining to be implemented from the original build plan and additional im
 
 ---
 
-## Priority Levels:
+## Priority Levels
 
 - **🔥 High Priority**: Content system, grammar detection, basic SRS
 - **⚡ Medium Priority**: Frontend UX, audio optimization, environment setup
