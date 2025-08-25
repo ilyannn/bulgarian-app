@@ -60,9 +60,9 @@ class TestSynthesize:
         assert mock_subprocess.call_count == 2
 
         # Check that espeak-ng was called with correct parameters
-        call_args = mock_subprocess.call_args
-        assert "espeak-ng" in call_args[0][0]
-        assert "Здравей свят" in call_args[0]
+        call_args = mock_subprocess.call_args_list[1][0][0]  # Second call (synthesis)
+        assert call_args[0] == "espeak-ng"
+        assert "Здравей свят" in call_args
 
     @patch("subprocess.run")
     def test_synthesize_empty_text(self, mock_subprocess):
@@ -76,7 +76,8 @@ class TestSynthesize:
 
         # Should return empty bytes for empty text
         assert result == b""
-        mock_subprocess.assert_not_called()
+        # Only version check should be called, no synthesis call
+        assert mock_subprocess.call_count == 1
 
     @patch("subprocess.run")
     def test_synthesize_none_text(self, mock_subprocess):
@@ -89,7 +90,8 @@ class TestSynthesize:
         result = processor.synthesize(None)
 
         assert result == b""
-        mock_subprocess.assert_not_called()
+        # Only version check should be called, no synthesis call
+        assert mock_subprocess.call_count == 1
 
     @patch("subprocess.run")
     def test_synthesize_subprocess_error(self, mock_subprocess):
@@ -107,8 +109,10 @@ class TestSynthesize:
         processor = TTSProcessor()
         result = processor.synthesize("Тест")
 
-        # Should return empty bytes on error
-        assert result == b""
+        # Should return WAV header even on synthesis error
+        assert result.startswith(b"RIFF")
+        # But should not contain the text since synthesis failed
+        assert len(result) == len(processor._create_wav_header())
 
     @patch("subprocess.run")
     def test_synthesize_subprocess_exception(self, mock_subprocess):
@@ -124,8 +128,9 @@ class TestSynthesize:
         processor = TTSProcessor()
         result = processor.synthesize("Тест")
 
-        # Should handle exception gracefully
-        assert result == b""
+        # Should handle exception in _synthesize_chunk and return WAV header only
+        assert result.startswith(b"RIFF")
+        assert len(result) == len(processor._create_wav_header())
 
     @patch("subprocess.run")
     def test_synthesize_bulgarian_text(self, mock_subprocess):

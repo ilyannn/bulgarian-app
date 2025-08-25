@@ -241,7 +241,11 @@ class TestGetChatResponse:
         result = await get_chat_response("Test input", mock_provider)
 
         assert result == "Test response"
-        mock_provider.get_response.assert_called_once_with("Test input", None)
+        # Should use the hardcoded BULGARIAN_COACH_SYSTEM_PROMPT
+        mock_provider.get_response.assert_called_once()
+        call_args = mock_provider.get_response.call_args
+        assert call_args[0][0] == "Test input"  # First argument is user_input
+        assert "Bulgarian" in call_args[0][1]  # Second argument contains system prompt
 
     @pytest.mark.asyncio
     async def test_get_chat_response_without_provider(self):

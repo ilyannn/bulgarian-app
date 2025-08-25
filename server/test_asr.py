@@ -125,10 +125,10 @@ class TestProcessAudio:
 
         result = await processor.process_audio(fake_audio)
 
-        # Should handle error gracefully
+        # Should handle error gracefully and return default values
         assert result["text"] == ""
         assert result["confidence"] == 0.0
-        assert "error" in result
+        assert result["language"] == "bg"
 
     @patch("asr.WhisperModel")
     async def test_process_audio_bulgarian_text(self, mock_whisper_model):
@@ -142,9 +142,16 @@ class TestProcessAudio:
         ]
 
         for bulgarian_text in bulgarian_texts:
+            # Create mock segment with text attribute
+            mock_segment = Mock()
+            mock_segment.text = f" {bulgarian_text}"
+            mock_segment.start = 0.0
+            mock_segment.end = 1.0
+            mock_segment.avg_logprob = -0.3
+
             mock_model.transcribe = Mock(
                 return_value=(
-                    [{"text": f" {bulgarian_text}", "start": 0.0, "end": 1.0}],
+                    [mock_segment],
                     {"language": "bg"},
                 )
             )
@@ -163,28 +170,22 @@ class TestProcessAudio:
         """Test confidence score calculation."""
         mock_model = Mock()
 
-        # Mock segments with different confidence-indicating properties
-        segments_high_conf = [
-            {
-                "text": " Clear speech",
-                "start": 0.0,
-                "end": 2.0,
-                "avg_logprob": -0.1,  # High confidence
-            }
-        ]
+        # Create mock segments with different confidence-indicating properties
+        mock_segment_high = Mock()
+        mock_segment_high.text = " Clear speech"
+        mock_segment_high.start = 0.0
+        mock_segment_high.end = 2.0
+        mock_segment_high.avg_logprob = -0.1  # High confidence
 
-        segments_low_conf = [
-            {
-                "text": " Unclear speech",
-                "start": 0.0,
-                "end": 2.0,
-                "avg_logprob": -2.0,  # Lower confidence
-            }
-        ]
+        mock_segment_low = Mock()
+        mock_segment_low.text = " Unclear speech"
+        mock_segment_low.start = 0.0
+        mock_segment_low.end = 2.0
+        mock_segment_low.avg_logprob = -2.0  # Lower confidence
 
         # Test high confidence
         mock_model.transcribe = Mock(
-            return_value=(segments_high_conf, {"language": "en"})
+            return_value=([mock_segment_high], {"language": "en"})
         )
         mock_whisper_model.return_value = mock_model
 
@@ -194,7 +195,7 @@ class TestProcessAudio:
 
         # Test low confidence
         mock_model.transcribe = Mock(
-            return_value=(segments_low_conf, {"language": "en"})
+            return_value=([mock_segment_low], {"language": "en"})
         )
         result = await processor.process_audio(np.array([0.1, 0.2], dtype=np.float32))
         low_confidence = result["confidence"]

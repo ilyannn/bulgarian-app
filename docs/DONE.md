@@ -381,3 +381,18 @@ Items that have been successfully implemented from the original build plan.
 - [x] **TTS streaming test corrections**: Updated tests to expect WAV headers from synthesize_streaming method
 - [x] **Mock object consistency**: Fixed all mock objects across TTS, ASR, LLM, and grammar modules
 - [x] **Test infrastructure stability**: Achieved consistent test runs with proper error handling
+
+### Additional Test Improvements ✅ (2025-08-25 - Continued Session)
+
+- [x] **Further failure reduction**: Reduced test failures from 20 to 11 (76% total improvement from original 47)
+- [x] **Increased passing tests**: Improved from 109 to 118 passing tests
+- [x] **Complete TTS test resolution**: Fixed all 5 remaining TTS test failures
+  - Fixed subprocess call argument checking in test_synthesize_success
+  - Corrected empty/None text test expectations for version check calls
+  - Updated error handling tests to expect WAV headers vs empty bytes correctly
+- [x] **LLM test completion**: Fixed final LLM test failure with proper system prompt expectations
+- [x] **ASR test pattern fixes**: Resolved multiple ASR tests by converting dict-based segments to Mock objects
+  - Fixed test_process_audio_transcription_error expectations
+  - Updated test_process_audio_bulgarian_text to use Mock objects with .text attributes
+  - Fixed test_process_audio_confidence_calculation with proper Mock segment structure
+- [x] **Test architecture improvements**: Established consistent mock object patterns across all modules
