@@ -331,3 +331,11 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Super-Linter compatibility**: Configuration works with Super-Linter's taplo integration
 - [x] **Local development parity**: Same formatting rules apply locally via `just toml-format`
 - [x] **Pre-commit validation**: TOML formatting checked in pre-commit hooks
+
+### TOML Linting Enablement
+
+- [x] **Justfile recipes updated**: toml-check and toml-format now use .github/linters/.taplo.toml config
+- [x] **Super-Linter workflow configured**: Added TOML_TAPLO_CONFIG_FILE environment variable
+- [x] **Local superlint-pr recipe**: Updated with TOML configuration settings
+- [x] **Documentation updated**: Added TOML formatting standards to CLAUDE.md
+- [x] **Consistent enforcement**: TOML linting active in local dev, pre-commit hooks, and CI

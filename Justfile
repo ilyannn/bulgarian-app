@@ -279,7 +279,7 @@ toml-check:
     set -euo pipefail
     echo "=== Checking TOML formatting with taplo ==="
     if command -v taplo >/dev/null 2>&1; then
-        taplo format --check **/*.toml
+        taplo format --check --config .github/linters/.taplo.toml
     else
         echo "taplo not installed. Install with: cargo install taplo-cli --locked"
     fi
@@ -311,7 +311,7 @@ toml-format:
     set -euo pipefail
     echo "=== Formatting TOML files with taplo ==="
     if command -v taplo >/dev/null 2>&1; then
-        taplo format **/*.toml
+        taplo format --config .github/linters/.taplo.toml
     else
         echo "taplo not installed. Install with: cargo install taplo-cli --locked"
     fi
@@ -410,6 +410,9 @@ superlint-pr:
       -e DEFAULT_BRANCH={{ DEFAULT_BRANCH }} \
       -e VALIDATE_ALL_CODEBASE=true \
       -e IGNORE_GITIGNORED_FILES=true \
+      -e LINTER_RULES_PATH=.github/linters \
+      -e VALIDATE_TOML=true \
+      -e TOML_TAPLO_CONFIG_FILE=.github/linters/.taplo.toml \
       -v "${PWD}:/tmp/lint" \
       ghcr.io/super-linter/super-linter:latest
 

@@ -37,6 +37,9 @@ jobs:
           VALIDATE_DOCKERFILE_HADOLINT: true
           VALIDATE_BASH: true
           
+          # TOML linting configuration
+          TOML_TAPLO_CONFIG_FILE: .github/linters/.taplo.toml
+          
           # Language-specific settings - REMOVED false values to fix v7 compatibility
           # JavaScript/TypeScript validation is handled by Biome in the lint workflow
           # CSS and HTML validation not needed for this project

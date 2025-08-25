@@ -73,6 +73,7 @@ just dev         # Start development servers
 ### Code Standards
 - **Python**: Ruff for linting/formatting, type hints required
 - **JavaScript**: Biome for linting/formatting, TypeScript checking via tsc
+- **TOML**: Taplo for formatting with .github/linters/.taplo.toml configuration
 - **Commits**: Must pass pre-commit hooks (format, lint, typecheck)
 - **Documentation**: Code changes require docs/ updates (bypass with SKIP_DOCS_CHECK=1)
 - **CI Parity**: Always test `just lint` in a clean environment to match CI behavior
