@@ -219,3 +219,67 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Path leak prevention**: Fixed documentation triggers that violated absolute path security scanning
 - [x] **CI/CD lessons documentation**: Captured comprehensive enterprise GitHub Actions troubleshooting guide
 - [x] **Technical debt cleanup**: Removed temporary files and consolidated configuration management
+
+## 20) Environment Configuration and Logging System ✅ (2025-08-24)
+
+### Comprehensive Environment Configuration
+
+- [x] **Enhanced .env.example**: Complete configuration template with all environment variables, organized by sections
+- [x] **Environment validation module**: Created `server/config.py` with comprehensive startup validation
+- [x] **Configuration management**: Centralized all environment variable handling with type safety
+- [x] **Startup validation integration**: Added environment checks to FastAPI app lifespan with detailed error reporting
+
+### Development Environment Verification
+
+- [x] **Setup verification script**: Created `scripts/verify-setup.py` for comprehensive environment validation
+- [x] **Justfile integration**: Added `just verify` and `just verify-quick` recipes for easy environment checking
+- [x] **System dependency validation**: Automated checks for Python, uv, bun, just, eSpeak NG, Docker
+- [x] **Content system validation**: Verification of grammar packs, scenarios, and font files
+- [x] **Multi-level reporting**: Success/warning/error reporting with actionable troubleshooting guidance
+
+### Comprehensive Logging Infrastructure
+
+- [x] **Structured logging implementation**: Added logging throughout ASR, TTS, LLM, and app modules
+- [x] **Enhanced startup logging**: Detailed initialization logging with status indicators (✅❌🎉)
+- [x] **Configuration-based logging**: Environment-controlled log levels and detailed/debug options
+- [x] **Module-specific loggers**: Separate loggers for different components with appropriate log levels
+- [x] **Error reporting enhancement**: Improved error messages with context and troubleshooting hints
+
+## 21) OpenTelemetry Observability Integration ✅ (2025-08-24)
+
+### Comprehensive Telemetry Implementation
+
+- [x] **OpenTelemetry SDK integration**: Added full observability stack with traces, metrics, and instrumentation
+- [x] **Telemetry configuration module**: Created `server/telemetry.py` with comprehensive setup and context management
+- [x] **Environment configuration**: Extended config system with OpenTelemetry settings and validation
+- [x] **Custom metrics collection**: Implemented domain-specific metrics for audio processing, WebSocket connections, and LLM token usage
+
+### Automatic Instrumentation
+
+- [x] **FastAPI instrumentation**: Automatic HTTP request tracing with built-in middleware integration
+- [x] **HTTPX instrumentation**: External API call tracing for LLM provider requests
+- [x] **Logging instrumentation**: Enhanced logging integration with trace correlation
+- [x] **WebSocket tracing**: Custom instrumentation for real-time ASR connections with connection tracking
+
+### Application-Specific Observability
+
+- [x] **ASR processing metrics**: Audio chunk processing duration and performance tracking
+- [x] **TTS synthesis tracking**: Text-to-speech generation latency and throughput metrics
+- [x] **LLM interaction telemetry**: Token counting and request duration tracking for chat providers
+- [x] **Connection monitoring**: Active WebSocket connection counts and lifecycle tracking
+- [x] **Grammar detection spans**: Tracing for Bulgarian language rule processing
+
+### Development and Production Support
+
+- [x] **Console export for development**: `just dev-telemetry` recipe with local trace/metrics visualization
+- [x] **OTLP export capability**: Production-ready integration with Jaeger, Honeycomb, and other observability platforms
+- [x] **Configurable telemetry**: Environment-based enable/disable with granular export control
+- [x] **Performance overhead consideration**: Optional telemetry with graceful degradation when disabled
+
+### Observability Infrastructure
+
+- [x] **Resource attribution**: Service name, version, and environment tagging for multi-service deployments
+- [x] **Custom span attributes**: Domain-specific metadata (audio chunk size, text length, error types)
+- [x] **Histogram metrics**: Latency distribution tracking for audio processing and API requests
+- [x] **Counter metrics**: Request counting, token usage, and connection lifecycle events
+- [x] **Up/down counters**: Real-time connection state tracking for WebSocket sessions

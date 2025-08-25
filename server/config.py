@@ -78,6 +78,18 @@ class EnvironmentConfig:
         self.log_requests = os.getenv("LOG_REQUESTS", "false").lower() == "true"
         self.log_asr_details = os.getenv("LOG_ASR_DETAILS", "false").lower() == "true"
 
+        # OpenTelemetry Configuration
+        self.otel_enabled = os.getenv("OTEL_ENABLED", "false").lower() == "true"
+        self.otel_service_name = os.getenv("OTEL_SERVICE_NAME", "bulgarian-voice-coach")
+        self.otel_console_export = (
+            os.getenv("OTEL_CONSOLE_EXPORT", "false").lower() == "true"
+        )
+        self.otel_otlp_traces_endpoint = os.getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT")
+        self.otel_otlp_metrics_endpoint = os.getenv(
+            "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT"
+        )
+        self.environment = os.getenv("ENVIRONMENT", "development")
+
     def validate_environment(self) -> list[str]:
         """Validate environment configuration and return list of issues"""
         issues = []

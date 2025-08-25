@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from llm import DummyProvider
 from pydantic import BaseModel
+from telemetry import get_telemetry, init_telemetry
 from tts import TTSProcessor
 
 from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
@@ -35,6 +36,14 @@ async def lifespan(app: FastAPI):
         # Validate environment configuration
         config = get_config()
         logger.info("🚀 Starting Bulgarian Voice Coach server...")
+
+        # Initialize OpenTelemetry instrumentation
+        logger.info("Setting up observability...")
+        telemetry_context = init_telemetry()
+        if telemetry_context:
+            logger.info("✅ OpenTelemetry instrumentation enabled")
+        else:
+            logger.info("ℹ️  OpenTelemetry instrumentation disabled")
 
         # Initialize processors
         logger.info("Initializing ASR processor...")
@@ -101,10 +110,18 @@ app.add_middleware(
 @app.websocket("/ws/asr")
 async def websocket_asr_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time ASR"""
+    telemetry_context = get_telemetry()
+
     await websocket.accept()
+
+    # Track active connection
+    if telemetry_context:
+        telemetry_context.update_connections(1)
 
     if not asr_processor:
         await websocket.close(code=1000, reason="ASR not initialized")
+        if telemetry_context:
+            telemetry_context.update_connections(-1)
         return
 
     try:
@@ -112,8 +129,21 @@ async def websocket_asr_endpoint(websocket: WebSocket):
             # Receive binary audio data
             data = await websocket.receive_bytes()
 
-            # Process audio through ASR
-            result = asr_processor.process_audio_chunk(data)
+            # Process audio through ASR with telemetry
+            if telemetry_context:
+                with telemetry_context.trace_operation(
+                    "asr_processing", audio_chunk_size=len(data)
+                ):
+                    import time
+
+                    start_time = time.time()
+                    result = asr_processor.process_audio_chunk(data)
+                    duration = time.time() - start_time
+                    telemetry_context.record_audio_processing(
+                        duration, "asr_processing"
+                    )
+            else:
+                result = asr_processor.process_audio_chunk(data)
 
             if result:
                 if result["type"] == "partial":
@@ -123,17 +153,28 @@ async def websocket_asr_endpoint(websocket: WebSocket):
                 elif result["type"] == "final":
                     await websocket.send_json({"type": "final", "text": result["text"]})
 
-                    # Process through chat provider
-                    coach_response = await process_user_input(result["text"])
+                    # Process through chat provider with telemetry
+                    if telemetry_context:
+                        with telemetry_context.trace_operation(
+                            "coaching_pipeline", input_text=result["text"][:100]
+                        ):
+                            coach_response = await process_user_input(result["text"])
+                    else:
+                        coach_response = await process_user_input(result["text"])
+
                     await websocket.send_json(
                         {"type": "coach", "payload": coach_response.model_dump()}
                     )
 
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
+        logger.info("WebSocket disconnected")
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}")
         await websocket.close(code=1000, reason=str(e))
+    finally:
+        # Track connection close
+        if telemetry_context:
+            telemetry_context.update_connections(-1)
 
 
 async def process_user_input(text: str) -> CoachResponse:
@@ -147,7 +188,19 @@ async def process_user_input(text: str) -> CoachResponse:
     Provide corrections and a short contrastive note for the user's L1 if provided."""
 
     if chat_provider is not None:
-        reply_bg = await chat_provider.get_response(text, system_prompt)
+        telemetry_context = get_telemetry()
+        if telemetry_context:
+            with telemetry_context.trace_operation(
+                "llm_request", input_length=len(text)
+            ):
+                reply_bg = await chat_provider.get_response(text, system_prompt)
+                # Count tokens (rough estimate)
+                estimated_tokens = len(text.split()) + len(reply_bg.split())
+                telemetry_context.count_llm_tokens(
+                    estimated_tokens, "chat_provider", "unknown"
+                )
+        else:
+            reply_bg = await chat_provider.get_response(text, system_prompt)
     else:
         reply_bg = "Съжалявам, няма достъпен чат провайдър."
 
@@ -185,12 +238,28 @@ async def process_user_input(text: str) -> CoachResponse:
 @app.get("/tts")
 async def text_to_speech(text: str):
     """Convert text to speech and stream audio"""
+    telemetry_context = get_telemetry()
+
     if not tts_processor:
         raise HTTPException(status_code=500, detail="TTS not initialized")
 
+    if telemetry_context:
+        telemetry_context.count_request("GET", "/tts", 200)
+
     def generate_audio():
         assert tts_processor is not None
-        yield from tts_processor.synthesize_streaming(text)
+        if telemetry_context:
+            with telemetry_context.trace_operation(
+                "tts_synthesis", text_length=len(text)
+            ):
+                import time
+
+                start_time = time.time()
+                yield from tts_processor.synthesize_streaming(text)
+                duration = time.time() - start_time
+                telemetry_context.record_audio_processing(duration, "tts_synthesis")
+        else:
+            yield from tts_processor.synthesize_streaming(text)
 
     return StreamingResponse(
         generate_audio(), media_type="audio/wav", headers={"Cache-Control": "no-cache"}

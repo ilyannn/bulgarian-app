@@ -202,6 +202,25 @@ dev-stop:
     rmdir .dev-pids 2>/dev/null || true
     @echo "Development servers stopped."
 
+# Development with OpenTelemetry console export enabled
+[group('dev')]
+dev-telemetry:
+    # Start with telemetry enabled for debugging
+    mkdir -p .dev-pids
+    set +u
+    # Enable telemetry with console export
+    export OTEL_ENABLED=true; \
+    export OTEL_CONSOLE_EXPORT=true; \
+    export OTEL_SERVICE_NAME=bulgarian-voice-coach-dev; \
+    (cd server && uv run uvicorn app:app --reload) &
+    BACK_PID=$!
+    echo $BACK_PID > .dev-pids/backend.pid
+    (cd client && bun run dev) &
+    FRONT_PID=$!
+    echo $FRONT_PID > .dev-pids/frontend.pid
+    trap 'kill $BACK_PID $FRONT_PID 2>/dev/null || true; echo "Development servers with telemetry stopped."' INT TERM EXIT
+    wait
+
 # Production-like serve (api + built frontend with preview server)
 [group('deploy')]
 serve:

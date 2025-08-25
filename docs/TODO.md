@@ -14,6 +14,14 @@ Items remaining to be implemented from the original build plan and additional im
 - [x] **ty type checker integration**: Added experimental ty checker to lint workflow with proper configuration
 - [x] **OpenAI/Anthropic API compatibility**: Fixed type-safe message formatting and content block access
 
+### OpenTelemetry Observability Integration ✅
+
+- [x] **Comprehensive telemetry setup**: Added OpenTelemetry SDK with traces, metrics, and automatic instrumentation
+- [x] **Custom metrics for voice coaching**: Audio processing duration, WebSocket connections, LLM token usage tracking
+- [x] **Production observability**: OTLP export support for Jaeger, Honeycomb, and other monitoring platforms
+- [x] **Development debugging**: Console export mode with `just dev-telemetry` recipe for local observability
+- [x] **Environment configuration**: Extended .env.example with OpenTelemetry settings and validation
+
 ### Development Workflow Improvements ✅
 
 - [x] **Enhanced Justfile**: Added comprehensive diagnostics, improved recipe organization
@@ -268,19 +276,21 @@ Items remaining to be implemented from the original build plan and additional im
 
 ## 📊 Progress Summary
 
-- **Development Infrastructure**: ✅ **COMPLETE** - Modern tooling, type safety, diagnostics
+- **Development Infrastructure**: ✅ **COMPLETE** - Modern tooling, type safety, diagnostics, observability
 - **Core Application Structure**: ✅ **COMPLETE** - FastAPI, WebSocket, AI integration with enhanced endpoints
 - **Content System**: ✅ **COMPLETE** - Grammar packs & scenarios integrated, SRS functional
 - **Grammar Detection**: ✅ **COMPLETE** - Enhanced with real Bulgarian rules, content integration
 - **Chat Integration**: ✅ **COMPLETE** - Grammar detection integrated with drill generation
+- **Observability & Monitoring**: ✅ **COMPLETE** - OpenTelemetry instrumentation, logging, metrics
 - **Frontend UX**: 🔄 **PARTIAL** - Audio pipeline working, needs interactive elements
-- **Production Ready**: ❌ **TODO** - Deployment, monitoring, scalability
+- **Production Ready**: 🔄 **PARTIAL** - Observability done, needs deployment automation
 
 ## 🎯 Next Priority: Frontend UX Enhancement
 
-With grammar detection and content integration now complete, the next logical priorities are:
+With grammar detection, content integration, and observability now complete, the next logical priorities are:
 
 1. Implement interactive frontend elements for drills and grammar chips
 2. Add audio optimization and latency improvements
 3. Enhance transcript display with error highlighting
 4. Add user progress tracking and SRS state persistence
+5. Leverage OpenTelemetry metrics to optimize audio processing pipeline latency
