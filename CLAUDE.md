@@ -40,7 +40,7 @@ The project uses `just` as the command runner. Key recipes:
 - `just dev` - Start both backend and frontend servers
 - `just serve` - Production-like deployment
 
-### Code Quality  
+### Code Quality
 - `just lint` - Run all linting (Python ruff, JavaScript Biome, Justfile format)
 - `just format` - Auto-format all code
 - `just test` - Run test suite
@@ -88,7 +88,7 @@ Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `g
 - Interactive drills with SRS intervals
 - Error detection triggers
 
-### Scenarios (`server/content/bg_scenarios_with_grammar.json`)  
+### Scenarios (`server/content/bg_scenarios_with_grammar.json`)
 - Conversational scenarios bound to grammar concepts
 - Automatic grammar integration via heuristics
 - Level-appropriate content (A2-B2)
@@ -109,7 +109,7 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 - **Dependencies**: Installs `uv sync` and `bun install` before linting to ensure clean environment parity
 - **Execution**: `just lint` command for consistency with local development
 
-### 2. **Super-Lint Workflow** (`.github/workflows/super-lint.yml`) 
+### 2. **Super-Lint Workflow** (`.github/workflows/super-lint.yml`)
 - **Purpose**: Additional validation using GitHub Super-Linter
 - **Tools**: markdownlint, TOML validation, YAML validation, Dockerfile hadolint, Bash validation
 - **Benefits**: Catches issues that local tools might miss, provides security and compliance checks
@@ -142,7 +142,7 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 - `justfile` - Build recipes and development commands (self-documenting with inline comments)
 - `.githooks/pre-commit`, `.githooks/pre-push` - Versioned git hooks
 - `server/requirements.txt` - Python dependencies
-- `client/package.json` - JavaScript dependencies  
+- `client/package.json` - JavaScript dependencies
 - `docs/` - Living documentation (architecture, tech stack)
 - `.github/workflows/` - CI/CD pipeline definitions:
   - `lint.yml` - Code quality validation with project tools
