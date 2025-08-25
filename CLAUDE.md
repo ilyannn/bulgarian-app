@@ -182,3 +182,10 @@ The project follows "secure by default, fast local feedback, automation first" p
 - Organizational security policies can impact third-party integrations
 - Official installers typically bypass security restrictions better than marketplace actions
 - Local development parity with CI reduces debugging complexity
+
+### Super-Linter v7 Configuration
+- **Breaking change**: Cannot mix `VALIDATE_*: true` and `VALIDATE_*: false` settings
+- **Configuration approach**: Either specify only true values (enable specific linters) OR only false values (disable specific linters)
+- **Migration strategy**: Remove all false values and keep only positive validation settings
+- **Error pattern**: "Behavior not supported, please either only include (VALIDATE=true) or exclude (VALIDATE=false) linters, but not both"
+- **Best practice**: Use positive validation approach for clarity and maintainability

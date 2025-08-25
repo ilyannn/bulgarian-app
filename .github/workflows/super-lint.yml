@@ -25,6 +25,10 @@ jobs:
           LINTER_RULES_PATH: .github/linters
           
           # File type validation settings
+          # NOTE: Super-Linter v7 does NOT support mixing VALIDATE_*: true and VALIDATE_*: false
+          # You must either specify only true values (to enable specific linters) 
+          # or only false values (to disable specific linters), but not both.
+          # See: https://github.com/super-linter/super-linter/blob/main/docs/configuration.md
           VALIDATE_TOML: true
           VALIDATE_PYTHON_RUFF: true
           VALIDATE_JSON: true
@@ -33,11 +37,9 @@ jobs:
           VALIDATE_DOCKERFILE_HADOLINT: true
           VALIDATE_BASH: true
           
-          # Language-specific settings
-          VALIDATE_JAVASCRIPT_ES: false  # Handled by Biome in lint workflow
-          VALIDATE_TYPESCRIPT_ES: false  # Handled by Biome in lint workflow
-          VALIDATE_CSS: false  # No CSS files in this project
-          VALIDATE_HTML: false  # Simple HTML doesn't need linting
+          # Language-specific settings - REMOVED false values to fix v7 compatibility
+          # JavaScript/TypeScript validation is handled by Biome in the lint workflow
+          # CSS and HTML validation not needed for this project
           
           # Performance and output settings
           SUPPRESS_POSSUM: true  # Reduce noise in logs
