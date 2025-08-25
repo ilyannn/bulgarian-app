@@ -101,12 +101,34 @@ Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `g
 
 ## CI/CD
 
-GitHub Actions workflow (`.github/workflows/lint.yml`) runs:
-- Local linting tools (ruff, Biome, Prettier) 
-- Super-Linter for additional validation (uses markdownlint, different from local Prettier)
-- **Dependency installation**: Runs `uv sync` and `bun install` before linting to ensure clean environment parity
-- Runs on PRs and pushes to main branch
-- **Direct tool installation**: Uses official installers (curl) instead of third-party GitHub Actions to avoid organizational restrictions
+Three separate GitHub Actions workflows provide comprehensive validation:
+
+### 1. **Lint Workflow** (`.github/workflows/lint.yml`)
+- **Purpose**: Code quality and style validation using project tools
+- **Tools**: ruff (Python), Biome (JavaScript/TypeScript), Prettier (Markdown), Justfile format checking
+- **Dependencies**: Installs `uv sync` and `bun install` before linting to ensure clean environment parity
+- **Execution**: `just lint` command for consistency with local development
+
+### 2. **Super-Lint Workflow** (`.github/workflows/super-lint.yml`) 
+- **Purpose**: Additional validation using GitHub Super-Linter
+- **Tools**: markdownlint, TOML validation, YAML validation, Dockerfile hadolint, Bash validation
+- **Benefits**: Catches issues that local tools might miss, provides security and compliance checks
+- **Separation**: Independent from main lint workflow to isolate failures and improve parallel execution
+
+### 3. **Test Workflow** (`.github/workflows/test.yml`)
+- **Purpose**: Backend testing with comprehensive coverage
+- **Matrix**: Tests against Python 3.11 and 3.12
+- **Components**:
+  - Unit tests for all backend modules (ASR, TTS, LLM, grammar rules, content)
+  - Integration tests for API endpoints and WebSocket connections
+  - Coverage reporting with artifacts
+  - System dependencies installation (eSpeak-NG for TTS tests)
+- **Artifacts**: Test results and coverage reports uploaded for analysis
+
+**All workflows:**
+- Run on PRs and pushes to main branch
+- Use **direct tool installation** (curl) instead of third-party GitHub Actions to avoid organizational restrictions
+- Support parallel execution for faster feedback
 
 ## Security
 
@@ -122,6 +144,10 @@ GitHub Actions workflow (`.github/workflows/lint.yml`) runs:
 - `server/requirements.txt` - Python dependencies
 - `client/package.json` - JavaScript dependencies  
 - `docs/` - Living documentation (architecture, tech stack)
+- `.github/workflows/` - CI/CD pipeline definitions:
+  - `lint.yml` - Code quality validation with project tools
+  - `super-lint.yml` - Additional validation with GitHub Super-Linter
+  - `test.yml` - Backend testing with coverage reporting
 
 ## Recent Updates (2025-08-24)
 

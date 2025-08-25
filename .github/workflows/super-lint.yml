@@ -1,0 +1,44 @@
+name: Super-Lint
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  super-lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for better linting context
+          fetch-depth: 0
+
+      - name: GitHub Super-Linter
+        uses: super-linter/super-linter@v7
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINTER_RULES_PATH: .github/linters
+          
+          # File type validation settings
+          VALIDATE_TOML: true
+          VALIDATE_PYTHON_RUFF: true
+          VALIDATE_JSON: true
+          VALIDATE_YAML: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_DOCKERFILE_HADOLINT: true
+          VALIDATE_BASH: true
+          
+          # Language-specific settings
+          VALIDATE_JAVASCRIPT_ES: false  # Handled by Biome in lint workflow
+          VALIDATE_TYPESCRIPT_ES: false  # Handled by Biome in lint workflow
+          VALIDATE_CSS: false  # No CSS files in this project
+          VALIDATE_HTML: false  # Simple HTML doesn't need linting
+          
+          # Performance and output settings
+          SUPPRESS_POSSUM: true  # Reduce noise in logs
+          LOG_LEVEL: WARN  # Only show warnings and errors

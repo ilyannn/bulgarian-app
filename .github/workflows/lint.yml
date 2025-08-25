@@ -7,8 +7,9 @@ on:
     branches: [main, master]
 
 jobs:
-  lint-with-just:
+  just-lint:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,29 +40,5 @@ jobs:
           uv sync
           cd client && bun install
 
-      - name: Run linting
+      - name: Run comprehensive linting
         run: just lint
-
-  super-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: GitHub Super-Linter
-        uses: super-linter/super-linter@v7
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LINTER_RULES_PATH: .github/linters
-          # Only validate specific file types with ruff
-          VALIDATE_TOML: true
-          VALIDATE_PYTHON_RUFF: true
-          VALIDATE_JSON: true
-          VALIDATE_YAML: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_DOCKERFILE_HADOLINT: true
-          VALIDATE_BASH: true
-          # Note: JavaScript/TypeScript handled by Biome in lint-with-just job
