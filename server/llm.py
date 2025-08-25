@@ -3,6 +3,9 @@ import logging
 import os
 from abc import ABC, abstractmethod
 
+import anthropic
+import openai
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,8 +70,6 @@ class OpenAIProvider(ChatProvider):
             raise ValueError("OpenAI API key not configured")
 
         try:
-            import openai
-
             client = openai.AsyncOpenAI(api_key=self.api_key)
 
             response = await client.chat.completions.create(
@@ -110,8 +111,6 @@ class ClaudeProvider(ChatProvider):
             raise ValueError("Claude API key not configured")
 
         try:
-            import anthropic
-
             client = anthropic.AsyncAnthropic(api_key=self.api_key)
 
             response = await client.messages.create(

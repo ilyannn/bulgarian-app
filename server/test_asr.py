@@ -37,7 +37,9 @@ class TestASRProcessor:
         """Test ASRProcessor default initialization."""
         ASRProcessor()
 
-        mock_whisper_model.assert_called_with("base", device="cpu")
+        mock_whisper_model.assert_called_with(
+            "medium", device="cpu", compute_type="int8"
+        )
 
     @patch("asr.WhisperModel")
     def test_asr_processor_initialization_called(self, mock_whisper_model):
@@ -56,8 +58,15 @@ class TestProcessAudio:
         """Test successful audio processing."""
         # Mock Whisper model
         mock_model = Mock()
+        # Create mock segment objects with text attribute
+        mock_segment = Mock()
+        mock_segment.text = " Здравей свят"
+        mock_segment.start = 0.0
+        mock_segment.end = 2.0
+        mock_segment.avg_logprob = -0.5
+
         mock_transcribe_result = (
-            [{"text": " Здравей свят", "start": 0.0, "end": 2.0}],
+            [mock_segment],
             {"language": "bg"},
         )
         mock_model.transcribe = Mock(return_value=mock_transcribe_result)

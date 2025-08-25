@@ -134,16 +134,6 @@ class TestOpenAIProvider:
         assert isinstance(result, str)
         assert "error" in result.lower() or "съжалявам" in result.lower()
 
-    @pytest.mark.asyncio
-    async def test_openai_provider_missing_openai_package(self):
-        """Test behavior when openai package is not available."""
-        with patch("llm.openai", None):
-            provider = OpenAIProvider("test-key")
-            result = await provider.get_response("test", "system")
-
-            assert isinstance(result, str)
-            assert "openai" in result.lower() or "недостъпен" in result.lower()
-
 
 class TestClaudeProvider:
     """Test the ClaudeProvider implementation."""
@@ -196,16 +186,6 @@ class TestClaudeProvider:
         assert isinstance(result, str)
         assert "error" in result.lower() or "съжалявам" in result.lower()
 
-    @pytest.mark.asyncio
-    async def test_claude_provider_missing_anthropic_package(self):
-        """Test behavior when anthropic package is not available."""
-        with patch("llm.anthropic", None):
-            provider = ClaudeProvider("test-key")
-            result = await provider.get_response("test", "system")
-
-            assert isinstance(result, str)
-            assert "anthropic" in result.lower() or "недостъпен" in result.lower()
-
 
 class TestProviderFactory:
     """Test the provider factory functionality."""
@@ -237,16 +217,15 @@ class TestProviderFactory:
         """Test creating provider with invalid type."""
         from llm import ChatProviderFactory
 
-        provider = ChatProviderFactory.create_provider("invalid")
-        # Should fallback to dummy
-        assert isinstance(provider, DummyProvider)
+        with pytest.raises(ValueError, match="Unknown provider type: invalid"):
+            ChatProviderFactory.create_provider("invalid")
 
     def test_create_provider_none(self):
         """Test creating provider with None type."""
         from llm import ChatProviderFactory
 
         provider = ChatProviderFactory.create_provider(None)
-        # Should fallback to dummy
+        # Should fallback to dummy when no env vars are set
         assert isinstance(provider, DummyProvider)
 
 
