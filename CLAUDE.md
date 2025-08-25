@@ -33,7 +33,12 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 
 ## Build System (Justfile)
 
-The project uses `just` as the command runner. Key recipes:
+The project uses `just` as the command runner with a specific shell execution strategy:
+- **Multi-line recipes**: Use `#!/usr/bin/env bash` shebang with `set -euo pipefail` for proper error handling
+- **Simple recipes**: Execute directly without a shebang
+- **Benefits**: Variables persist across lines, background processes work correctly, clean error handling
+
+Key recipes:
 
 ### Development
 - `just install` - Install all dependencies (Python via uv, client via bun, git hooks)

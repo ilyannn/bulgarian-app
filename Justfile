@@ -4,8 +4,9 @@
 # ==============================================================================
 # 1. SHELL EXECUTION MODEL (CRITICAL DIFFERENCE):
 #    - By default, each recipe line runs in a SEPARATE shell
-#    - With `set shell := ["bash", "-c"]`, all lines are combined into ONE shell
-#    - This is why our multi-line recipes below work correctly
+#    - Our strategy: Use shebang (#!/usr/bin/env bash) for multi-line recipes
+#    - This allows variables to persist and background processes to work correctly
+#    - Simple one-line recipes execute directly without a shebang
 #
 # 2. VARIABLE SYNTAX:
 #    - Recipe variables: use shell syntax ($VAR or ${VAR})
@@ -30,17 +31,6 @@
 _default:
     @just --list --unsorted --list-prefix ····
 
-# Configure shell for all recipes - THIS IS CRITICAL!
-# This setting wraps ALL recipe lines into a single bash command:
-#   bash -euo pipefail -c "line1; line2; line3"
-# Options:
-#   -e: exit on any command error
-#   -u: exit on undefined variable
-#   -o pipefail: fail if any command in a pipe fails
-# RESULT: Variables persist across lines, background processes work correctly
-
-set shell := ["bash", "-euo", "pipefail", "-c"]
-
 # Export all just variables as environment variables to recipes
 
 set export := true
@@ -56,6 +46,8 @@ DEFAULT_BRANCH := "main"
 # Install Python and sync dependencies using uv
 [group('python')]
 py-sync:
+    #!/usr/bin/env bash
+    set -euo pipefail
     uv python install
     uv sync --locked || uv sync --dev
 
@@ -69,6 +61,8 @@ py-lint:
 [group('format')]
 [group('python')]
 py-format:
+    #!/usr/bin/env bash
+    set -euo pipefail
     uvx ruff format --config .github/linters/.ruff.toml server
     # Keep imports sorted (Ruff's `I` rules)
     uvx ruff check --config .github/linters/.ruff.toml --select I --fix server
@@ -77,6 +71,8 @@ py-format:
 [group('python')]
 [group('typecheck')]
 py-typecheck:
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Note: ty is still in early development, may have breaking changes
     # Allow ty to fail without stopping the build (experimental tool)
     uvx ty check server || echo "ty type checking completed with issues (experimental tool)"
@@ -100,18 +96,22 @@ web-install:
 [group('docker')]
 [group('quality')]
 docker-lint:
-    @echo "=== Docker linting with hadolint ==="
-    @if command -v hadolint >/dev/null 2>&1; then \
-        find . -name "Dockerfile*" -exec hadolint {} + 2>/dev/null || echo "No Dockerfiles found or hadolint issues detected"; \
-    else \
-        echo "hadolint not installed. Install with: brew install hadolint (macOS) or see https://github.com/hadolint/hadolint"; \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Docker linting with hadolint ==="
+    if command -v hadolint >/dev/null 2>&1; then
+        find . -name "Dockerfile*" -exec hadolint {} + 2>/dev/null || echo "No Dockerfiles found or hadolint issues detected"
+    else
+        echo "hadolint not installed. Install with: brew install hadolint (macOS) or see https://github.com/hadolint/hadolint"
     fi
 
 # Check prettier formatting
 [group('quality')]
 [group('web')]
 prettier-check:
-    @echo "=== Prettier formatting check ==="
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Prettier formatting check ==="
     cd client && bunx prettier --check .
 
 # Lint JavaScript/TypeScript code with Biome using centralized config
@@ -149,6 +149,8 @@ web-dev:
 # Install all dependencies (Python via uv + client via bun + git hooks + system deps)
 [group('setup')]
 install: py-sync web-install hooks-install
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Install system dependencies (eSpeak-NG for text-to-speech)
     # Check if espeak-ng is available, install if not
     command -v espeak-ng >/dev/null 2>&1 || brew install espeak-ng
@@ -161,8 +163,9 @@ install: py-sync web-install hooks-install
 # Start both backend (FastAPI) and frontend (Vite) development servers
 [group('dev')]
 dev:
-    # IMPORTANT: This recipe works because `set shell` combines all lines into one command!
-    # The shell executes: bash -c "(cd server && ...) & BACK_PID=$! ; (cd client && ...) & ..."
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # IMPORTANT: This recipe now uses a shebang to run all lines in one bash session!
     # This allows:
     #   - Background processes with & to run in parallel
     #   - Variables (BACK_PID, FRONT_PID) to persist across lines
@@ -185,31 +188,35 @@ dev:
 # Stop development servers cleanly using stored PIDs
 [group('dev')]
 dev-stop:
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Read PIDs from files and terminate processes
-    if [ -f .dev-pids/backend.pid ]; then \
-        kill "$(cat .dev-pids/backend.pid)" 2>/dev/null || true; \
-        rm -f .dev-pids/backend.pid; \
+    if [ -f .dev-pids/backend.pid ]; then
+        kill "$(cat .dev-pids/backend.pid)" 2>/dev/null || true
+        rm -f .dev-pids/backend.pid
     fi
-    if [ -f .dev-pids/frontend.pid ]; then \
-        kill "$(cat .dev-pids/frontend.pid)" 2>/dev/null || true; \
-        rm -f .dev-pids/frontend.pid; \
+    if [ -f .dev-pids/frontend.pid ]; then
+        kill "$(cat .dev-pids/frontend.pid)" 2>/dev/null || true
+        rm -f .dev-pids/frontend.pid
     fi
     # Clean up any remaining processes by name as fallback
     pkill -f "uvicorn app:app" 2>/dev/null || true
     pkill -f "vite.*dev" 2>/dev/null || true
     rmdir .dev-pids 2>/dev/null || true
-    @echo "Development servers stopped."
+    echo "Development servers stopped."
 
 # Development with OpenTelemetry console export enabled
 [group('dev')]
 dev-telemetry:
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Start with telemetry enabled for debugging
     mkdir -p .dev-pids
     set +u
     # Enable telemetry with console export
-    export OTEL_ENABLED=true; \
-    export OTEL_CONSOLE_EXPORT=true; \
-    export OTEL_SERVICE_NAME=bulgarian-voice-coach-dev; \
+    export OTEL_ENABLED=true
+    export OTEL_CONSOLE_EXPORT=true
+    export OTEL_SERVICE_NAME=bulgarian-voice-coach-dev
     (cd server && uv run uvicorn app:app --reload) &
     BACK_PID=$!
     echo $BACK_PID > .dev-pids/backend.pid
@@ -222,7 +229,9 @@ dev-telemetry:
 # Production-like serve (api + built frontend with preview server)
 [group('deploy')]
 serve:
-    # Background processes work because `set shell` combines all lines into one shell session
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Background processes work because shebang runs all lines in one bash session
     (cd server && uv run uvicorn app:app --host 0.0.0.0 --port 8000) &
     (cd client && bun run build && bun run preview -- --host) &
     wait
@@ -239,14 +248,16 @@ test:
 # Get all diagnostics from LSP servers (same as Zed uses)
 [group('quality')]
 diagnostics:
-    @echo "=== Python Diagnostics (ruff) ==="
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Python Diagnostics (ruff) ==="
     uvx ruff check server/ --config .github/linters/.ruff.toml --output-format=full || true
-    @echo ""
-    @echo "=== Python Type Diagnostics (ty) ==="
+    echo ""
+    echo "=== Python Type Diagnostics (ty) ==="
     uvx ty check server/ || true
-    @echo ""
-    @echo ""
-    @echo "=== JavaScript/TypeScript Diagnostics ==="
+    echo ""
+    echo ""
+    echo "=== JavaScript/TypeScript Diagnostics ==="
     cd client && bunx tsc --noEmit || true
     cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json . --diagnostic-level=info || true
 
@@ -254,7 +265,9 @@ diagnostics:
 [group('docs')]
 [group('quality')]
 docs-check:
-    @echo "=== Checking documentation formatting with Prettier ==="
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Checking documentation formatting with Prettier ==="
     bunx prettier --config .github/linters/.prettierrc.json --check "docs/**/*.{md,mdx}" --log-level warn || echo "No docs found"
     bunx prettier --config .github/linters/.prettierrc.json --check "README.md" --log-level warn || echo "No README.md found"
 
@@ -262,24 +275,30 @@ docs-check:
 [group('quality')]
 [group('toml')]
 toml-check:
-    @echo "=== Checking TOML formatting with taplo ==="
-    @if command -v taplo >/dev/null 2>&1; then \
-        taplo format --check **/*.toml; \
-    else \
-        echo "taplo not installed. Install with: cargo install taplo-cli --locked"; \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Checking TOML formatting with taplo ==="
+    if command -v taplo >/dev/null 2>&1; then
+        taplo format --check **/*.toml
+    else
+        echo "taplo not installed. Install with: cargo install taplo-cli --locked"
     fi
 
 # Run all linting: Docker + Python + Web + Docs + TOML + Justfile formatting check
 [group('quality')]
 lint: docker-lint py-lint web-lint web-typecheck docs-check toml-check
+    #!/usr/bin/env bash
+    set -euo pipefail
     uvx ty check server/ || true
     just --fmt --check --unstable
 
 # Simulate CI environment by testing lint with fresh dependencies
 [group('lint')]
 ci-test:
-    @echo "=== Testing in clean CI-like environment ==="
-    @echo "This simulates CI by removing node_modules and reinstalling"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Testing in clean CI-like environment ==="
+    echo "This simulates CI by removing node_modules and reinstalling"
     rm -rf client/node_modules client/bun.lock
     cd client && bun install
     just lint
@@ -288,18 +307,22 @@ ci-test:
 [group('format')]
 [group('toml')]
 toml-format:
-    @echo "=== Formatting TOML files with taplo ==="
-    @if command -v taplo >/dev/null 2>&1; then \
-        taplo format **/*.toml; \
-    else \
-        echo "taplo not installed. Install with: cargo install taplo-cli --locked"; \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Formatting TOML files with taplo ==="
+    if command -v taplo >/dev/null 2>&1; then
+        taplo format **/*.toml
+    else
+        echo "taplo not installed. Install with: cargo install taplo-cli --locked"
     fi
 
 # Format documentation with Prettier (Markdown, HTML, etc.) using centralized config
 [group('docs')]
 [group('format')]
 docs-format:
-    @echo "=== Formatting documentation with Prettier ==="
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Formatting documentation with Prettier ==="
     bunx prettier --config .github/linters/.prettierrc.json --write "docs/**/*.{md,mdx}" --log-level warn
     bunx prettier --config .github/linters/.prettierrc.json --write "README.md" --log-level warn || echo "No README.md found"
 
@@ -307,8 +330,6 @@ docs-format:
 [group('quality')]
 format: py-format web-format docs-format toml-format
     just --fmt --unstable
-
-# Alias for `format`
 
 alias fmt := format
 
@@ -319,6 +340,8 @@ build: py-build
 # Check if code is formatted correctly (fails if not)
 [group('quality')]
 format-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
     uvx ruff format --config .github/linters/.ruff.toml --check server
     cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json --reporter=summary
 
@@ -329,9 +352,11 @@ format-check:
 # Install git hooks from .githooks directory
 [group('setup')]
 hooks-install:
+    #!/usr/bin/env bash
+    set -euo pipefail
     git config core.hooksPath .githooks
     chmod +x .githooks/* || true
-    @echo "Installed hooks to .githooks (core.hooksPath)."
+    echo "Installed hooks to .githooks (core.hooksPath)."
 
 # Gate run before every commit (lint + typecheck + format-check + docs-guard)
 [group('git-hooks')]
@@ -344,34 +369,40 @@ pre-push: secrets-scan path-leak-scan
 # Scan for secrets using Gitleaks (containerized security scanner)
 [group('security')]
 secrets-scan:
-    # Backslash continuation keeps this as one logical command across multiple lines
+    #!/usr/bin/env bash
+    set -euo pipefail
     docker run --rm -v "${PWD}:/repo" ghcr.io/gitleaks/gitleaks:latest \
       git --no-banner --redact --report-format sarif --report-path gitleaks.sarif /repo
 
 # Prevent accidental commits of absolute user paths (/Users/<name> or ~)
 [group('security')]
 path-leak-scan:
-    @echo "Scanning for absolute path leaks"
-    @! (git grep -l '/Users/[a-zA-Z]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Scanning for absolute path leaks"
+    ! (git grep -l '/Users/[a-zA-Z]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
       (echo "\nERROR: Found /Users/<name> path leak. Remove absolute user paths." && exit 1)
-    @! (git grep -l '~/[a-zA-Z._]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
+    ! (git grep -l '~/[a-zA-Z._]' -- . ':!node_modules' ':!.git' ':!*.sarif' | head -1) || \
       (echo "\nERROR: Found <file> path leak in the ~ folder. Remove absolute user paths." && exit 1)
 
 # Require docs/ updates when code changes (bypass with SKIP_DOCS_CHECK=1)
 [group('git-hooks')]
 docs-guard:
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Uses staged changes; fails if non-docs changed but no docs/ changes are staged
-    # Backslash continuation keeps this as ONE shell command; $${var} passes ${var} to bash
-    @non_docs="$(git diff --cached --name-only -- . ':!docs/**' || true)"; \
-    docs_changed="$(git diff --cached --name-only -- 'docs/**' || true)"; \
-    if [ -n "$${non_docs}" ] && [ -z "$${docs_changed}" ] && [ -z "$${SKIP_DOCS_CHECK-}" ]; then \
-      echo "\nERROR: This commit changes code but not docs/. Please update docs/ (or set SKIP_DOCS_CHECK=1 to bypass)."; \
-      exit 1; \
+    non_docs="$(git diff --cached --name-only -- . ':!docs/**' || true)"
+    docs_changed="$(git diff --cached --name-only -- 'docs/**' || true)"
+    if [ -n "${non_docs}" ] && [ -z "${docs_changed}" ] && [ -z "${SKIP_DOCS_CHECK-}" ]; then
+      echo "\nERROR: This commit changes code but not docs/. Please update docs/ (or set SKIP_DOCS_CHECK=1 to bypass)."
+      exit 1
     fi
 
 # Run Super-Linter container for comprehensive code quality checks
 [group('quality')]
 superlint-pr:
+    #!/usr/bin/env bash
+    set -euo pipefail
     # Lints whole repo by default; set VALIDATE_ALL_CODEBASE=false to check only changes
     # {{ DEFAULT_BRANCH }} uses just's variable interpolation (happens before shell execution)
     docker run --rm \
@@ -385,15 +416,19 @@ superlint-pr:
 # Verify development environment setup
 [group('setup')]
 verify:
-    @echo "🔍 Verifying development environment setup..."
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🔍 Verifying development environment setup..."
     python3 scripts/verify-setup.py
 
 # Quick setup verification (essential checks only)
 [group('setup')]
 verify-quick:
-    @echo "⚡ Quick setup verification..."
-    @python3 -c "import sys; print(f'✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
-    @uv --version && echo "✅ uv package manager"
-    @bun --version && echo "✅ bun runtime" 
-    @just --version && echo "✅ just command runner"
-    @echo "🎉 Basic tools are available!"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "⚡ Quick setup verification..."
+    python3 -c "import sys; print(f'✅ Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}')"
+    uv --version && echo "✅ uv package manager"
+    bun --version && echo "✅ bun runtime"
+    just --version && echo "✅ just command runner"
+    echo "🎉 Basic tools are available!"

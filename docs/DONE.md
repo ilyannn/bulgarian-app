@@ -283,3 +283,27 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Histogram metrics**: Latency distribution tracking for audio processing and API requests
 - [x] **Counter metrics**: Request counting, token usage, and connection lifecycle events
 - [x] **Up/down counters**: Real-time connection state tracking for WebSocket sessions
+
+## 22) Build System Shell Execution Refactoring ✅ (2025-08-25)
+
+### Justfile Shell Strategy Migration
+
+- [x] **Shebang-based execution**: Replaced global `set shell` configuration with per-recipe shebangs
+- [x] **Explicit bash invocation**: Multi-line recipes now use `#!/usr/bin/env bash` with `set -euo pipefail`
+- [x] **Simple recipe optimization**: One-line recipes execute directly without shell overhead
+- [x] **Error handling consistency**: Each complex recipe has explicit error handling configuration
+
+### Implementation Details
+
+- [x] **Global shell removal**: Removed `set shell := ["bash", "-euo", "pipefail", "-c"]` configuration
+- [x] **Recipe-level control**: Added shebangs to 20+ multi-line recipes for explicit bash execution
+- [x] **Variable persistence**: Maintained variable scope within recipes using single bash session
+- [x] **Background process support**: Preserved parallel execution capability for dev servers
+- [x] **Documentation update**: Updated CLAUDE.md to reflect new shell execution strategy
+
+### Benefits Achieved
+
+- [x] **Improved clarity**: Each recipe's execution model is now explicit and self-documenting
+- [x] **Better maintainability**: No hidden global shell configuration affecting all recipes
+- [x] **Flexible execution**: Simple recipes run faster without shell wrapper overhead
+- [x] **Consistent error handling**: Each recipe explicitly defines its error handling behavior
