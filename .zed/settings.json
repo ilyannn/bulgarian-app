@@ -1,7 +1,7 @@
 {
   "languages": {
     "Python": {
-      "language_servers": ["ruff", "pyright"],
+      "language_servers": ["ruff"],
       "formatter": {
         "external": {
           "command": "uvx",
@@ -15,16 +15,6 @@
       "settings": {
         "configuration": "./pyproject.toml",
         "fixAll": true
-      }
-    },
-    "pyright": {
-      "settings": {
-        "python.defaultInterpreterPath": "./.venv/bin/python",
-        "python.analysis.extraPaths": ["./server", "."],
-        "python.pythonPath": "./.venv/bin/python",
-        "python.analysis.autoSearchPaths": true,
-        "reportMissingImports": "none",
-        "reportMissingTypeStubs": false
       }
     }
   }

@@ -80,8 +80,6 @@ py-typecheck:
     # Note: ty is still in early development, may have breaking changes
     # Allow ty to fail without stopping the build (experimental tool)
     uvx ty check server || echo "ty type checking completed with issues (experimental tool)"
-    # Also run pyright with centralized config
-    uvx pyright --project .github/linters/pyrightconfig.json server/ || true
 
 # Build Python package (sdist + wheel) with uv
 [group('build')]
@@ -232,7 +230,7 @@ serve:
 # Run tests (server only for now)
 [group('test')]
 test:
-    cd server && uv run pytest test_app.py test_content.py -q
+    cd server && uv run pytest -v --tb=short
 
 # ---- Repo-wide tasks -------------------------------------------------------
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
@@ -247,8 +245,6 @@ diagnostics:
     @echo "=== Python Type Diagnostics (ty) ==="
     uvx ty check server/ || true
     @echo ""
-    @echo "=== Python Type Diagnostics (pyright) ==="
-    uvx pyright --project .github/linters/pyrightconfig.json server/ || true
     @echo ""
     @echo "=== JavaScript/TypeScript Diagnostics ==="
     cd client && bunx tsc --noEmit || true
