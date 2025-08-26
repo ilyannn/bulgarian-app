@@ -239,6 +239,9 @@ just test
 
 # Production-like serve
 just serve
+
+# Capture screenshots for documentation
+just screenshots
 ```
 
 ## Grammar Detection

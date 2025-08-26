@@ -794,3 +794,52 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Bulgarian typography showcase**: Visual documentation properly displays Cyrillic text and Ysabeau font integration
 
 **Documentation Achievement**: Successfully enhanced README.md with comprehensive UI component documentation, professional visual assets, and detailed technical specifications. Created reusable screenshot automation system and established visual documentation standards for the project.
+
+## 32) Official Screenshot Capture System ✅ (2025-08-26)
+
+### Professional Screenshot Automation Infrastructure
+
+- [x] **Official screenshot capture script**: Created `scripts/capture-screenshots.js` as professional Node.js script with comprehensive error handling
+- [x] **Justfile integration**: Added `just screenshots` command to build system for easy access to screenshot generation
+- [x] **Comprehensive documentation**: Created detailed `scripts/README.md` documenting usage, prerequisites, and technical specifications
+- [x] **README.md integration**: Added screenshot command to development workflow documentation
+
+### Screenshot Capture Script Features
+
+- [x] **Professional error handling**: Prerequisite checking for development servers and Node.js availability
+- [x] **Automated browser control**: Playwright Chromium automation with viewport configuration (1200x800)
+- [x] **6 screenshot definitions**: Structured configuration for main interface, grammar chips (collapsed/expanded), drill interface (default/hint), and workflow
+- [x] **Intelligent component interaction**: Automated scrolling, clicking, and animation waiting for realistic screenshots
+- [x] **Optimized image output**: Professional quality PNG files with appropriate clipping and dimensions
+- [x] **Comprehensive logging**: Progress indicators, success statistics, and detailed file size reporting
+
+### Build System Integration
+
+- [x] **Justfile command implementation**: Added `screenshots` recipe to docs group with prerequisite validation
+- [x] **Node.js availability checking**: Script validates Node.js installation before attempting screenshot capture
+- [x] **Development server validation**: Automatic checking that frontend and backend servers are running
+- [x] **Clear usage instructions**: Help text with prerequisites and usage examples in Justfile output
+
+### Documentation Infrastructure
+
+- [x] **Scripts directory documentation**: Created comprehensive `scripts/README.md` explaining screenshot system
+- [x] **Technical specifications**: Detailed documentation of image dimensions, browser configuration, and automation features
+- [x] **Usage workflow documentation**: Clear instructions for developers to generate screenshots for documentation
+- [x] **Integration guidelines**: Explained how screenshots integrate with existing README.md and documentation system
+
+### Screenshot Automation Technical Features
+
+- [x] **Structured screenshot definitions**: Array-based configuration with metadata for each screenshot type
+- [x] **Dynamic component interaction**: Smart detection and interaction with UI elements (grammar chips, drill buttons)
+- [x] **Professional image quality**: Optimized viewport settings and clipping regions for focused component screenshots
+- [x] **Comprehensive error recovery**: Graceful handling of missing elements, timeout scenarios, and browser failures
+- [x] **File management**: Automatic screenshots directory creation and organized output with file size reporting
+
+### Development Workflow Enhancement
+
+- [x] **Official script replacement**: Removed temporary `capture-screenshots.js` and established permanent workflow
+- [x] **Command discoverability**: Screenshot command appears in `just --list` with proper description
+- [x] **Developer convenience**: Single command execution for updating all documentation screenshots
+- [x] **Reusable automation**: Script designed for repeated use during development and documentation updates
+
+**Screenshot System Achievement**: Successfully created professional screenshot capture system with automated browser control, comprehensive error handling, and seamless build system integration. Established reusable workflow for maintaining high-quality visual documentation assets.

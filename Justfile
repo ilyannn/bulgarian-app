@@ -426,6 +426,26 @@ docs-format:
     bunx prettier --config .github/linters/.prettierrc.json --write "docs/**/*.{md,mdx}" --log-level warn
     bunx prettier --config .github/linters/.prettierrc.json --write "README.md" --log-level warn || echo "No README.md found"
 
+# Capture professional screenshots for documentation (requires dev servers running)
+[group('docs')]
+screenshots:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "=== Capturing Screenshots for Documentation ==="
+    echo "📋 Prerequisites:"
+    echo "   • Development servers must be running: just dev"
+    echo "   • Playwright must be installed: cd client && bun install"
+    echo ""
+
+    # Check if Node.js is available
+    if ! command -v node >/dev/null 2>&1; then
+        echo "❌ Node.js not found! Please install Node.js to run screenshot script."
+        exit 1
+    fi
+
+    # Run the official screenshot capture script
+    node scripts/capture-screenshots.js
+
 # Run all formatting: Python + Web + Docs + TOML + Justfile formatting
 [group('quality')]
 format: py-format web-format docs-format toml-format
