@@ -241,8 +241,8 @@ serve:
 test: py-test web-test
 
 # Run server tests with pytest
-[group('test')]
 [group('python')]
+[group('test')]
 py-test:
     cd server && uv run pytest -v --tb=short
 
@@ -260,7 +260,7 @@ web-test-dev:
 
 # Run client tests with UI for interactive debugging
 [group('test')]
-[group('web')]  
+[group('web')]
 web-test-ui:
     cd client && bun run test:ui
 
@@ -279,7 +279,7 @@ web-test-e2e:
 # Run E2E tests with Playwright UI for debugging
 [group('test')]
 [group('web')]
-web-test-e2e-ui:  
+web-test-e2e-ui:
     cd client && bun run test:e2e:ui
 
 # Install Playwright browsers (needed for E2E tests)
