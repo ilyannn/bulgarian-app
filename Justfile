@@ -236,10 +236,69 @@ serve:
     (cd client && bun run build && bun run preview -- --host) &
     wait
 
-# Run tests (server only for now)
+# Run all tests (server + client)
 [group('test')]
-test:
+test: py-test web-test
+
+# Run server tests with pytest
+[group('test')]
+[group('python')]
+py-test:
     cd server && uv run pytest -v --tb=short
+
+# Run client unit and integration tests with Vitest
+[group('test')]
+[group('web')]
+web-test:
+    cd client && bun run test:run
+
+# Run client tests in watch mode for development
+[group('test')]
+[group('web')]
+web-test-dev:
+    cd client && bun run test
+
+# Run client tests with UI for interactive debugging
+[group('test')]
+[group('web')]  
+web-test-ui:
+    cd client && bun run test:ui
+
+# Run client tests with coverage report
+[group('test')]
+[group('web')]
+web-test-coverage:
+    cd client && bun run test:coverage
+
+# Run E2E tests with Playwright
+[group('test')]
+[group('web')]
+web-test-e2e:
+    cd client && bun run test:e2e
+
+# Run E2E tests with Playwright UI for debugging
+[group('test')]
+[group('web')]
+web-test-e2e-ui:  
+    cd client && bun run test:e2e:ui
+
+# Install Playwright browsers (needed for E2E tests)
+[group('setup')]
+[group('web')]
+web-install-browsers:
+    cd client && bunx playwright install
+
+# Run comprehensive test suite with coverage
+[group('test')]
+test-all: py-test web-test-coverage web-test-e2e
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "✅ All tests completed successfully!"
+    echo ""
+    echo "📊 Test Summary:"
+    echo "  - Python backend tests: ✅"  
+    echo "  - JavaScript unit/integration tests: ✅"
+    echo "  - E2E browser tests: ✅"
 
 # ---- Repo-wide tasks -------------------------------------------------------
 # Lint everything: Python + Web + Shell/Docker via Super-Linter (local)
