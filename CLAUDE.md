@@ -5,6 +5,7 @@ This document summarizes the Bulgarian Voice Coach project's architecture, build
 ## Project Overview
 
 A voice-enabled web application for teaching Bulgarian to Slavic speakers, featuring:
+
 - Real-time speech recognition and synthesis
 - Grammar error detection with contextual corrections
 - Interactive drills with spaced repetition system (SRS)
@@ -13,6 +14,7 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 ## Architecture
 
 ### Backend (Python FastAPI)
+
 - `server/app.py` - Main FastAPI application with WebSocket support
 - `server/asr.py` - faster-whisper ASR with WebRTC VAD
 - `server/tts.py` - eSpeak NG for Bulgarian text-to-speech
@@ -21,11 +23,13 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 - `server/content/` - Grammar packs and scenario data (JSON)
 
 ### Frontend (Vite + Vanilla JS)
+
 - `client/index.html` - Main UI with mic controls and transcript display
 - `client/main.js` - WebSocket client and audio handling
 - `client/audio-worklet.js` - Real-time audio capture (16kHz PCM)
 
 ### Key Features
+
 - **Latency Target**: ~1.2-2.0s end-to-end (VAD → ASR → LLM → TTS)
 - **Audio Pipeline**: getUserMedia → AudioWorklet → WebSocket → faster-whisper
 - **Grammar Integration**: Real-time error detection with contextual micro-lessons
@@ -34,6 +38,7 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 ## Build System (Justfile)
 
 The project uses `just` as the command runner with a specific shell execution strategy:
+
 - **Multi-line recipes**: Use `#!/usr/bin/env bash` shebang with `set -euo pipefail` for proper error handling
 - **Simple recipes**: Execute directly without a shebang
 - **Benefits**: Variables persist across lines, background processes work correctly, clean error handling
@@ -41,17 +46,20 @@ The project uses `just` as the command runner with a specific shell execution st
 Key recipes:
 
 ### Development
+
 - `just install` - Install all dependencies (Python via uv, client via bun, git hooks)
 - `just dev` - Start both backend and frontend servers
 - `just serve` - Production-like deployment
 
 ### Code Quality
+
 - `just lint` - Run all linting (Python ruff, JavaScript Biome, Justfile format)
 - `just format` - Auto-format all code
 - `just test` - Run test suite
 - `just build` - Build packages
 
 ### Security & Git Hooks
+
 - `just pre-commit` - Gate for commits (lint + typecheck + format-check + docs-guard)
 - `just pre-push` - Security scans (secrets via Gitleaks, path leak detection)
 - `just hooks-install` - Install git hooks from `.githooks/`
@@ -59,18 +67,21 @@ Key recipes:
 ## Development Workflow
 
 ### Prerequisites
+
 - Python 3.11+ with `uv` package manager
 - Bun for JavaScript/TypeScript
 - Docker for security scanning
 - eSpeak NG for TTS
 
 ### Setup
+
 ```bash
 just install     # Install all dependencies
 just dev         # Start development servers
 ```
 
 ### Code Standards
+
 - **Python**: Ruff for linting/formatting, type hints required
 - **JavaScript**: Biome for linting/formatting, TypeScript checking via tsc
 - **TOML**: Taplo for formatting with .github/linters/.taplo.toml configuration
@@ -79,7 +90,9 @@ just dev         # Start development servers
 - **CI Parity**: Always test `just lint` in a clean environment to match CI behavior
 
 ### Git Hooks
+
 Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `git config core.hooksPath .githooks`. They enforce:
+
 - Code formatting and linting
 - Type checking
 - Documentation updates
@@ -89,12 +102,14 @@ Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `g
 ## Content System
 
 ### Grammar Rules (`server/content/bg_grammar_pack.json`)
+
 - Structured grammar items with IDs, explanations, examples
 - L1-specific contrast notes (Polish, Russian, Ukrainian, Serbian)
 - Interactive drills with SRS intervals
 - Error detection triggers
 
 ### Scenarios (`server/content/bg_scenarios_with_grammar.json`)
+
 - Conversational scenarios bound to grammar concepts
 - Automatic grammar integration via heuristics
 - Level-appropriate content (A2-B2)
@@ -110,18 +125,21 @@ Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `g
 Three separate GitHub Actions workflows provide comprehensive validation:
 
 ### 1. **Lint Workflow** (`.github/workflows/lint.yml`)
+
 - **Purpose**: Code quality and style validation using project tools
 - **Tools**: ruff (Python), Biome (JavaScript/TypeScript), Prettier (Markdown), Justfile format checking
 - **Dependencies**: Installs `uv sync` and `bun install` before linting to ensure clean environment parity
 - **Execution**: `just lint` command for consistency with local development
 
 ### 2. **Super-Lint Workflow** (`.github/workflows/super-lint.yml`)
+
 - **Purpose**: Additional validation using GitHub Super-Linter
 - **Tools**: markdownlint, TOML validation, YAML validation, Dockerfile hadolint, Bash validation
 - **Benefits**: Catches issues that local tools might miss, provides security and compliance checks
 - **Separation**: Independent from main lint workflow to isolate failures and improve parallel execution
 
 ### 3. **Test Workflow** (`.github/workflows/test.yml`)
+
 - **Purpose**: Backend testing with comprehensive coverage
 - **Matrix**: Tests against Python 3.11 and 3.12
 - **Components**:
@@ -132,6 +150,7 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 - **Artifacts**: Test results and coverage reports uploaded for analysis
 
 **All workflows:**
+
 - Run on PRs and pushes to main branch
 - Use **direct tool installation** (curl) instead of third-party GitHub Actions to avoid organizational restrictions
 - Support parallel execution for faster feedback
@@ -169,6 +188,7 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 ## Development Philosophy
 
 The project follows "secure by default, fast local feedback, automation first" principles:
+
 - All quality checks run locally before commit/push
 - Consistent tooling across team members via versioned hooks
 - Comprehensive linting and formatting automation
@@ -178,6 +198,7 @@ The project follows "secure by default, fast local feedback, automation first" p
 ## Critical Lessons Learned
 
 ### CI/CD in Enterprise Environments
+
 - **GitHub Actions restrictions**: Organizations may block third-party actions not from verified publishers or same organization
 - **startup_failure diagnosis**: Indicates workflow syntax/permission issues, not runtime errors
 - **Direct installation approach**: Official tool installers (curl + official scripts) often more reliable than GitHub Actions
@@ -186,12 +207,14 @@ The project follows "secure by default, fast local feedback, automation first" p
 - **Clean environment testing**: CI failures often stem from missing dependencies that exist locally - always install dependencies explicitly in workflows
 
 ### Security-First Development
+
 - Path leak scanning applies to all files, including CI workflows
 - Organizational security policies can impact third-party integrations
 - Official installers typically bypass security restrictions better than marketplace actions
 - Local development parity with CI reduces debugging complexity
 
 ### Super-Linter v7 Configuration
+
 - **Breaking change**: Cannot mix `VALIDATE_*: true` and `VALIDATE_*: false` settings
 - **Configuration approach**: Either specify only true values (enable specific linters) OR only false values (disable specific linters)
 - **Migration strategy**: Remove all false values and keep only positive validation settings

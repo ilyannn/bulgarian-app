@@ -462,32 +462,47 @@ class BulgarianVoiceCoach {
 
     let html = `<strong>Coach:</strong> <span class="bg-text bg-response">${payload.reply_bg}</span>`;
 
-    // Add enhanced corrections if available
-    if (payload.corrections && payload.corrections.length > 0 && window.enhancedCorrections) {
-      html += window.enhancedCorrections.processCorrections(payload.corrections);
-    } else if (payload.corrections && payload.corrections.length > 0) {
-      // Fallback to basic corrections if enhanced system not available
-      html += '<div class="corrections">';
-      html += '<div style="margin-top: 0.5rem; font-weight: 500;">Corrections:</div>';
+    // Add grammar chips UI if available
+    if (payload.corrections && payload.corrections.length > 0) {
+      if (window.grammarChipsUI) {
+        // Create container for grammar chips
+        const chipsContainer = document.createElement('div');
+        chipsContainer.className = 'grammar-chips-wrapper';
+        coachLine.innerHTML = html;
+        this.transcriptArea.appendChild(coachLine);
 
-      payload.corrections.forEach((correction, index) => {
-        html += `<span class="correction-chip" onclick="toggleCorrection(${index})" data-correction-index="${index}">
-                    ${correction.before} → ${correction.after}
-                </span>`;
-      });
-      html += '</div>';
+        // Add chips to the coach response
+        window.grammarChipsUI.createChips(payload.corrections, coachLine);
 
-      // Add correction details (hidden by default)
-      payload.corrections.forEach((correction, index) => {
-        html += `<div class="correction-details" id="correction-${index}">
-                    <strong>Error:</strong> ${correction.type}<br>
-                    <strong>Note:</strong> ${correction.note}
-                </div>`;
-      });
+        // Don't add HTML for corrections since chips handle it
+        html = null;
+      } else if (window.enhancedCorrections) {
+        // Fallback to enhanced corrections if grammar chips not available
+        html += window.enhancedCorrections.processCorrections(payload.corrections);
+      } else {
+        // Fallback to basic corrections
+        html += '<div class="corrections">';
+        html += '<div style="margin-top: 0.5rem; font-weight: 500;">Corrections:</div>';
+
+        payload.corrections.forEach((correction, index) => {
+          html += `<span class="correction-chip" onclick="toggleCorrection(${index})" data-correction-index="${index}">
+                      ${correction.before} → ${correction.after}
+                  </span>`;
+        });
+        html += '</div>';
+
+        // Add correction details (hidden by default)
+        payload.corrections.forEach((correction, index) => {
+          html += `<div class="correction-details" id="correction-${index}">
+                      <strong>Error:</strong> ${correction.type}<br>
+                      <strong>Note:</strong> ${correction.note}
+                  </div>`;
+        });
+      }
     }
 
     // Add drills if any - with interactive practice option
-    if (payload.drills && payload.drills.length > 0) {
+    if (html && payload.drills && payload.drills.length > 0) {
       html += '<div class="drills-section">';
       html +=
         '<div style="font-weight: 500; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">';
@@ -508,8 +523,11 @@ class BulgarianVoiceCoach {
       window.currentDrills = payload.drills;
     }
 
-    coachLine.innerHTML = html;
-    this.transcriptArea.appendChild(coachLine);
+    // Only update innerHTML if html is not null (grammar chips handle their own rendering)
+    if (html) {
+      coachLine.innerHTML = html;
+      this.transcriptArea.appendChild(coachLine);
+    }
     this.scrollToBottom();
 
     // Store for playback
