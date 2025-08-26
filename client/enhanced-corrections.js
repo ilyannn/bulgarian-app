@@ -4,43 +4,43 @@
  */
 
 export class EnhancedCorrectionsSystem {
-	constructor() {
-		this.corrections = new Map();
-		this.correctionHistory = [];
-		this.isHighlightMode = false;
-		this.audioContext = null;
+  constructor() {
+    this.corrections = new Map();
+    this.correctionHistory = [];
+    this.isHighlightMode = false;
+    this.audioContext = null;
 
-		this.initializeEventListeners();
-		this.injectStyles();
-	}
+    this.initializeEventListeners();
+    this.injectStyles();
+  }
 
-	/**
-	 * Initialize event listeners for correction interactions
-	 */
-	initializeEventListeners() {
-		// Listen for keyboard shortcuts
-		document.addEventListener("keydown", (event) => {
-			if (event.key === "h" && (event.ctrlKey || event.metaKey)) {
-				event.preventDefault();
-				this.toggleHighlightMode();
-			}
-		});
+  /**
+   * Initialize event listeners for correction interactions
+   */
+  initializeEventListeners() {
+    // Listen for keyboard shortcuts
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'h' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        this.toggleHighlightMode();
+      }
+    });
 
-		// Listen for correction clicks globally
-		document.addEventListener("click", (event) => {
-			if (event.target.matches(".correction-chip-enhanced")) {
-				event.preventDefault();
-				const correctionId = event.target.dataset.correctionId;
-				this.handleCorrectionClick(correctionId);
-			}
-		});
-	}
+    // Listen for correction clicks globally
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('.correction-chip-enhanced')) {
+        event.preventDefault();
+        const correctionId = event.target.dataset.correctionId;
+        this.handleCorrectionClick(correctionId);
+      }
+    });
+  }
 
-	/**
-	 * Inject enhanced styles for corrections
-	 */
-	injectStyles() {
-		const styles = `
+  /**
+   * Inject enhanced styles for corrections
+   */
+  injectStyles() {
+    const styles = `
       .correction-chip-enhanced {
         display: inline-flex;
         align-items: center;
@@ -218,129 +218,128 @@ export class EnhancedCorrectionsSystem {
       }
     `;
 
-		const styleSheet = document.createElement("style");
-		styleSheet.textContent = styles;
-		document.head.appendChild(styleSheet);
-	}
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+  }
 
-	/**
-	 * Process and enhance corrections from the server
-	 * @param {Array} corrections - Array of correction objects
-	 * @returns {string} Enhanced HTML for corrections
-	 */
-	processCorrections(corrections) {
-		if (!corrections || corrections.length === 0) {
-			return "";
-		}
+  /**
+   * Process and enhance corrections from the server
+   * @param {Array} corrections - Array of correction objects
+   * @returns {string} Enhanced HTML for corrections
+   */
+  processCorrections(corrections) {
+    if (!corrections || corrections.length === 0) {
+      return '';
+    }
 
-		let html = '<div class="corrections-enhanced">';
-		html +=
-			'<h4 style="margin-bottom: 0.8rem; color: #666;">📚 Grammar Corrections</h4>';
+    let html = '<div class="corrections-enhanced">';
+    html += '<h4 style="margin-bottom: 0.8rem; color: #666;">📚 Grammar Corrections</h4>';
 
-		corrections.forEach((correction, index) => {
-			const correctionId = this.generateCorrectionId(correction);
-			const severity = this.determineSeverity(correction);
+    for (const [index, correction] of corrections.entries()) {
+      const correctionId = this.generateCorrectionId(correction);
+      const severity = this.determineSeverity(correction);
 
-			this.corrections.set(correctionId, {
-				...correction,
-				index,
-				severity,
-				timestamp: Date.now(),
-				practiceCount: 0,
-				isVisible: false,
-			});
+      this.corrections.set(correctionId, {
+        ...correction,
+        index,
+        severity,
+        timestamp: Date.now(),
+        practiceCount: 0,
+        isVisible: false,
+      });
 
-			html += this.renderCorrectionChip(correction, correctionId, severity);
-		});
+      html += this.renderCorrectionChip(correction, correctionId, severity);
+    }
 
-		html += "</div>";
-		html += this.renderCorrectionDetails(corrections);
+    html += '</div>';
+    html += this.renderCorrectionDetails(corrections);
 
-		return html;
-	}
+    return html;
+  }
 
-	/**
-	 * Generate unique ID for a correction
-	 * @param {Object} correction - Correction object
-	 * @returns {string} Unique correction ID
-	 */
-	generateCorrectionId(correction) {
-		const content = `${correction.before}_${correction.after}_${correction.type}`;
-		return btoa(content)
-			.replace(/[^a-zA-Z0-9]/g, "")
-			.substring(0, 16);
-	}
+  /**
+   * Generate unique ID for a correction
+   * @param {Object} correction - Correction object
+   * @returns {string} Unique correction ID
+   */
+  generateCorrectionId(correction) {
+    const content = `${correction.before}_${correction.after}_${correction.type}`;
+    return btoa(content)
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .substring(0, 16);
+  }
 
-	/**
-	 * Determine correction severity based on type and frequency
-	 * @param {Object} correction - Correction object
-	 * @returns {string} Severity level (high, medium, low)
-	 */
-	determineSeverity(correction) {
-		const highSeverityTypes = ["grammar", "syntax", "verb_conjugation"];
-		const mediumSeverityTypes = ["vocabulary", "preposition", "case"];
+  /**
+   * Determine correction severity based on type and frequency
+   * @param {Object} correction - Correction object
+   * @returns {string} Severity level (high, medium, low)
+   */
+  determineSeverity(correction) {
+    const highSeverityTypes = ['grammar', 'syntax', 'verb_conjugation'];
+    const mediumSeverityTypes = ['vocabulary', 'preposition', 'case'];
 
-		if (highSeverityTypes.includes(correction.type)) {
-			return "high";
-		}
-		if (mediumSeverityTypes.includes(correction.type)) {
-			return "medium";
-		}
-		return "low";
-	}
+    if (highSeverityTypes.includes(correction.type)) {
+      return 'high';
+    }
+    if (mediumSeverityTypes.includes(correction.type)) {
+      return 'medium';
+    }
+    return 'low';
+  }
 
-	/**
-	 * Render correction chip with enhanced styling
-	 * @param {Object} correction - Correction object
-	 * @param {string} correctionId - Unique ID
-	 * @param {string} severity - Severity level
-	 * @returns {string} HTML for correction chip
-	 */
-	renderCorrectionChip(correction, correctionId, severity) {
-		const icon = this.getSeverityIcon(severity);
-		return `
+  /**
+   * Render correction chip with enhanced styling
+   * @param {Object} correction - Correction object
+   * @param {string} correctionId - Unique ID
+   * @param {string} severity - Severity level
+   * @returns {string} HTML for correction chip
+   */
+  renderCorrectionChip(correction, correctionId, severity) {
+    const icon = this.getSeverityIcon(severity);
+    return `
       <span class="correction-chip-enhanced correction-severity-${severity}" 
             data-correction-id="${correctionId}"
             title="Click to see detailed explanation">
         ${icon} ${correction.before} → <strong>${correction.after}</strong>
       </span>
     `;
-	}
+  }
 
-	/**
-	 * Get icon for severity level
-	 * @param {string} severity - Severity level
-	 * @returns {string} Icon character
-	 */
-	getSeverityIcon(severity) {
-		const icons = {
-			high: "🔴",
-			medium: "🟡",
-			low: "🟢",
-		};
-		return icons[severity] || "⚪";
-	}
+  /**
+   * Get icon for severity level
+   * @param {string} severity - Severity level
+   * @returns {string} Icon character
+   */
+  getSeverityIcon(severity) {
+    const icons = {
+      high: '🔴',
+      medium: '🟡',
+      low: '🟢',
+    };
+    return icons[severity] || '⚪';
+  }
 
-	/**
-	 * Render detailed correction explanations
-	 * @param {Array} corrections - Array of corrections
-	 * @returns {string} HTML for correction details
-	 */
-	renderCorrectionDetails(corrections) {
-		let html = "";
+  /**
+   * Render detailed correction explanations
+   * @param {Array} corrections - Array of corrections
+   * @returns {string} HTML for correction details
+   */
+  renderCorrectionDetails(corrections) {
+    let html = '';
 
-		corrections.forEach((correction, index) => {
-			const correctionId = this.generateCorrectionId(correction);
-			const severity = this.determineSeverity(correction);
+    for (const correction of corrections) {
+      const correctionId = this.generateCorrectionId(correction);
+      const severity = this.determineSeverity(correction);
 
-			html += `
+      html += `
         <div class="correction-details-enhanced" 
              id="correction-details-${correctionId}" 
              style="display: none;">
           
           <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
             <h4 style="margin: 0; color: #4ecdc4;">
-              ${this.getSeverityIcon(severity)} ${correction.type.replace("_", " ").toUpperCase()}
+              ${this.getSeverityIcon(severity)} ${correction.type.replace('_', ' ').toUpperCase()}
             </h4>
             <button class="correction-audio-btn" onclick="enhancedCorrections.playCorrection('${correctionId}')">
               🔊
@@ -354,19 +353,19 @@ export class EnhancedCorrectionsSystem {
 
           <div style="margin: 1rem 0;">
             <strong>Explanation:</strong><br>
-            ${correction.note || "This correction improves the grammatical accuracy of your Bulgarian."}
+            ${correction.note || 'This correction improves the grammatical accuracy of your Bulgarian.'}
           </div>
 
           ${
-						correction.example
-							? `
+            correction.example
+              ? `
             <div class="correction-example">
               <strong>Example:</strong><br>
               <span class="bg-text">${correction.example}</span>
             </div>
           `
-							: ""
-					}
+              : ''
+          }
 
           <div class="correction-stats">
             <span>Severity: ${severity.toUpperCase()}</span>
@@ -382,224 +381,215 @@ export class EnhancedCorrectionsSystem {
           </button>
         </div>
       `;
-		});
+    }
 
-		return html;
-	}
+    return html;
+  }
 
-	/**
-	 * Handle correction chip click
-	 * @param {string} correctionId - Correction ID
-	 */
-	handleCorrectionClick(correctionId) {
-		const correction = this.corrections.get(correctionId);
-		if (!correction) return;
+  /**
+   * Handle correction chip click
+   * @param {string} correctionId - Correction ID
+   */
+  handleCorrectionClick(correctionId) {
+    const correction = this.corrections.get(correctionId);
+    if (!correction) return;
 
-		const detailsElement = document.getElementById(
-			`correction-details-${correctionId}`,
-		);
-		if (!detailsElement) return;
+    const detailsElement = document.getElementById(`correction-details-${correctionId}`);
+    if (!detailsElement) return;
 
-		const isVisible = detailsElement.style.display !== "none";
+    const isVisible = detailsElement.style.display !== 'none';
 
-		// Hide all other correction details
-		for (const el of document.querySelectorAll(
-			".correction-details-enhanced",
-		)) {
-			el.style.display = "none";
-		}
+    // Hide all other correction details
+    for (const el of document.querySelectorAll('.correction-details-enhanced')) {
+      el.style.display = 'none';
+    }
 
-		if (!isVisible) {
-			detailsElement.style.display = "block";
-			correction.isVisible = true;
+    if (!isVisible) {
+      detailsElement.style.display = 'block';
+      correction.isVisible = true;
 
-			// Track interaction
-			this.trackCorrectionInteraction(correctionId, "view");
+      // Track interaction
+      this.trackCorrectionInteraction(correctionId, 'view');
 
-			// Add to history
-			this.correctionHistory.push({
-				correctionId,
-				action: "view",
-				timestamp: Date.now(),
-			});
-		}
-	}
+      // Add to history
+      this.correctionHistory.push({
+        correctionId,
+        action: 'view',
+        timestamp: Date.now(),
+      });
+    }
+  }
 
-	/**
-	 * Toggle highlight mode for all corrections
-	 */
-	toggleHighlightMode() {
-		this.isHighlightMode = !this.isHighlightMode;
-		document.body.classList.toggle("highlight-mode", this.isHighlightMode);
+  /**
+   * Toggle highlight mode for all corrections
+   */
+  toggleHighlightMode() {
+    this.isHighlightMode = !this.isHighlightMode;
+    document.body.classList.toggle('highlight-mode', this.isHighlightMode);
 
-		// Show toast notification
-		this.showNotification(
-			this.isHighlightMode
-				? "Highlight mode enabled! Press Ctrl/Cmd+H to toggle."
-				: "Highlight mode disabled.",
-			"info",
-		);
-	}
+    // Show toast notification
+    this.showNotification(
+      this.isHighlightMode
+        ? 'Highlight mode enabled! Press Ctrl/Cmd+H to toggle.'
+        : 'Highlight mode disabled.',
+      'info'
+    );
+  }
 
-	/**
-	 * Play audio for correction (TTS)
-	 * @param {string} correctionId - Correction ID
-	 */
-	async playCorrection(correctionId) {
-		const correction = this.corrections.get(correctionId);
-		if (!correction) return;
+  /**
+   * Play audio for correction (TTS)
+   * @param {string} correctionId - Correction ID
+   */
+  async playCorrection(correctionId) {
+    const correction = this.corrections.get(correctionId);
+    if (!correction) return;
 
-		try {
-			// Call TTS API for the correct pronunciation
-			const response = await fetch("/tts", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					text: correction.after,
-					voice: "bg",
-					speed: 0.8,
-				}),
-			});
+    try {
+      // Call TTS API for the correct pronunciation
+      const response = await fetch('/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: correction.after,
+          voice: 'bg',
+          speed: 0.8,
+        }),
+      });
 
-			if (response.ok) {
-				const audioBlob = await response.blob();
-				const audioUrl = URL.createObjectURL(audioBlob);
-				const audio = new Audio(audioUrl);
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
 
-				audio.play();
-				audio.onended = () => URL.revokeObjectURL(audioUrl);
+        audio.play();
+        audio.onended = () => URL.revokeObjectURL(audioUrl);
 
-				this.trackCorrectionInteraction(correctionId, "audio");
-			}
-		} catch (error) {
-			console.warn("TTS not available:", error);
-			this.showNotification("Audio playback not available", "error");
-		}
-	}
+        this.trackCorrectionInteraction(correctionId, 'audio');
+      }
+    } catch (error) {
+      console.warn('TTS not available:', error);
+      this.showNotification('Audio playback not available', 'error');
+    }
+  }
 
-	/**
-	 * Start practice mode for a correction
-	 * @param {string} correctionId - Correction ID
-	 */
-	startPractice(correctionId) {
-		const correction = this.corrections.get(correctionId);
-		if (!correction) return;
+  /**
+   * Start practice mode for a correction
+   * @param {string} correctionId - Correction ID
+   */
+  startPractice(correctionId) {
+    const correction = this.corrections.get(correctionId);
+    if (!correction) return;
 
-		// Increment practice count
-		correction.practiceCount += 1;
+    // Increment practice count
+    correction.practiceCount += 1;
 
-		// Update progress bar
-		const progressBar = document.querySelector(
-			`#correction-details-${correctionId} .correction-progress-bar`,
-		);
-		if (progressBar) {
-			progressBar.style.width = `${(correction.practiceCount / 5) * 100}%`;
-		}
+    // Update progress bar
+    const progressBar = document.querySelector(
+      `#correction-details-${correctionId} .correction-progress-bar`
+    );
+    if (progressBar) {
+      progressBar.style.width = `${(correction.practiceCount / 5) * 100}%`;
+    }
 
-		// Show practice prompt
-		this.showPracticePrompt(correction);
-		this.trackCorrectionInteraction(correctionId, "practice");
-	}
+    // Show practice prompt
+    this.showPracticePrompt(correction);
+    this.trackCorrectionInteraction(correctionId, 'practice');
+  }
 
-	/**
-	 * Show practice prompt for correction
-	 * @param {Object} correction - Correction object
-	 */
-	showPracticePrompt(correction) {
-		const prompt = `Try using the correct form: "${correction.after}" in a sentence.`;
-		this.showNotification(prompt, "info", 5000);
+  /**
+   * Show practice prompt for correction
+   * @param {Object} correction - Correction object
+   */
+  showPracticePrompt(correction) {
+    const prompt = `Try using the correct form: "${correction.after}" in a sentence.`;
+    this.showNotification(prompt, 'info', 5000);
 
-		// Focus on mic button to encourage practice
-		const micButton = document.getElementById("mic-button");
-		if (micButton) {
-			micButton.style.animation = "pulse 1s ease-in-out 3";
-		}
-	}
+    // Focus on mic button to encourage practice
+    const micButton = document.getElementById('mic-button');
+    if (micButton) {
+      micButton.style.animation = 'pulse 1s ease-in-out 3';
+    }
+  }
 
-	/**
-	 * Track correction interaction for analytics
-	 * @param {string} correctionId - Correction ID
-	 * @param {string} action - Action type
-	 */
-	trackCorrectionInteraction(correctionId, action) {
-		// Store interaction data
-		const interaction = {
-			correctionId,
-			action,
-			timestamp: Date.now(),
-		};
+  /**
+   * Track correction interaction for analytics
+   * @param {string} correctionId - Correction ID
+   * @param {string} action - Action type
+   */
+  trackCorrectionInteraction(correctionId, action) {
+    // Store interaction data
+    const interaction = {
+      correctionId,
+      action,
+      timestamp: Date.now(),
+    };
 
-		// Could send to analytics API
-		console.log("Correction interaction:", interaction);
-	}
+    // Could send to analytics API
+    console.log('Correction interaction:', interaction);
+  }
 
-	/**
-	 * Get practice count for a correction
-	 * @param {string} correctionId - Correction ID
-	 * @returns {number} Practice count
-	 */
-	getPracticeCount(correctionId) {
-		const correction = this.corrections.get(correctionId);
-		return correction ? correction.practiceCount : 0;
-	}
+  /**
+   * Get practice count for a correction
+   * @param {string} correctionId - Correction ID
+   * @returns {number} Practice count
+   */
+  getPracticeCount(correctionId) {
+    const correction = this.corrections.get(correctionId);
+    return correction ? correction.practiceCount : 0;
+  }
 
-	/**
-	 * Show toast notification
-	 * @param {string} message - Message text
-	 * @param {string} type - Notification type (error, success, info)
-	 * @param {number} duration - Duration in ms
-	 */
-	showNotification(message, type = "info", duration = 3000) {
-		// Implementation depends on existing toast system
-		if (window.showToast) {
-			window.showToast(message, type);
-		} else {
-			console.log(`[${type.toUpperCase()}] ${message}`);
-		}
-	}
+  /**
+   * Show toast notification
+   * @param {string} message - Message text
+   * @param {string} type - Notification type (error, success, info)
+   * @param {number} duration - Duration in ms
+   */
+  showNotification(message, type = 'info', _duration = 3000) {
+    // Implementation depends on existing toast system
+    if (window.showToast) {
+      window.showToast(message, type);
+    } else {
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+  }
 
-	/**
-	 * Get correction statistics
-	 * @returns {Object} Statistics object
-	 */
-	getStatistics() {
-		const stats = {
-			totalCorrections: this.corrections.size,
-			severityBreakdown: { high: 0, medium: 0, low: 0 },
-			totalPractice: 0,
-			averagePractice: 0,
-		};
+  /**
+   * Get correction statistics
+   * @returns {Object} Statistics object
+   */
+  getStatistics() {
+    const stats = {
+      totalCorrections: this.corrections.size,
+      severityBreakdown: { high: 0, medium: 0, low: 0 },
+      totalPractice: 0,
+      averagePractice: 0,
+    };
 
-		for (const correction of this.corrections.values()) {
-			stats.severityBreakdown[correction.severity]++;
-			stats.totalPractice += correction.practiceCount;
-		}
+    for (const correction of this.corrections.values()) {
+      stats.severityBreakdown[correction.severity]++;
+      stats.totalPractice += correction.practiceCount;
+    }
 
-		stats.averagePractice =
-			stats.totalCorrections > 0
-				? stats.totalPractice / stats.totalCorrections
-				: 0;
+    stats.averagePractice =
+      stats.totalCorrections > 0 ? stats.totalPractice / stats.totalCorrections : 0;
 
-		return stats;
-	}
+    return stats;
+  }
 
-	/**
-	 * Export correction history
-	 * @returns {Array} Correction history
-	 */
-	exportHistory() {
-		return {
-			corrections: Array.from(this.corrections.entries()),
-			history: this.correctionHistory,
-			statistics: this.getStatistics(),
-		};
-	}
+  /**
+   * Export correction history
+   * @returns {Array} Correction history
+   */
+  exportHistory() {
+    return {
+      corrections: Array.from(this.corrections.entries()),
+      history: this.correctionHistory,
+      statistics: this.getStatistics(),
+    };
+  }
 }
 
 // Create global instance only in browser environment
-if (
-	typeof window !== "undefined" &&
-	!globalThis.process?.env?.NODE_ENV?.includes("test")
-) {
-	window.enhancedCorrections = new EnhancedCorrectionsSystem();
+if (typeof window !== 'undefined' && !globalThis.process?.env?.NODE_ENV?.includes('test')) {
+  window.enhancedCorrections = new EnhancedCorrectionsSystem();
 }

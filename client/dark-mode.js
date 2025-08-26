@@ -4,67 +4,67 @@
  */
 
 export class DarkModeSystem {
-	constructor() {
-		this.isDarkMode = this.getStoredPreference();
-		this.toggleButton = null;
-		this.themeIcon = null;
+  constructor() {
+    this.isDarkMode = this.getStoredPreference();
+    this.toggleButton = null;
+    this.themeIcon = null;
 
-		this.init();
-	}
+    this.init();
+  }
 
-	/**
-	 * Initialize dark mode system
-	 */
-	init() {
-		this.createToggleButton();
-		this.injectStyles();
-		this.applyTheme(this.isDarkMode, false); // false = no animation on initial load
-		this.setupEventListeners();
+  /**
+   * Initialize dark mode system
+   */
+  init() {
+    this.createToggleButton();
+    this.injectStyles();
+    this.applyTheme(this.isDarkMode, false); // false = no animation on initial load
+    this.setupEventListeners();
 
-		// Listen for system theme changes
-		this.watchSystemTheme();
-	}
+    // Listen for system theme changes
+    this.watchSystemTheme();
+  }
 
-	/**
-	 * Create the dark mode toggle button
-	 */
-	createToggleButton() {
-		// Find the header or create a container for the toggle
-		const header = document.querySelector(".header");
-		if (!header) return;
+  /**
+   * Create the dark mode toggle button
+   */
+  createToggleButton() {
+    // Find the header or create a container for the toggle
+    const header = document.querySelector('.header');
+    if (!header) return;
 
-		// Create toggle container
-		const toggleContainer = document.createElement("div");
-		toggleContainer.className = "theme-toggle-container";
+    // Create toggle container
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'theme-toggle-container';
 
-		// Create toggle button
-		this.toggleButton = document.createElement("button");
-		this.toggleButton.className = "theme-toggle-btn";
-		this.toggleButton.title = "Toggle dark/light mode (Ctrl/Cmd+D)";
-		this.toggleButton.setAttribute("aria-label", "Toggle theme");
+    // Create toggle button
+    this.toggleButton = document.createElement('button');
+    this.toggleButton.className = 'theme-toggle-btn';
+    this.toggleButton.title = 'Toggle dark/light mode (Ctrl/Cmd+D)';
+    this.toggleButton.setAttribute('aria-label', 'Toggle theme');
 
-		// Create icon container
-		this.themeIcon = document.createElement("span");
-		this.themeIcon.className = "theme-icon";
-		this.updateToggleIcon();
+    // Create icon container
+    this.themeIcon = document.createElement('span');
+    this.themeIcon.className = 'theme-icon';
+    this.updateToggleIcon();
 
-		this.toggleButton.appendChild(this.themeIcon);
-		toggleContainer.appendChild(this.toggleButton);
+    this.toggleButton.appendChild(this.themeIcon);
+    toggleContainer.appendChild(this.toggleButton);
 
-		// Insert after the header title
-		const headerTitle = header.querySelector("h1");
-		if (headerTitle) {
-			headerTitle.insertAdjacentElement("afterend", toggleContainer);
-		} else {
-			header.appendChild(toggleContainer);
-		}
-	}
+    // Insert after the header title
+    const headerTitle = header.querySelector('h1');
+    if (headerTitle) {
+      headerTitle.insertAdjacentElement('afterend', toggleContainer);
+    } else {
+      header.appendChild(toggleContainer);
+    }
+  }
 
-	/**
-	 * Inject dark mode styles
-	 */
-	injectStyles() {
-		const styles = `
+  /**
+   * Inject dark mode styles
+   */
+  injectStyles() {
+    const styles = `
       .theme-toggle-container {
         position: absolute;
         top: 1rem;
@@ -361,304 +361,295 @@ export class DarkModeSystem {
       }
     `;
 
-		const styleSheet = document.createElement("style");
-		styleSheet.textContent = styles;
-		document.head.appendChild(styleSheet);
-	}
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+  }
 
-	/**
-	 * Setup event listeners
-	 */
-	setupEventListeners() {
-		if (this.toggleButton) {
-			this.toggleButton.addEventListener("click", () => {
-				this.toggleTheme();
-			});
-		}
+  /**
+   * Setup event listeners
+   */
+  setupEventListeners() {
+    if (this.toggleButton) {
+      this.toggleButton.addEventListener('click', () => {
+        this.toggleTheme();
+      });
+    }
 
-		// Keyboard shortcut (Ctrl/Cmd + D)
-		document.addEventListener("keydown", (event) => {
-			if ((event.ctrlKey || event.metaKey) && event.key === "d") {
-				event.preventDefault();
-				this.toggleTheme();
-			}
-		});
+    // Keyboard shortcut (Ctrl/Cmd + D)
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+        event.preventDefault();
+        this.toggleTheme();
+      }
+    });
 
-		// Listen for storage changes (sync across tabs)
-		window.addEventListener("storage", (event) => {
-			if (event.key === "dark-mode-preference") {
-				const newPreference = event.newValue === "true";
-				this.isDarkMode = newPreference;
-				this.applyTheme(newPreference, false);
-				this.updateToggleIcon();
-			}
-		});
-	}
+    // Listen for storage changes (sync across tabs)
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'dark-mode-preference') {
+        const newPreference = event.newValue === 'true';
+        this.isDarkMode = newPreference;
+        this.applyTheme(newPreference, false);
+        this.updateToggleIcon();
+      }
+    });
+  }
 
-	/**
-	 * Watch for system theme changes
-	 */
-	watchSystemTheme() {
-		if (window.matchMedia) {
-			const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  /**
+   * Watch for system theme changes
+   */
+  watchSystemTheme() {
+    if (window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-			mediaQuery.addEventListener("change", (event) => {
-				// Only auto-switch if user hasn't set a preference
-				if (!this.hasStoredPreference()) {
-					this.isDarkMode = event.matches;
-					this.applyTheme(this.isDarkMode, true);
-					this.updateToggleIcon();
-				}
-			});
-		}
-	}
+      mediaQuery.addEventListener('change', (event) => {
+        // Only auto-switch if user hasn't set a preference
+        if (!this.hasStoredPreference()) {
+          this.isDarkMode = event.matches;
+          this.applyTheme(this.isDarkMode, true);
+          this.updateToggleIcon();
+        }
+      });
+    }
+  }
 
-	/**
-	 * Toggle between dark and light themes
-	 */
-	toggleTheme() {
-		this.isDarkMode = !this.isDarkMode;
-		this.applyTheme(this.isDarkMode, true);
-		this.updateToggleIcon();
-		this.storePreference(this.isDarkMode);
+  /**
+   * Toggle between dark and light themes
+   */
+  toggleTheme() {
+    this.isDarkMode = !this.isDarkMode;
+    this.applyTheme(this.isDarkMode, true);
+    this.updateToggleIcon();
+    this.storePreference(this.isDarkMode);
 
-		// Show notification
-		this.showNotification(
-			`Switched to ${this.isDarkMode ? "dark" : "light"} mode`,
-			"info",
-		);
+    // Show notification
+    this.showNotification(`Switched to ${this.isDarkMode ? 'dark' : 'light'} mode`, 'info');
 
-		// Track theme preference
-		this.trackThemeChange();
-	}
+    // Track theme preference
+    this.trackThemeChange();
+  }
 
-	/**
-	 * Apply theme to the document
-	 * @param {boolean} isDark - Whether to apply dark theme
-	 * @param {boolean} animate - Whether to animate the transition
-	 */
-	applyTheme(isDark, animate = true) {
-		const html = document.documentElement;
+  /**
+   * Apply theme to the document
+   * @param {boolean} isDark - Whether to apply dark theme
+   * @param {boolean} animate - Whether to animate the transition
+   */
+  applyTheme(isDark, animate = true) {
+    const html = document.documentElement;
 
-		if (animate && this.themeIcon) {
-			this.themeIcon.classList.add("switching");
-			setTimeout(() => {
-				this.themeIcon?.classList.remove("switching");
-			}, 500);
-		}
+    if (animate && this.themeIcon) {
+      this.themeIcon.classList.add('switching');
+      setTimeout(() => {
+        this.themeIcon?.classList.remove('switching');
+      }, 500);
+    }
 
-		if (isDark) {
-			html.setAttribute("data-theme", "dark");
-		} else {
-			html.removeAttribute("data-theme");
-		}
+    if (isDark) {
+      html.setAttribute('data-theme', 'dark');
+    } else {
+      html.removeAttribute('data-theme');
+    }
 
-		// Update meta theme-color for mobile browsers
-		this.updateMetaThemeColor(isDark);
+    // Update meta theme-color for mobile browsers
+    this.updateMetaThemeColor(isDark);
 
-		// Dispatch theme change event for other components
-		document.dispatchEvent(
-			new CustomEvent("themechange", {
-				detail: { isDark, theme: isDark ? "dark" : "light" },
-			}),
-		);
-	}
+    // Dispatch theme change event for other components
+    document.dispatchEvent(
+      new CustomEvent('themechange', {
+        detail: { isDark, theme: isDark ? 'dark' : 'light' },
+      })
+    );
+  }
 
-	/**
-	 * Update the toggle button icon
-	 */
-	updateToggleIcon() {
-		if (!this.themeIcon) return;
+  /**
+   * Update the toggle button icon
+   */
+  updateToggleIcon() {
+    if (!this.themeIcon) return;
 
-		this.themeIcon.textContent = this.isDarkMode ? "☀️" : "🌙";
+    this.themeIcon.textContent = this.isDarkMode ? '☀️' : '🌙';
 
-		if (this.toggleButton) {
-			this.toggleButton.title = `Switch to ${this.isDarkMode ? "light" : "dark"} mode (Ctrl/Cmd+D)`;
-		}
-	}
+    if (this.toggleButton) {
+      this.toggleButton.title = `Switch to ${this.isDarkMode ? 'light' : 'dark'} mode (Ctrl/Cmd+D)`;
+    }
+  }
 
-	/**
-	 * Update meta theme-color for mobile browsers
-	 * @param {boolean} isDark - Whether dark theme is active
-	 */
-	updateMetaThemeColor(isDark) {
-		let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  /**
+   * Update meta theme-color for mobile browsers
+   * @param {boolean} isDark - Whether dark theme is active
+   */
+  updateMetaThemeColor(isDark) {
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
-		if (!metaThemeColor) {
-			metaThemeColor = document.createElement("meta");
-			metaThemeColor.name = "theme-color";
-			document.head.appendChild(metaThemeColor);
-		}
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.name = 'theme-color';
+      document.head.appendChild(metaThemeColor);
+    }
 
-		metaThemeColor.content = isDark ? "#1a1a2e" : "#667eea";
-	}
+    metaThemeColor.content = isDark ? '#1a1a2e' : '#667eea';
+  }
 
-	/**
-	 * Get stored theme preference from localStorage
-	 * @returns {boolean} Stored preference or system preference
-	 */
-	getStoredPreference() {
-		try {
-			const stored = localStorage.getItem("dark-mode-preference");
-			if (stored !== null) {
-				return stored === "true";
-			}
-		} catch (error) {
-			console.warn("Failed to read theme preference from localStorage:", error);
-		}
+  /**
+   * Get stored theme preference from localStorage
+   * @returns {boolean} Stored preference or system preference
+   */
+  getStoredPreference() {
+    try {
+      const stored = localStorage.getItem('dark-mode-preference');
+      if (stored !== null) {
+        return stored === 'true';
+      }
+    } catch (_error) {
+      console.warn('Failed to read theme preference from localStorage:', error);
+    }
 
-		// Fallback to system preference
-		return this.getSystemPreference();
-	}
+    // Fallback to system preference
+    return this.getSystemPreference();
+  }
 
-	/**
-	 * Check if user has stored a theme preference
-	 * @returns {boolean} Whether preference is stored
-	 */
-	hasStoredPreference() {
-		try {
-			return localStorage.getItem("dark-mode-preference") !== null;
-		} catch (error) {
-			return false;
-		}
-	}
+  /**
+   * Check if user has stored a theme preference
+   * @returns {boolean} Whether preference is stored
+   */
+  hasStoredPreference() {
+    try {
+      return localStorage.getItem('dark-mode-preference') !== null;
+    } catch (_error) {
+      return false;
+    }
+  }
 
-	/**
-	 * Get system theme preference
-	 * @returns {boolean} System dark mode preference
-	 */
-	getSystemPreference() {
-		if (window.matchMedia) {
-			return window.matchMedia("(prefers-color-scheme: dark)").matches;
-		}
-		return false;
-	}
+  /**
+   * Get system theme preference
+   * @returns {boolean} System dark mode preference
+   */
+  getSystemPreference() {
+    if (window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  }
 
-	/**
-	 * Store theme preference in localStorage
-	 * @param {boolean} isDark - Theme preference to store
-	 */
-	storePreference(isDark) {
-		try {
-			localStorage.setItem("dark-mode-preference", isDark.toString());
-		} catch (error) {
-			console.warn("Failed to store theme preference in localStorage:", error);
-		}
-	}
+  /**
+   * Store theme preference in localStorage
+   * @param {boolean} isDark - Theme preference to store
+   */
+  storePreference(isDark) {
+    try {
+      localStorage.setItem('dark-mode-preference', isDark.toString());
+    } catch (_error) {
+      console.warn('Failed to store theme preference in localStorage:', error);
+    }
+  }
 
-	/**
-	 * Show notification for theme change
-	 * @param {string} message - Notification message
-	 * @param {string} type - Notification type
-	 */
-	showNotification(message, type = "info") {
-		// Use existing toast system if available
-		if (window.showToast) {
-			window.showToast(message, type);
-		} else if (window.enhancedCorrections) {
-			window.enhancedCorrections.showNotification(message, type);
-		} else {
-			console.log(`Theme: ${message}`);
-		}
-	}
+  /**
+   * Show notification for theme change
+   * @param {string} message - Notification message
+   * @param {string} type - Notification type
+   */
+  showNotification(message, type = 'info') {
+    // Use existing toast system if available
+    if (window.showToast) {
+      window.showToast(message, type);
+    } else if (window.enhancedCorrections) {
+      window.enhancedCorrections.showNotification(message, type);
+    } else {
+      console.log(`Theme: ${message}`);
+    }
+  }
 
-	/**
-	 * Track theme change for analytics
-	 */
-	trackThemeChange() {
-		const event = {
-			action: "theme_change",
-			theme: this.isDarkMode ? "dark" : "light",
-			timestamp: Date.now(),
-			userAgent: navigator.userAgent.includes("Mobile") ? "mobile" : "desktop",
-		};
+  /**
+   * Track theme change for analytics
+   */
+  trackThemeChange() {
+    const event = {
+      action: 'theme_change',
+      theme: this.isDarkMode ? 'dark' : 'light',
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent.includes('Mobile') ? 'mobile' : 'desktop',
+    };
 
-		console.log("Theme change tracked:", event);
-		// Could send to analytics API
-	}
+    console.log('Theme change tracked:', event);
+    // Could send to analytics API
+  }
 
-	/**
-	 * Get current theme information
-	 * @returns {Object} Theme information
-	 */
-	getThemeInfo() {
-		return {
-			isDarkMode: this.isDarkMode,
-			theme: this.isDarkMode ? "dark" : "light",
-			hasStoredPreference: this.hasStoredPreference(),
-			systemPreference: this.getSystemPreference(),
-			supportsSystemDetection: !!window.matchMedia,
-		};
-	}
+  /**
+   * Get current theme information
+   * @returns {Object} Theme information
+   */
+  getThemeInfo() {
+    return {
+      isDarkMode: this.isDarkMode,
+      theme: this.isDarkMode ? 'dark' : 'light',
+      hasStoredPreference: this.hasStoredPreference(),
+      systemPreference: this.getSystemPreference(),
+      supportsSystemDetection: !!window.matchMedia,
+    };
+  }
 
-	/**
-	 * Force set theme without storing preference
-	 * @param {boolean} isDark - Theme to set
-	 */
-	forceTheme(isDark) {
-		this.isDarkMode = isDark;
-		this.applyTheme(isDark, true);
-		this.updateToggleIcon();
-	}
+  /**
+   * Force set theme without storing preference
+   * @param {boolean} isDark - Theme to set
+   */
+  forceTheme(isDark) {
+    this.isDarkMode = isDark;
+    this.applyTheme(isDark, true);
+    this.updateToggleIcon();
+  }
 
-	/**
-	 * Reset to system preference
-	 */
-	resetToSystemPreference() {
-		const systemPref = this.getSystemPreference();
-		this.isDarkMode = systemPref;
-		this.applyTheme(systemPref, true);
-		this.updateToggleIcon();
+  /**
+   * Reset to system preference
+   */
+  resetToSystemPreference() {
+    const systemPref = this.getSystemPreference();
+    this.isDarkMode = systemPref;
+    this.applyTheme(systemPref, true);
+    this.updateToggleIcon();
 
-		// Remove stored preference to follow system
-		try {
-			localStorage.removeItem("dark-mode-preference");
-		} catch (error) {
-			console.warn(
-				"Failed to remove theme preference from localStorage:",
-				error,
-			);
-		}
+    // Remove stored preference to follow system
+    try {
+      localStorage.removeItem('dark-mode-preference');
+    } catch (_error) {
+      console.warn('Failed to remove theme preference from localStorage:', error);
+    }
 
-		this.showNotification("Reset to follow system theme", "info");
-	}
+    this.showNotification('Reset to follow system theme', 'info');
+  }
 
-	/**
-	 * Destroy dark mode system (cleanup)
-	 */
-	destroy() {
-		if (this.toggleButton) {
-			this.toggleButton.remove();
-		}
+  /**
+   * Destroy dark mode system (cleanup)
+   */
+  destroy() {
+    if (this.toggleButton) {
+      this.toggleButton.remove();
+    }
 
-		// Remove theme attribute
-		document.documentElement.removeAttribute("data-theme");
+    // Remove theme attribute
+    document.documentElement.removeAttribute('data-theme');
 
-		// Clean up event listeners would require storing references
-		console.log("DarkModeSystem destroyed");
-	}
+    // Clean up event listeners would require storing references
+    console.log('DarkModeSystem destroyed');
+  }
 }
 
 // Auto-initialize when loaded (skip in test environments)
-if (
-	typeof document !== "undefined" &&
-	!globalThis.process?.env?.NODE_ENV?.includes("test")
-) {
-	document.addEventListener("DOMContentLoaded", () => {
-		if (!window.darkModeSystem) {
-			window.darkModeSystem = new DarkModeSystem();
-		}
-	});
+if (typeof document !== 'undefined' && !globalThis.process?.env?.NODE_ENV?.includes('test')) {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.darkModeSystem) {
+      window.darkModeSystem = new DarkModeSystem();
+    }
+  });
 
-	// Also initialize immediately if DOM already loaded
-	if (document.readyState === "loading") {
-		// DOM is still loading
-	} else {
-		// DOM is already loaded
-		if (!window.darkModeSystem) {
-			window.darkModeSystem = new DarkModeSystem();
-		}
-	}
+  // Also initialize immediately if DOM already loaded
+  if (document.readyState === 'loading') {
+    // DOM is still loading
+  } else {
+    // DOM is already loaded
+    if (!window.darkModeSystem) {
+      window.darkModeSystem = new DarkModeSystem();
+    }
+  }
 }
 
 export default DarkModeSystem;

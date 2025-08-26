@@ -10,42 +10,42 @@
  */
 
 export class InteractiveDrillSystem {
-	constructor() {
-		this.drills = new Map(); // Current drill set
-		this.progress = new Map(); // User progress per drill
-		this.currentDrill = null;
-		this.currentMode = "practice"; // practice, review, challenge
-		this.isActive = false;
-		this.userInput = "";
-		this.attempts = 0;
-		this.maxAttempts = 3;
+  constructor() {
+    this.drills = new Map(); // Current drill set
+    this.progress = new Map(); // User progress per drill
+    this.currentDrill = null;
+    this.currentMode = 'practice'; // practice, review, challenge
+    this.isActive = false;
+    this.userInput = '';
+    this.attempts = 0;
+    this.maxAttempts = 3;
 
-		// SRS intervals in days
-		this.srsIntervals = [1, 3, 7, 21, 60, 120];
-		this.currentInterval = 0;
+    // SRS intervals in days
+    this.srsIntervals = [1, 3, 7, 21, 60, 120];
+    this.currentInterval = 0;
 
-		// Audio feedback
-		this.audioContext = null;
+    // Audio feedback
+    this.audioContext = null;
 
-		// UI elements
-		this.drillContainer = null;
-		this.practiceButton = null;
-		this.inputField = null;
-		this.feedbackArea = null;
-		this.progressBar = null;
-		this.micButton = null;
+    // UI elements
+    this.drillContainer = null;
+    this.practiceButton = null;
+    this.inputField = null;
+    this.feedbackArea = null;
+    this.progressBar = null;
+    this.micButton = null;
 
-		this.init();
-	}
+    this.init();
+  }
 
-	init() {
-		this.injectStyles();
-		this.loadProgress();
-		this.setupEventListeners();
-	}
+  init() {
+    this.injectStyles();
+    this.loadProgress();
+    this.setupEventListeners();
+  }
 
-	injectStyles() {
-		const styles = `
+  injectStyles() {
+    const styles = `
       /* Interactive Drill System Styles */
       .drill-practice-modal {
         position: fixed;
@@ -456,68 +456,68 @@ export class InteractiveDrillSystem {
       }
     `;
 
-		const styleSheet = document.createElement("style");
-		styleSheet.textContent = styles;
-		document.head.appendChild(styleSheet);
-	}
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+  }
 
-	setupEventListeners() {
-		// Listen for drill practice requests
-		document.addEventListener("startDrillPractice", (event) => {
-			this.startPractice(event.detail.drills, event.detail.mode);
-		});
+  setupEventListeners() {
+    // Listen for drill practice requests
+    document.addEventListener('startDrillPractice', (event) => {
+      this.startPractice(event.detail.drills, event.detail.mode);
+    });
 
-		// Keyboard shortcuts
-		document.addEventListener("keydown", (event) => {
-			if (this.isActive) {
-				if (event.key === "Escape") {
-					event.preventDefault();
-					this.closePractice();
-				} else if (event.key === "Enter" && !event.shiftKey) {
-					event.preventDefault();
-					this.checkAnswer();
-				} else if (event.ctrlKey && event.key === "h") {
-					event.preventDefault();
-					this.showHint();
-				}
-			}
-		});
-	}
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (event) => {
+      if (this.isActive) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.closePractice();
+        } else if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          this.checkAnswer();
+        } else if (event.ctrlKey && event.key === 'h') {
+          event.preventDefault();
+          this.showHint();
+        }
+      }
+    });
+  }
 
-	startPractice(drills, mode = "practice") {
-		this.drills.clear();
-		this.currentMode = mode;
-		this.isActive = true;
+  startPractice(drills, mode = 'practice') {
+    this.drills.clear();
+    this.currentMode = mode;
+    this.isActive = true;
 
-		// Process drills into our internal format
-		drills.forEach((drill, index) => {
-			const drillId = drill.id || `drill_${index}`;
-			this.drills.set(drillId, {
-				id: drillId,
-				prompt: drill.prompt_bg || drill.prompt,
-				answer: drill.answer_bg || drill.answer,
-				level: drill.level || "A2",
-				type: drill.type || "transform",
-				hint: drill.hint || "",
-				grammarPoint: drill.grammarPoint || "",
-				...drill,
-			});
-		});
+    // Process drills into our internal format
+    drills.forEach((drill, index) => {
+      const drillId = drill.id || `drill_${index}`;
+      this.drills.set(drillId, {
+        id: drillId,
+        prompt: drill.prompt_bg || drill.prompt,
+        answer: drill.answer_bg || drill.answer,
+        level: drill.level || 'A2',
+        type: drill.type || 'transform',
+        hint: drill.hint || '',
+        grammarPoint: drill.grammarPoint || '',
+        ...drill,
+      });
+    });
 
-		this.createPracticeModal();
-		this.nextDrill();
-	}
+    this.createPracticeModal();
+    this.nextDrill();
+  }
 
-	createPracticeModal() {
-		// Remove existing modal if any
-		const existingModal = document.querySelector(".drill-practice-modal");
-		if (existingModal) {
-			existingModal.remove();
-		}
+  createPracticeModal() {
+    // Remove existing modal if any
+    const existingModal = document.querySelector('.drill-practice-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
 
-		const modal = document.createElement("div");
-		modal.className = "drill-practice-modal";
-		modal.innerHTML = `
+    const modal = document.createElement('div');
+    modal.className = 'drill-practice-modal';
+    modal.innerHTML = `
       <div class="drill-practice-container">
         <button class="drill-close-btn" title="Close practice">×</button>
         
@@ -589,387 +589,368 @@ export class InteractiveDrillSystem {
       </div>
     `;
 
-		document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-		// Cache UI elements
-		this.drillContainer = modal;
-		this.inputField = modal.querySelector(".drill-input");
-		this.feedbackArea = modal.querySelector(".drill-feedback");
-		this.progressBar = modal.querySelector(".drill-progress-fill");
-		this.micButton = modal.querySelector(".drill-mic-btn");
+    // Cache UI elements
+    this.drillContainer = modal;
+    this.inputField = modal.querySelector('.drill-input');
+    this.feedbackArea = modal.querySelector('.drill-feedback');
+    this.progressBar = modal.querySelector('.drill-progress-fill');
+    this.micButton = modal.querySelector('.drill-mic-btn');
 
-		// Setup event listeners
-		modal
-			.querySelector(".drill-close-btn")
-			.addEventListener("click", () => this.closePractice());
-		modal
-			.querySelector("#drill-check-btn")
-			.addEventListener("click", () => this.checkAnswer());
-		modal
-			.querySelector("#drill-next-btn")
-			.addEventListener("click", () => this.nextDrill());
-		modal
-			.querySelector("#drill-hint-btn")
-			.addEventListener("click", () => this.showHint());
-		modal
-			.querySelector("#drill-skip-btn")
-			.addEventListener("click", () => this.skipDrill());
+    // Setup event listeners
+    modal.querySelector('.drill-close-btn').addEventListener('click', () => this.closePractice());
+    modal.querySelector('#drill-check-btn').addEventListener('click', () => this.checkAnswer());
+    modal.querySelector('#drill-next-btn').addEventListener('click', () => this.nextDrill());
+    modal.querySelector('#drill-hint-btn').addEventListener('click', () => this.showHint());
+    modal.querySelector('#drill-skip-btn').addEventListener('click', () => this.skipDrill());
 
-		this.micButton.addEventListener("click", () => this.toggleVoiceInput());
+    this.micButton.addEventListener('click', () => this.toggleVoiceInput());
 
-		this.inputField.addEventListener("input", () => {
-			// Clear previous feedback when user starts typing
-			this.hideFeedback();
-			this.inputField.classList.remove("correct", "incorrect");
-		});
+    this.inputField.addEventListener('input', () => {
+      // Clear previous feedback when user starts typing
+      this.hideFeedback();
+      this.inputField.classList.remove('correct', 'incorrect');
+    });
 
-		// Show modal
-		setTimeout(() => {
-			modal.classList.add("active");
-			this.inputField.focus();
-		}, 50);
-	}
+    // Show modal
+    setTimeout(() => {
+      modal.classList.add('active');
+      this.inputField.focus();
+    }, 50);
+  }
 
-	nextDrill() {
-		const drillIds = Array.from(this.drills.keys());
+  nextDrill() {
+    const drillIds = Array.from(this.drills.keys());
 
-		if (drillIds.length === 0) {
-			this.completePractice();
-			return;
-		}
+    if (drillIds.length === 0) {
+      this.completePractice();
+      return;
+    }
 
-		// Get next drill (for now, just pick the first one)
-		const nextDrillId = drillIds[0];
-		this.currentDrill = this.drills.get(nextDrillId);
-		this.drills.delete(nextDrillId);
+    // Get next drill (for now, just pick the first one)
+    const nextDrillId = drillIds[0];
+    this.currentDrill = this.drills.get(nextDrillId);
+    this.drills.delete(nextDrillId);
 
-		this.attempts = 0;
-		this.userInput = "";
+    this.attempts = 0;
+    this.userInput = '';
 
-		this.displayDrill();
-		this.updateProgress();
-		this.inputField.value = "";
-		this.inputField.focus();
-		this.hideFeedback();
-		this.hideHint();
+    this.displayDrill();
+    this.updateProgress();
+    this.inputField.value = '';
+    this.inputField.focus();
+    this.hideFeedback();
+    this.hideHint();
 
-		// Update buttons
-		document.querySelector("#drill-check-btn").style.display = "inline-flex";
-		document.querySelector("#drill-next-btn").style.display = "none";
-	}
+    // Update buttons
+    document.querySelector('#drill-check-btn').style.display = 'inline-flex';
+    document.querySelector('#drill-next-btn').style.display = 'none';
+  }
 
-	displayDrill() {
-		if (!this.currentDrill) return;
+  displayDrill() {
+    if (!this.currentDrill) return;
 
-		const promptElement = document.querySelector(".drill-prompt");
-		const levelElement = document.querySelector(".drill-level");
-		const hintElement = document.querySelector(".drill-hint");
+    const promptElement = document.querySelector('.drill-prompt');
+    const levelElement = document.querySelector('.drill-level');
+    const hintElement = document.querySelector('.drill-hint');
 
-		promptElement.textContent = this.currentDrill.prompt;
-		levelElement.textContent = `Level ${this.currentDrill.level}`;
+    promptElement.textContent = this.currentDrill.prompt;
+    levelElement.textContent = `Level ${this.currentDrill.level}`;
 
-		if (this.currentDrill.hint) {
-			hintElement.textContent = this.currentDrill.hint;
-		}
-	}
+    if (this.currentDrill.hint) {
+      hintElement.textContent = this.currentDrill.hint;
+    }
+  }
 
-	updateProgress() {
-		const totalDrills = this.drills.size + 1; // +1 for current drill
-		const currentIndex = totalDrills - this.drills.size;
+  updateProgress() {
+    const totalDrills = this.drills.size + 1; // +1 for current drill
+    const currentIndex = totalDrills - this.drills.size;
 
-		document.querySelector(".drill-current").textContent = currentIndex;
-		document.querySelector(".drill-total").textContent = totalDrills;
+    document.querySelector('.drill-current').textContent = currentIndex;
+    document.querySelector('.drill-total').textContent = totalDrills;
 
-		const progressPercent = ((currentIndex - 1) / totalDrills) * 100;
-		this.progressBar.style.width = `${progressPercent}%`;
-	}
+    const progressPercent = ((currentIndex - 1) / totalDrills) * 100;
+    this.progressBar.style.width = `${progressPercent}%`;
+  }
 
-	checkAnswer() {
-		if (!this.currentDrill) return;
+  checkAnswer() {
+    if (!this.currentDrill) return;
 
-		this.attempts++;
-		this.userInput = this.inputField.value.trim();
+    this.attempts++;
+    this.userInput = this.inputField.value.trim();
 
-		if (!this.userInput) {
-			this.showFeedback("Please enter an answer", "incorrect", "❌");
-			return;
-		}
+    if (!this.userInput) {
+      this.showFeedback('Please enter an answer', 'incorrect', '❌');
+      return;
+    }
 
-		const result = this.evaluateAnswer(
-			this.userInput,
-			this.currentDrill.answer,
-		);
+    const result = this.evaluateAnswer(this.userInput, this.currentDrill.answer);
 
-		this.updateStats();
+    this.updateStats();
 
-		if (result.correct) {
-			this.showFeedback(result.message, "correct", "✅");
-			this.inputField.classList.add("correct");
-			this.recordProgress(true);
+    if (result.correct) {
+      this.showFeedback(result.message, 'correct', '✅');
+      this.inputField.classList.add('correct');
+      this.recordProgress(true);
 
-			// Enable next button
-			document.querySelector("#drill-check-btn").style.display = "none";
-			document.querySelector("#drill-next-btn").style.display = "inline-flex";
-		} else if (result.partial) {
-			this.showFeedback(result.message, "partial", "⚠️");
-			this.inputField.classList.add("incorrect");
+      // Enable next button
+      document.querySelector('#drill-check-btn').style.display = 'none';
+      document.querySelector('#drill-next-btn').style.display = 'inline-flex';
+    } else if (result.partial) {
+      this.showFeedback(result.message, 'partial', '⚠️');
+      this.inputField.classList.add('incorrect');
 
-			if (this.attempts >= this.maxAttempts) {
-				this.showCorrectAnswer();
-			}
-		} else {
-			this.showFeedback(result.message, "incorrect", "❌");
-			this.inputField.classList.add("incorrect");
+      if (this.attempts >= this.maxAttempts) {
+        this.showCorrectAnswer();
+      }
+    } else {
+      this.showFeedback(result.message, 'incorrect', '❌');
+      this.inputField.classList.add('incorrect');
 
-			if (this.attempts >= this.maxAttempts) {
-				this.showCorrectAnswer();
-			} else {
-				// Give hint after 2 attempts
-				if (this.attempts >= 2) {
-					this.showHint();
-				}
-			}
-		}
-	}
+      if (this.attempts >= this.maxAttempts) {
+        this.showCorrectAnswer();
+      } else {
+        // Give hint after 2 attempts
+        if (this.attempts >= 2) {
+          this.showHint();
+        }
+      }
+    }
+  }
 
-	evaluateAnswer(userAnswer, correctAnswer) {
-		// Normalize answers for comparison
-		const normalizedUser = this.normalizeAnswer(userAnswer);
-		const normalizedCorrect = this.normalizeAnswer(correctAnswer);
+  evaluateAnswer(userAnswer, correctAnswer) {
+    // Normalize answers for comparison
+    const normalizedUser = this.normalizeAnswer(userAnswer);
+    const normalizedCorrect = this.normalizeAnswer(correctAnswer);
 
-		if (normalizedUser === normalizedCorrect) {
-			return {
-				correct: true,
-				message: "Perfect! That's the correct answer.",
-				score: 100,
-			};
-		}
+    if (normalizedUser === normalizedCorrect) {
+      return {
+        correct: true,
+        message: "Perfect! That's the correct answer.",
+        score: 100,
+      };
+    }
 
-		// Check for partial matches
-		const similarity = this.calculateSimilarity(
-			normalizedUser,
-			normalizedCorrect,
-		);
+    // Check for partial matches
+    const similarity = this.calculateSimilarity(normalizedUser, normalizedCorrect);
 
-		if (similarity > 0.8) {
-			return {
-				correct: false,
-				partial: true,
-				message: "Close! Check your spelling and grammar.",
-				score: Math.round(similarity * 100),
-			};
-		}
-		if (similarity > 0.5) {
-			return {
-				correct: false,
-				partial: true,
-				message: "You're on the right track, but there are some errors.",
-				score: Math.round(similarity * 100),
-			};
-		}
-		return {
-			correct: false,
-			message: "That's not quite right. Try again!",
-			score: 0,
-		};
-	}
+    if (similarity > 0.8) {
+      return {
+        correct: false,
+        partial: true,
+        message: 'Close! Check your spelling and grammar.',
+        score: Math.round(similarity * 100),
+      };
+    }
+    if (similarity > 0.5) {
+      return {
+        correct: false,
+        partial: true,
+        message: "You're on the right track, but there are some errors.",
+        score: Math.round(similarity * 100),
+      };
+    }
+    return {
+      correct: false,
+      message: "That's not quite right. Try again!",
+      score: 0,
+    };
+  }
 
-	normalizeAnswer(answer) {
-		return answer
-			.toLowerCase()
-			.trim()
-			.replace(/[^\u0400-\u04FF\w\s]/g, "") // Keep only Cyrillic, Latin, digits, whitespace
-			.replace(/\s+/g, " ");
-	}
+  normalizeAnswer(answer) {
+    return answer
+      .toLowerCase()
+      .trim()
+      .replace(/[^\u0400-\u04FF\w\s]/g, '') // Keep only Cyrillic, Latin, digits, whitespace
+      .replace(/\s+/g, ' ');
+  }
 
-	calculateSimilarity(str1, str2) {
-		// Simple Levenshtein distance-based similarity
-		const longer = str1.length > str2.length ? str1 : str2;
-		const shorter = str1.length > str2.length ? str2 : str1;
+  calculateSimilarity(str1, str2) {
+    // Simple Levenshtein distance-based similarity
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
 
-		if (longer.length === 0) {
-			return 1.0;
-		}
+    if (longer.length === 0) {
+      return 1.0;
+    }
 
-		const distance = this.levenshteinDistance(longer, shorter);
-		return (longer.length - distance) / longer.length;
-	}
+    const distance = this.levenshteinDistance(longer, shorter);
+    return (longer.length - distance) / longer.length;
+  }
 
-	levenshteinDistance(str1, str2) {
-		const matrix = [];
+  levenshteinDistance(str1, str2) {
+    const matrix = [];
 
-		for (let i = 0; i <= str2.length; i++) {
-			matrix[i] = [i];
-		}
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
 
-		for (let j = 0; j <= str1.length; j++) {
-			matrix[0][j] = j;
-		}
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
 
-		for (let i = 1; i <= str2.length; i++) {
-			for (let j = 1; j <= str1.length; j++) {
-				if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-					matrix[i][j] = matrix[i - 1][j - 1];
-				} else {
-					matrix[i][j] = Math.min(
-						matrix[i - 1][j - 1] + 1,
-						matrix[i][j - 1] + 1,
-						matrix[i - 1][j] + 1,
-					);
-				}
-			}
-		}
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
 
-		return matrix[str2.length][str1.length];
-	}
+    return matrix[str2.length][str1.length];
+  }
 
-	showFeedback(message, type, icon) {
-		this.feedbackArea.innerHTML = `
+  showFeedback(message, type, icon) {
+    this.feedbackArea.innerHTML = `
       <span class="drill-feedback-icon">${icon}</span>
       ${message}
     `;
-		this.feedbackArea.className = `drill-feedback ${type} visible`;
-	}
+    this.feedbackArea.className = `drill-feedback ${type} visible`;
+  }
 
-	hideFeedback() {
-		this.feedbackArea.classList.remove("visible");
-	}
+  hideFeedback() {
+    this.feedbackArea.classList.remove('visible');
+  }
 
-	showHint() {
-		const hintElement = document.querySelector(".drill-hint");
-		if (hintElement && this.currentDrill.hint) {
-			hintElement.classList.add("visible");
-		}
-	}
+  showHint() {
+    const hintElement = document.querySelector('.drill-hint');
+    if (hintElement && this.currentDrill.hint) {
+      hintElement.classList.add('visible');
+    }
+  }
 
-	hideHint() {
-		const hintElement = document.querySelector(".drill-hint");
-		if (hintElement) {
-			hintElement.classList.remove("visible");
-		}
-	}
+  hideHint() {
+    const hintElement = document.querySelector('.drill-hint');
+    if (hintElement) {
+      hintElement.classList.remove('visible');
+    }
+  }
 
-	showCorrectAnswer() {
-		this.showFeedback(
-			`The correct answer is: <strong>${this.currentDrill.answer}</strong>`,
-			"correct",
-			"💡",
-		);
-		this.recordProgress(false);
+  showCorrectAnswer() {
+    this.showFeedback(
+      `The correct answer is: <strong>${this.currentDrill.answer}</strong>`,
+      'correct',
+      '💡'
+    );
+    this.recordProgress(false);
 
-		// Enable next button
-		document.querySelector("#drill-check-btn").style.display = "none";
-		document.querySelector("#drill-next-btn").style.display = "inline-flex";
-	}
+    // Enable next button
+    document.querySelector('#drill-check-btn').style.display = 'none';
+    document.querySelector('#drill-next-btn').style.display = 'inline-flex';
+  }
 
-	skipDrill() {
-		this.recordProgress(false);
-		this.nextDrill();
-	}
+  skipDrill() {
+    this.recordProgress(false);
+    this.nextDrill();
+  }
 
-	toggleVoiceInput() {
-		if (this.micButton.classList.contains("recording")) {
-			this.stopVoiceRecording();
-		} else {
-			this.startVoiceRecording();
-		}
-	}
+  toggleVoiceInput() {
+    if (this.micButton.classList.contains('recording')) {
+      this.stopVoiceRecording();
+    } else {
+      this.startVoiceRecording();
+    }
+  }
 
-	startVoiceRecording() {
-		// Trigger main app's microphone if available
-		if (window.startRecording) {
-			this.micButton.classList.add("recording");
-			this.micButton.title = "Stop recording";
+  startVoiceRecording() {
+    // Trigger main app's microphone if available
+    if (window.startRecording) {
+      this.micButton.classList.add('recording');
+      this.micButton.title = 'Stop recording';
 
-			// Listen for voice input
-			const handleVoiceInput = (event) => {
-				if (event.detail?.text) {
-					this.inputField.value = event.detail.text;
-					this.stopVoiceRecording();
-					document.removeEventListener("voiceInput", handleVoiceInput);
-				}
-			};
+      // Listen for voice input
+      const handleVoiceInput = (event) => {
+        if (event.detail?.text) {
+          this.inputField.value = event.detail.text;
+          this.stopVoiceRecording();
+          document.removeEventListener('voiceInput', handleVoiceInput);
+        }
+      };
 
-			document.addEventListener("voiceInput", handleVoiceInput);
-			window.startRecording();
-		} else {
-			this.showNotification("Voice input not available", "error");
-		}
-	}
+      document.addEventListener('voiceInput', handleVoiceInput);
+      window.startRecording();
+    } else {
+      this.showNotification('Voice input not available', 'error');
+    }
+  }
 
-	stopVoiceRecording() {
-		if (window.stopRecording) {
-			window.stopRecording();
-		}
+  stopVoiceRecording() {
+    if (window.stopRecording) {
+      window.stopRecording();
+    }
 
-		this.micButton.classList.remove("recording");
-		this.micButton.title = "Use voice input";
-	}
+    this.micButton.classList.remove('recording');
+    this.micButton.title = 'Use voice input';
+  }
 
-	recordProgress(correct) {
-		const drillId = this.currentDrill.id;
+  recordProgress(correct) {
+    const drillId = this.currentDrill.id;
 
-		if (!this.progress.has(drillId)) {
-			this.progress.set(drillId, {
-				attempts: 0,
-				correct: 0,
-				lastPracticed: Date.now(),
-				interval: 0,
-				nextReview: Date.now(),
-			});
-		}
+    if (!this.progress.has(drillId)) {
+      this.progress.set(drillId, {
+        attempts: 0,
+        correct: 0,
+        lastPracticed: Date.now(),
+        interval: 0,
+        nextReview: Date.now(),
+      });
+    }
 
-		const progress = this.progress.get(drillId);
-		progress.attempts++;
-		progress.lastPracticed = Date.now();
+    const progress = this.progress.get(drillId);
+    progress.attempts++;
+    progress.lastPracticed = Date.now();
 
-		if (correct) {
-			progress.correct++;
-			// Advance SRS interval
-			if (progress.interval < this.srsIntervals.length - 1) {
-				progress.interval++;
-			}
-		} else {
-			// Reset SRS interval on wrong answer
-			progress.interval = Math.max(0, progress.interval - 1);
-		}
+    if (correct) {
+      progress.correct++;
+      // Advance SRS interval
+      if (progress.interval < this.srsIntervals.length - 1) {
+        progress.interval++;
+      }
+    } else {
+      // Reset SRS interval on wrong answer
+      progress.interval = Math.max(0, progress.interval - 1);
+    }
 
-		// Calculate next review date
-		const intervalDays = this.srsIntervals[progress.interval];
-		progress.nextReview = Date.now() + intervalDays * 24 * 60 * 60 * 1000;
+    // Calculate next review date
+    const intervalDays = this.srsIntervals[progress.interval];
+    progress.nextReview = Date.now() + intervalDays * 24 * 60 * 60 * 1000;
 
-		this.saveProgress();
-	}
+    this.saveProgress();
+  }
 
-	updateStats() {
-		let totalCorrect = 0;
-		let totalAttempts = 0;
+  updateStats() {
+    let totalCorrect = 0;
+    let totalAttempts = 0;
 
-		for (const progress of this.progress.values()) {
-			totalCorrect += progress.correct;
-			totalAttempts += progress.attempts;
-		}
+    for (const progress of this.progress.values()) {
+      totalCorrect += progress.correct;
+      totalAttempts += progress.attempts;
+    }
 
-		// Add current session
-		totalAttempts += this.attempts;
-		if (document.querySelector(".drill-feedback.correct")) {
-			totalCorrect++;
-		}
+    // Add current session
+    totalAttempts += this.attempts;
+    if (document.querySelector('.drill-feedback.correct')) {
+      totalCorrect++;
+    }
 
-		const accuracy =
-			totalAttempts > 0
-				? Math.round((totalCorrect / totalAttempts) * 100)
-				: 100;
+    const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 100;
 
-		document.querySelector("#drill-correct-count").textContent = totalCorrect;
-		document.querySelector("#drill-attempts-count").textContent = totalAttempts;
-		document.querySelector("#drill-accuracy").textContent = `${accuracy}%`;
-	}
+    document.querySelector('#drill-correct-count').textContent = totalCorrect;
+    document.querySelector('#drill-attempts-count').textContent = totalAttempts;
+    document.querySelector('#drill-accuracy').textContent = `${accuracy}%`;
+  }
 
-	completePractice() {
-		const stats = this.calculateSessionStats();
+  completePractice() {
+    const stats = this.calculateSessionStats();
 
-		const completionMessage = `
+    const completionMessage = `
       <div style="text-align: center; padding: 2rem;">
         <h2>🎉 Practice Complete!</h2>
         <p>Great job! You completed ${stats.totalDrills} drills.</p>
@@ -982,145 +963,138 @@ export class InteractiveDrillSystem {
       </div>
     `;
 
-		this.drillContainer.querySelector(".drill-practice-container").innerHTML =
-			completionMessage;
+    this.drillContainer.querySelector('.drill-practice-container').innerHTML = completionMessage;
 
-		setTimeout(() => {
-			this.closePractice();
-		}, 3000);
-	}
+    setTimeout(() => {
+      this.closePractice();
+    }, 3000);
+  }
 
-	calculateSessionStats() {
-		let totalCorrect = 0;
-		let totalAttempts = 0;
-		const totalDrills = this.progress.size;
+  calculateSessionStats() {
+    let totalCorrect = 0;
+    let totalAttempts = 0;
+    const totalDrills = this.progress.size;
 
-		for (const progress of this.progress.values()) {
-			totalCorrect += progress.correct;
-			totalAttempts += progress.attempts;
-		}
+    for (const progress of this.progress.values()) {
+      totalCorrect += progress.correct;
+      totalAttempts += progress.attempts;
+    }
 
-		const accuracy =
-			totalAttempts > 0
-				? Math.round((totalCorrect / totalAttempts) * 100)
-				: 100;
+    const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 100;
 
-		return {
-			totalDrills,
-			correct: totalCorrect,
-			total: totalAttempts,
-			accuracy,
-		};
-	}
+    return {
+      totalDrills,
+      correct: totalCorrect,
+      total: totalAttempts,
+      accuracy,
+    };
+  }
 
-	closePractice() {
-		this.isActive = false;
-		this.currentDrill = null;
-		this.stopVoiceRecording();
+  closePractice() {
+    this.isActive = false;
+    this.currentDrill = null;
+    this.stopVoiceRecording();
 
-		if (this.drillContainer) {
-			this.drillContainer.classList.remove("active");
-			setTimeout(() => {
-				this.drillContainer.remove();
-				this.drillContainer = null;
-			}, 300);
-		}
-	}
+    if (this.drillContainer) {
+      this.drillContainer.classList.remove('active');
+      setTimeout(() => {
+        this.drillContainer.remove();
+        this.drillContainer = null;
+      }, 300);
+    }
+  }
 
-	loadProgress() {
-		try {
-			const saved = localStorage.getItem("drillProgress");
-			if (saved) {
-				const progressData = JSON.parse(saved);
-				this.progress = new Map(Object.entries(progressData));
-			}
-		} catch (error) {
-			console.warn("Failed to load drill progress:", error);
-		}
-	}
+  loadProgress() {
+    try {
+      const saved = localStorage.getItem('drillProgress');
+      if (saved) {
+        const progressData = JSON.parse(saved);
+        this.progress = new Map(Object.entries(progressData));
+      }
+    } catch (error) {
+      console.warn('Failed to load drill progress:', error);
+    }
+  }
 
-	saveProgress() {
-		try {
-			const progressData = Object.fromEntries(this.progress);
-			localStorage.setItem("drillProgress", JSON.stringify(progressData));
-		} catch (error) {
-			console.warn("Failed to save drill progress:", error);
-		}
-	}
+  saveProgress() {
+    try {
+      const progressData = Object.fromEntries(this.progress);
+      localStorage.setItem('drillProgress', JSON.stringify(progressData));
+    } catch (error) {
+      console.warn('Failed to save drill progress:', error);
+    }
+  }
 
-	showNotification(message, type) {
-		if (typeof window.showToast === "function") {
-			window.showToast(message, type);
-		} else {
-			console.log(`[${type.toUpperCase()}] ${message}`);
-		}
-	}
+  showNotification(message, type) {
+    if (typeof window.showToast === 'function') {
+      window.showToast(message, type);
+    } else {
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+  }
 
-	// Public API methods
-	getDrillsForReview() {
-		const now = Date.now();
-		const reviewDrills = [];
+  // Public API methods
+  getDrillsForReview() {
+    const now = Date.now();
+    const reviewDrills = [];
 
-		this.progress.forEach((progress, drillId) => {
-			if (progress.nextReview <= now) {
-				reviewDrills.push(drillId);
-			}
-		});
+    this.progress.forEach((progress, drillId) => {
+      if (progress.nextReview <= now) {
+        reviewDrills.push(drillId);
+      }
+    });
 
-		return reviewDrills;
-	}
+    return reviewDrills;
+  }
 
-	getProgress() {
-		return Object.fromEntries(this.progress);
-	}
+  getProgress() {
+    return Object.fromEntries(this.progress);
+  }
 
-	resetProgress() {
-		this.progress.clear();
-		localStorage.removeItem("drillProgress");
-	}
+  resetProgress() {
+    this.progress.clear();
+    localStorage.removeItem('drillProgress');
+  }
 
-	exportProgress() {
-		return {
-			progress: this.getProgress(),
-			exportDate: new Date().toISOString(),
-			version: "1.0",
-		};
-	}
+  exportProgress() {
+    return {
+      progress: this.getProgress(),
+      exportDate: new Date().toISOString(),
+      version: '1.0',
+    };
+  }
 
-	importProgress(data) {
-		if (data.progress) {
-			this.progress = new Map(Object.entries(data.progress));
-			this.saveProgress();
-		}
-	}
+  importProgress(data) {
+    if (data.progress) {
+      this.progress = new Map(Object.entries(data.progress));
+      this.saveProgress();
+    }
+  }
 
-	destroy() {
-		this.closePractice();
-		this.progress.clear();
-		console.log("InteractiveDrillSystem destroyed");
-	}
+  destroy() {
+    this.closePractice();
+    this.progress.clear();
+    console.log('InteractiveDrillSystem destroyed');
+  }
 }
 
 // Auto-initialize when loaded (skip in test environments)
-if (
-	typeof document !== "undefined" &&
-	!globalThis.process?.env?.NODE_ENV?.includes("test")
-) {
-	document.addEventListener("DOMContentLoaded", () => {
-		if (!window.interactiveDrills) {
-			window.interactiveDrills = new InteractiveDrillSystem();
-		}
-	});
+if (typeof document !== 'undefined' && !globalThis.process?.env?.NODE_ENV?.includes('test')) {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!window.interactiveDrills) {
+      window.interactiveDrills = new InteractiveDrillSystem();
+    }
+  });
 
-	// Also initialize immediately if DOM already loaded
-	if (document.readyState === "loading") {
-		// DOM is still loading
-	} else {
-		// DOM is already loaded
-		if (!window.interactiveDrills) {
-			window.interactiveDrills = new InteractiveDrillSystem();
-		}
-	}
+  // Also initialize immediately if DOM already loaded
+  if (document.readyState === 'loading') {
+    // DOM is still loading
+  } else {
+    // DOM is already loaded
+    if (!window.interactiveDrills) {
+      window.interactiveDrills = new InteractiveDrillSystem();
+    }
+  }
 }
 
 export default InteractiveDrillSystem;
