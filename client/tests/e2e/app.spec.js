@@ -359,6 +359,569 @@ test.describe('Cross-browser Compatibility', () => {
   });
 });
 
+test.describe('Complete Voice Coaching Workflow', () => {
+  test('should handle full voice interaction cycle', async ({ page }) => {
+    // Mock WebSocket and audio for complete workflow
+    await page.addInitScript(() => {
+      window.mockWebSocketMessages = [];
+      window.mockAudioData = [];
+
+      // Mock WebSocket with message handling
+      window.WebSocket = class MockWebSocket {
+        constructor(url) {
+          this.url = url;
+          this.readyState = WebSocket.CONNECTING;
+          this.onopen = null;
+          this.onclose = null;
+          this.onerror = null;
+          this.onmessage = null;
+
+          setTimeout(() => {
+            this.readyState = WebSocket.OPEN;
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 100);
+        }
+
+        send(data) {
+          window.mockWebSocketMessages.push(data);
+
+          // Simulate ASR responses based on sent data
+          setTimeout(() => {
+            if (this.onmessage) {
+              // Mock partial transcription
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'transcription',
+                    text: 'Здравей',
+                    is_final: false,
+                  }),
+                })
+              );
+
+              // Mock final transcription
+              setTimeout(() => {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'transcription',
+                      text: 'Здравей, как си?',
+                      is_final: true,
+                    }),
+                  })
+                );
+
+                // Mock coach response
+                setTimeout(() => {
+                  this.onmessage(
+                    new MessageEvent('message', {
+                      data: JSON.stringify({
+                        type: 'coach_response',
+                        text: 'Отлично произношение! Много добре казахте "здравей".',
+                        audio_data: 'mock_audio_base64_data',
+                      }),
+                    })
+                  );
+                }, 200);
+              }, 300);
+            }
+          }, 200);
+        }
+
+        close() {
+          this.readyState = WebSocket.CLOSED;
+          if (this.onclose) this.onclose(new Event('close'));
+        }
+      };
+
+      // Mock getUserMedia for audio capture
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [
+          {
+            stop: () => {},
+            kind: 'audio',
+            enabled: true,
+          },
+        ],
+      });
+
+      // Mock Audio for TTS playback
+      window.Audio = class MockAudio {
+        constructor() {
+          this.src = '';
+          this.onended = null;
+          this.play = async () => {
+            window.mockAudioData.push('played');
+            setTimeout(() => {
+              if (this.onended) this.onended();
+            }, 500);
+          };
+        }
+      };
+    });
+
+    await page.goto('/');
+
+    // Wait for connection
+    await expect(page.locator('#connection-text')).toHaveText('Connected', { timeout: 5000 });
+
+    // Start recording
+    const micButton = page.locator('#mic-button');
+    await micButton.click();
+
+    // Check recording state
+    await expect(page.locator('#mic-status')).toHaveText('Recording...', { timeout: 2000 });
+
+    // Stop recording
+    await micButton.click();
+
+    // Wait for transcription to appear
+    await expect(page.locator('.transcript-line.partial')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('.transcript-line.partial')).toContainText('Здравей');
+
+    // Wait for final transcription
+    await expect(page.locator('.transcript-line.final')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.transcript-line.final')).toContainText('Здравей, как си?');
+
+    // Wait for coach response
+    await expect(page.locator('.transcript-line.coach')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('.transcript-line.coach')).toContainText('Отлично произношение');
+
+    // Check that play button is now enabled
+    await expect(page.locator('#play-last-btn')).toBeEnabled({ timeout: 2000 });
+
+    // Test TTS playback
+    await page.locator('#play-last-btn').click();
+
+    // Verify audio was played (check mock data)
+    const audioPlayed = await page.evaluate(() => window.mockAudioData.length > 0);
+    expect(audioPlayed).toBe(true);
+  });
+
+  test('should handle voice activity detection', async ({ page }) => {
+    await page.addInitScript(() => {
+      // Mock WebSocket with VAD simulation
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          // Simulate VAD detection
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'vad',
+                    speaking: true,
+                  }),
+                })
+              );
+
+              setTimeout(() => {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'vad',
+                      speaking: false,
+                    }),
+                  })
+                );
+              }, 1000);
+            }
+          }, 100);
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+
+    // Should show voice activity
+    await expect(page.locator('#mic-status')).toHaveText('Recording...', { timeout: 2000 });
+
+    // Check for visual feedback during speaking
+    const micLevel = page.locator('.mic-level');
+    await expect(micLevel).toBeVisible();
+  });
+
+  test('should handle grammar correction workflow', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          setTimeout(() => {
+            if (this.onmessage) {
+              // Mock grammar error detection
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'transcription',
+                    text: 'Аз съм студент от България',
+                    is_final: true,
+                  }),
+                })
+              );
+
+              // Mock grammar correction
+              setTimeout(() => {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'coach_response',
+                      text: 'Добре! Забележете правилното използване на "от" за произход. Много добре!',
+                      grammar_notes:
+                        'Правилно използвахте предлога "от" за означаване на произход.',
+                      audio_data: 'mock_grammar_audio',
+                    }),
+                  })
+                );
+              }, 300);
+            }
+          }, 200);
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click(); // Stop recording
+
+    // Wait for grammar feedback
+    await expect(page.locator('.transcript-line.coach')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('.transcript-line.coach')).toContainText('Правилно използвахте');
+  });
+});
+
+test.describe('Audio Processing E2E', () => {
+  test('should handle continuous recording mode', async ({ page }) => {
+    await page.addInitScript(() => {
+      let recordingActive = false;
+
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(data) {
+          if (data.includes('start_recording')) {
+            recordingActive = true;
+            // Simulate continuous partial results
+            const sendPartials = () => {
+              if (recordingActive && this.onmessage) {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'transcription',
+                      text: Math.random() > 0.5 ? 'Добър ден' : 'Как сте',
+                      is_final: false,
+                    }),
+                  })
+                );
+                setTimeout(sendPartials, 500);
+              }
+            };
+            setTimeout(sendPartials, 200);
+          } else if (data.includes('stop_recording')) {
+            recordingActive = false;
+          }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+
+    // Start continuous recording
+    await page.locator('#mic-button').click();
+
+    // Should show continuous partial updates
+    await expect(page.locator('.transcript-line.partial')).toBeVisible({ timeout: 2000 });
+
+    // Wait for multiple partial updates
+    await page.waitForTimeout(1000);
+
+    // Stop recording
+    await page.locator('#mic-button').click();
+    await expect(page.locator('#mic-status')).toHaveText('Click microphone to start');
+  });
+
+  test('should handle audio level monitoring', async ({ page }) => {
+    await page.addInitScript(() => {
+      // Mock AudioContext with level data
+      window.AudioContext = class MockAudioContext {
+        constructor() {
+          this.state = 'suspended';
+          this.sampleRate = 48000;
+          this.audioWorklet = {
+            addModule: async () => {},
+          };
+        }
+
+        async resume() {
+          this.state = 'running';
+        }
+
+        createMediaStreamSource() {
+          return { connect: () => {} };
+        }
+
+        createScriptProcessor() {
+          const processor = {
+            onaudioprocess: null,
+            connect: () => {},
+            disconnect: () => {},
+          };
+
+          // Simulate audio processing with varying levels
+          setTimeout(() => {
+            const simulateAudio = () => {
+              if (processor.onaudioprocess) {
+                const event = {
+                  inputBuffer: {
+                    getChannelData: () => {
+                      const data = new Float32Array(1024);
+                      const level = Math.random() * 0.5; // Random audio level
+                      for (let i = 0; i < data.length; i++) {
+                        data[i] = (Math.random() - 0.5) * level;
+                      }
+                      return data;
+                    },
+                  },
+                };
+                processor.onaudioprocess(event);
+              }
+              setTimeout(simulateAudio, 100);
+            };
+            simulateAudio();
+          }, 100);
+
+          return processor;
+        }
+
+        get destination() {
+          return { connect: () => {} };
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+
+    // Check that mic level indicator responds
+    const micLevel = page.locator('.mic-level');
+    await expect(micLevel).toBeVisible();
+
+    // Wait for level changes (visual feedback)
+    await page.waitForTimeout(500);
+
+    await page.locator('#mic-button').click(); // Stop
+  });
+
+  test('should handle WebSocket reconnection', async ({ page }) => {
+    const _connectionAttempts = 0;
+
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          window.connectionAttempts = (window.connectionAttempts || 0) + 1;
+          this.readyState = WebSocket.CONNECTING;
+          this.onopen = null;
+          this.onclose = null;
+          this.onerror = null;
+
+          if (window.connectionAttempts === 1) {
+            // First connection fails
+            setTimeout(() => {
+              this.readyState = WebSocket.CLOSED;
+              if (this.onerror) this.onerror(new Event('error'));
+            }, 100);
+          } else {
+            // Subsequent connections succeed
+            setTimeout(() => {
+              this.readyState = WebSocket.OPEN;
+              if (this.onopen) this.onopen(new Event('open'));
+            }, 200);
+          }
+        }
+
+        send() {}
+        close() {
+          this.readyState = WebSocket.CLOSED;
+          if (this.onclose) this.onclose(new Event('close'));
+        }
+      };
+    });
+
+    await page.goto('/');
+
+    // Should initially show connection error
+    await expect(page.locator('#connection-text')).toHaveText('Connection Error', {
+      timeout: 2000,
+    });
+
+    // Should automatically reconnect and show connected
+    await expect(page.locator('#connection-text')).toHaveText('Connected', { timeout: 5000 });
+  });
+});
+
+test.describe('Error Handling E2E', () => {
+  test('should handle microphone permission denied', async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = async () => {
+        throw new Error('Permission denied');
+      };
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+
+    // Should show error state
+    await expect(page.locator('#mic-status')).toHaveText('Microphone access denied', {
+      timeout: 2000,
+    });
+  });
+
+  test('should handle TTS playback errors', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send() {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'coach_response',
+                    text: 'Test response',
+                    audio_data: 'invalid_audio_data',
+                  }),
+                })
+              );
+            }
+          }, 100);
+        }
+      };
+
+      // Mock Audio that fails to play
+      window.Audio = class MockAudio {
+        constructor() {
+          this.src = '';
+          this.play = async () => {
+            throw new Error('Audio playback failed');
+          };
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click();
+
+    // Wait for coach response
+    await expect(page.locator('.transcript-line.coach')).toBeVisible({ timeout: 2000 });
+
+    // Try to play audio (should handle error gracefully)
+    await page.locator('#play-last-btn').click();
+
+    // Application should remain functional
+    await expect(page.locator('#mic-button')).toBeVisible();
+  });
+
+  test('should handle network disconnection during recording', async ({ page }) => {
+    const _disconnectAfterMs = 1000;
+
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onclose = null;
+          this.onerror = null;
+
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+
+            // Disconnect after delay
+            setTimeout(() => {
+              this.readyState = WebSocket.CLOSED;
+              if (this.onclose) this.onclose(new Event('close'));
+            }, 1000);
+          }, 50);
+        }
+
+        send() {
+          if (this.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket is not open');
+          }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await expect(page.locator('#connection-text')).toHaveText('Connected');
+
+    // Start recording
+    await page.locator('#mic-button').click();
+
+    // Wait for disconnection
+    await expect(page.locator('#connection-text')).toHaveText('Disconnected', { timeout: 3000 });
+
+    // Recording should stop automatically
+    await expect(page.locator('#mic-status')).toHaveText('Click microphone to start');
+  });
+});
+
 test.describe('Bulgarian Text Rendering', () => {
   test('should render Cyrillic characters correctly', async ({ page }) => {
     await page.goto('/');

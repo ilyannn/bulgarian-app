@@ -282,21 +282,62 @@ web-test-e2e:
 web-test-e2e-ui:
     cd client && bun run test:e2e:ui
 
+# Run E2E performance and stress tests
+[group('test')]
+[group('web')]
+web-test-e2e-performance:
+    cd client && bunx playwright test tests/e2e/performance.spec.js
+
+# Run E2E tests with full video recording for debugging
+[group('test')]
+[group('web')]
+web-test-e2e-debug:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd client
+    echo "🎬 Running E2E tests with full recording..."
+    bunx playwright test --video=on --trace=on
+
+# Run E2E tests in headed mode (visible browser) for development
+[group('test')]
+[group('web')]
+web-test-e2e-headed:
+    cd client && bunx playwright test --headed
+
+# Generate E2E test report
+[group('test')]
+[group('web')]
+web-test-e2e-report:
+    cd client && bunx playwright show-report
+
 # Install Playwright browsers (needed for E2E tests)
 [group('setup')]
 [group('web')]
 web-install-browsers:
     cd client && bunx playwright install
 
+# Run cross-browser E2E tests (all browsers)
+[group('test')]
+[group('web')]
+web-test-e2e-cross-browser:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd client
+    echo "🌍 Running cross-browser E2E tests..."
+    bunx playwright test --project=chromium --project=firefox --project=webkit
+
 # Run comprehensive test suite with coverage
 [group('test')]
-test-all: py-test web-test-coverage web-test-e2e
+test-all: py-test web-test-coverage web-test-e2e web-test-e2e-performance
     #!/usr/bin/env bash
     set -euo pipefail
     echo "✅ All tests completed successfully!"
     echo ""
     echo "📊 Test Summary:"
-    echo "  - Python backend tests: ✅"  
+    echo "  - Python backend tests: ✅"
+    echo "  - Client unit tests with coverage: ✅"
+    echo "  - E2E functionality tests: ✅"
+    echo "  - E2E performance & stress tests: ✅"  
     echo "  - JavaScript unit/integration tests: ✅"
     echo "  - E2E browser tests: ✅"
 
