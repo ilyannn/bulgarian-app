@@ -23,7 +23,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] `dev` - Development servers with process management
 - [x] `lint` - Code quality checks with ruff and Biome
 - [x] `format` - Code formatting automation
-- [x] `test` - Test suite execution (31 passing tests)
+- [x] `test` - Test suite execution (163 passing tests)
 - [x] `serve` - Production-like deployment
 - [x] Enhanced with groups, security scanning, and git hooks
 
@@ -167,7 +167,7 @@ Items that have been successfully implemented from the original build plan.
 - [x] Modern Python tooling with uv instead of pip/venv
 - [x] Bun runtime for faster JavaScript tooling
 - [x] Enhanced Justfile with recipe groups and security features
-- [x] Comprehensive test coverage with 31 unit tests
+- [x] Comprehensive test coverage with 163 unit tests
 - [x] Git hooks for automated quality enforcement
 - [x] Typography optimization for Bulgarian Cyrillic
 - [x] Security scanning and leak prevention
@@ -430,3 +430,57 @@ Items that have been successfully implemented from the original build plan.
   - Integration workflows (2 tests)
 
 **Total Achievement**: From 47 failing tests to **0 failing tests** - **100% improvement in test suite reliability**
+
+## 25) Configuration Module Test Coverage ✅ (2025-08-26)
+
+### Comprehensive Config Testing Implementation
+
+- [x] **Complete test suite creation**: Added 34 comprehensive tests for `config.py` module covering all functionality
+- [x] **Environment variable testing**: Tests for parsing, defaults, type conversion, and case sensitivity
+- [x] **Configuration validation**: Tests for provider availability, content file checks, and eSpeak installation
+- [x] **Error handling coverage**: Tests for invalid values, missing dependencies, and critical failures
+- [x] **Logging setup testing**: Tests for custom log levels, request logging, and ASR detail logging
+- [x] **Startup validation**: Tests for successful startup, warnings, and critical error scenarios
+- [x] **Global config management**: Tests for instance creation, caching, and teardown
+
+### Test Categories Implemented
+
+- [x] **TestEnvironmentConfig**: 13 tests covering configuration initialization and environment parsing
+  - Default configuration values validation
+  - Environment variable override testing
+  - Boolean, integer, and float parsing verification
+  - CORS origins comma-separated parsing
+  - Case-insensitive provider handling
+- [x] **TestConfigValidation**: 8 tests covering environment validation logic
+  - Provider-specific API key validation (OpenAI, Claude, auto fallback)
+  - Content file existence checks
+  - eSpeak NG installation validation
+  - Audio configuration validation (sample rate, VAD aggressiveness)
+  - L1 language validation (PL, RU, UK, SR support)
+- [x] **TestEspeakInstallationCheck**: 6 tests covering eSpeak detection mechanisms
+  - Custom ESPEAK_PATH success and failure scenarios
+  - Standard installation path detection
+  - Fallback from espeak-ng to espeak command
+  - Timeout and exception handling
+  - Complete failure scenarios
+- [x] **TestLoggingSetup**: 4 tests covering logging configuration
+  - Default and custom log level setup
+  - Request logging enablement (LOG_REQUESTS=true)
+  - ASR detail logging enablement (LOG_ASR_DETAILS=true)
+- [x] **TestStartupValidation**: 3 tests covering startup validation function
+  - Successful validation with configuration return
+  - Non-critical warnings handling
+  - Critical failure scenarios with ConfigError raising
+
+### Test Infrastructure Improvements
+
+- [x] **Mock pattern consistency**: Established consistent mocking patterns for subprocess calls and environment variables
+- [x] **Comprehensive coverage**: All public methods and critical code paths covered
+- [x] **Error scenario testing**: Edge cases and failure modes thoroughly tested
+- [x] **Global state management**: Proper test isolation with teardown methods
+
+### Test Suite Statistics Update
+
+- [x] **Total test count**: Increased from 129 to **163 tests** (34 new config tests)
+- [x] **Perfect reliability maintained**: All 163 tests pass successfully
+- [x] **Coverage expansion**: Configuration module now fully tested alongside existing modules
