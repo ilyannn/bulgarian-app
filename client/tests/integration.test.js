@@ -65,11 +65,41 @@ function createIntegratedVoiceCoach() {
 }
 
 // Enhanced WebSocket mock for integration testing
-class IntegrationWebSocketMock extends WebSocket {
+class IntegrationWebSocketMock {
   constructor(url) {
-    super(url);
+    this.url = url;
+    this.readyState = 1; // OPEN
     this.messageQueue = [];
     this.isSimulating = false;
+    this.onopen = null;
+    this.onclose = null;
+    this.onmessage = null;
+    this.onerror = null;
+
+    // Simulate connection opened after a short delay
+    setTimeout(() => {
+      if (this.onopen) {
+        this.onopen({ type: 'open' });
+      }
+    }, 10);
+  }
+
+  send(data) {
+    // Mock send behavior
+  }
+
+  close() {
+    this.readyState = 3; // CLOSED
+    if (this.onclose) {
+      this.onclose({ type: 'close', code: 1000 });
+    }
+  }
+
+  addEventListener(event, handler) {
+    if (event === 'open') this.onopen = handler;
+    if (event === 'close') this.onclose = handler;
+    if (event === 'message') this.onmessage = handler;
+    if (event === 'error') this.onerror = handler;
   }
 
   // Simulate realistic ASR workflow with progressive responses

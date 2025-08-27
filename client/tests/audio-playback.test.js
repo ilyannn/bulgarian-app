@@ -4,6 +4,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Global mocks needed before main.js import
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+};
+
 describe('Audio Playback Controls', () => {
   let voiceCoach;
   let mockElements;
@@ -28,6 +34,7 @@ describe('Audio Playback Controls', () => {
       },
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
+      playLastBtn: { addEventListener: vi.fn() },
       transcriptArea: { innerHTML: '', appendChild: vi.fn(), querySelector: vi.fn() },
       connectionStatus: {},
       audioStatus: {},
@@ -55,6 +62,7 @@ describe('Audio Playback Controls', () => {
         style: {},
       })),
       head: { appendChild: vi.fn() },
+      body: { appendChild: vi.fn() },
     };
 
     global.navigator = {
@@ -88,15 +96,27 @@ describe('Audio Playback Controls', () => {
         close: vi.fn(),
         readyState: 1,
       })),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      location: {
+        protocol: 'http:',
+        host: 'localhost:3000',
+        hostname: 'localhost',
+        port: '3000',
+      },
       URL: {
         createObjectURL: vi.fn(() => 'blob:mock-url'),
         revokeObjectURL: vi.fn(),
       },
-      fetch: vi.fn(),
       localStorage: {
         getItem: vi.fn(),
         setItem: vi.fn(),
       },
+      fetch: vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve([]),
+        blob: () => Promise.resolve(new Blob(['audio-data'], { type: 'audio/wav' })),
+      }),
     };
 
     global.Audio = vi.fn(() => ({
@@ -108,14 +128,8 @@ describe('Audio Playback Controls', () => {
     }));
 
     // Import and create voiceCoach instance after mocking
-    const mainModule = await import('../main.js');
-    // Handle different export patterns
-    const BulgarianVoiceCoach = mainModule.default || mainModule.BulgarianVoiceCoach || mainModule;
-    voiceCoach = new (
-      typeof BulgarianVoiceCoach === 'function'
-        ? BulgarianVoiceCoach
-        : BulgarianVoiceCoach.BulgarianVoiceCoach
-    )();
+    const { default: BulgarianVoiceCoach } = await import('../main.js');
+    voiceCoach = new BulgarianVoiceCoach();
   });
 
   afterEach(() => {
@@ -181,12 +195,12 @@ describe('Audio Playback Controls', () => {
       const result = await voiceCoach.loadAudio();
 
       expect(result).toBe(true);
-      expect(global.fetch).toHaveBeenCalledWith('/tts?text=Test%20Bulgarian%20text');
+      expect(global.window.fetch).toHaveBeenCalledWith('/tts?text=Test%20Bulgarian%20text');
       expect(voiceCoach.currentAudioUrl).toBe('blob:mock-url');
     });
 
     it('should handle audio loading errors', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
+      global.window.fetch = vi.fn().mockResolvedValue({
         ok: false,
         statusText: 'Server Error',
       });

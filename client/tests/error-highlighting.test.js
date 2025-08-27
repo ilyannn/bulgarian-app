@@ -4,6 +4,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Global mocks needed before main.js import
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+};
+
 describe('Error Highlighting', () => {
   let voiceCoach;
   let mockElements;
@@ -19,6 +25,7 @@ describe('Error Highlighting', () => {
       },
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
+      playLastBtn: { addEventListener: vi.fn() },
       playPauseBtn: { addEventListener: vi.fn(), disabled: false },
       replayBtn: { addEventListener: vi.fn(), disabled: false },
       stopBtn: { addEventListener: vi.fn(), disabled: false },
@@ -76,6 +83,14 @@ describe('Error Highlighting', () => {
         close: vi.fn(),
         readyState: 1,
       })),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      location: {
+        protocol: 'http:',
+        host: 'localhost:3000',
+        hostname: 'localhost',
+        port: '3000',
+      },
       localStorage: {
         getItem: vi.fn(),
         setItem: vi.fn(),
@@ -92,13 +107,8 @@ describe('Error Highlighting', () => {
     }));
 
     // Import and create voiceCoach instance after mocking
-    const mainModule = await import('../main.js');
-    const BulgarianVoiceCoach = mainModule.default || mainModule.BulgarianVoiceCoach || mainModule;
-    voiceCoach = new (
-      typeof BulgarianVoiceCoach === 'function'
-        ? BulgarianVoiceCoach
-        : BulgarianVoiceCoach.BulgarianVoiceCoach
-    )();
+    const { default: BulgarianVoiceCoach } = await import('../main.js');
+    voiceCoach = new BulgarianVoiceCoach();
   });
 
   afterEach(() => {

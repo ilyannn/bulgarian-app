@@ -24,6 +24,11 @@ class BulgarianVoiceCoach {
     this.clearBtn = document.getElementById('clear-btn');
     this.playLastBtn = document.getElementById('play-last-btn');
 
+    // Audio control buttons
+    this.playPauseBtn = document.getElementById('play-pause-btn');
+    this.replayBtn = document.getElementById('replay-btn');
+    this.stopBtn = document.getElementById('stop-btn');
+
     // Status indicators
     this.connectionStatus = document.getElementById('connection-status');
     this.connectionText = document.getElementById('connection-text');
@@ -74,6 +79,19 @@ class BulgarianVoiceCoach {
     // Play last response
     this.playLastBtn.addEventListener('click', () => {
       this.playLastResponse();
+    });
+
+    // Audio control buttons
+    this.playPauseBtn.addEventListener('click', () => {
+      this.togglePlayPause();
+    });
+
+    this.replayBtn.addEventListener('click', () => {
+      this.replayAudio();
+    });
+
+    this.stopBtn.addEventListener('click', () => {
+      this.stopAudio();
     });
 
     // Keyboard shortcuts
@@ -642,7 +660,7 @@ class BulgarianVoiceCoach {
       this.playLastBtn.disabled = true;
       this.playLastBtn.textContent = '🔄 Loading...';
 
-      const response = await fetch(`/tts?text=${encodeURIComponent(this.lastResponseText)}`);
+      const response = await window.fetch(`/tts?text=${encodeURIComponent(this.lastResponseText)}`);
       if (!response.ok) throw new Error('TTS request failed');
 
       const audioBlob = await response.blob();
@@ -902,7 +920,7 @@ class BulgarianVoiceCoach {
       const userId = this.getUserId();
 
       // Fetch due items for warm-up
-      const response = await fetch(
+      const response = await window.fetch(
         `/progress/due-items?user_id=${encodeURIComponent(userId)}&limit=3`
       );
       if (!response.ok) {
@@ -927,10 +945,10 @@ class BulgarianVoiceCoach {
   getUserId() {
     // Simple user ID generation for demo
     // In a real app, this would come from authentication
-    let userId = localStorage.getItem('bulgarian_coach_user_id');
+    let userId = window.localStorage.getItem('bulgarian_coach_user_id');
     if (!userId) {
-      userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('bulgarian_coach_user_id', userId);
+      userId = `user_${Math.random().toString(36).substr(2, 7)}`;
+      window.localStorage.setItem('bulgarian_coach_user_id', userId);
     }
     return userId;
   }
@@ -988,7 +1006,7 @@ class BulgarianVoiceCoach {
   async startGrammarPractice(grammarId) {
     try {
       // Fetch specific drills for this grammar item
-      const response = await fetch(`/content/drills/${encodeURIComponent(grammarId)}`);
+      const response = await window.fetch(`/content/drills/${encodeURIComponent(grammarId)}`);
       if (!response.ok) {
         this.showError('Could not load practice drills');
         return;
@@ -1077,6 +1095,146 @@ class BulgarianVoiceCoach {
     };
     return typeMap[errorType] || 'general';
   }
+
+  // Audio control methods
+  enableAudioControls(enabled) {
+    if (this.playPauseBtn) {
+      this.playPauseBtn.disabled = !enabled;
+    }
+    if (this.replayBtn) {
+      this.replayBtn.disabled = !enabled;
+    }
+    if (this.stopBtn) {
+      this.stopBtn.disabled = !enabled;
+    }
+    if (!enabled && this.playPauseBtn) {
+      this.playPauseBtn.textContent = '▶️ Play Response';
+    }
+  }
+
+  async loadAudio() {
+    if (!this.lastResponseText) {
+      return false;
+    }
+
+    try {
+      const response = await window.fetch(`/tts?text=${encodeURIComponent(this.lastResponseText)}`);
+      if (!response.ok) {
+        this.showError('Could not load audio: TTS request failed');
+        return false;
+      }
+
+      const audioBlob = await response.blob();
+      if (this.currentAudioUrl) {
+        window.URL.revokeObjectURL(this.currentAudioUrl);
+      }
+      this.currentAudioUrl = window.URL.createObjectURL(audioBlob);
+
+      if (this.audioPlayer) {
+        this.audioPlayer.src = this.currentAudioUrl;
+      }
+
+      return true;
+    } catch (error) {
+      this.showError(`Could not load audio: ${error.message}`);
+      return false;
+    }
+  }
+
+  async togglePlayPause() {
+    if (!this.isPlaying && !this.isPaused) {
+      // Start playing
+      try {
+        const loaded = await this.loadAudio();
+        if (loaded && this.audioPlayer) {
+          await this.audioPlayer.play();
+          this.onAudioPlaying();
+        }
+      } catch (error) {
+        this.showError(`Playback failed: ${error.message}`);
+      }
+    } else if (this.isPlaying && !this.isPaused) {
+      // Pause
+      if (this.audioPlayer) {
+        this.audioPlayer.pause();
+        this.onAudioPaused();
+      }
+    } else if (this.isPaused) {
+      // Resume
+      try {
+        if (this.audioPlayer) {
+          await this.audioPlayer.play();
+          this.onAudioPlaying();
+        }
+      } catch (error) {
+        this.showError(`Playback failed: ${error.message}`);
+      }
+    }
+  }
+
+  async replayAudio() {
+    try {
+      if (!this.currentAudioUrl) {
+        await this.loadAudio();
+      }
+
+      if (this.audioPlayer) {
+        this.audioPlayer.currentTime = 0;
+        await this.audioPlayer.play();
+        this.onAudioPlaying();
+      }
+    } catch (error) {
+      this.showError(`Replay failed: ${error.message}`);
+    }
+  }
+
+  stopAudio() {
+    if (this.audioPlayer) {
+      this.audioPlayer.pause();
+      this.audioPlayer.currentTime = 0;
+    }
+    this.isPlaying = false;
+    this.isPaused = false;
+    if (this.playPauseBtn) {
+      this.playPauseBtn.textContent = '▶️ Play Response';
+    }
+  }
+
+  onAudioPlaying() {
+    this.isPlaying = true;
+    this.isPaused = false;
+    if (this.playPauseBtn) {
+      this.playPauseBtn.textContent = '⏸️ Pause';
+    }
+  }
+
+  onAudioPaused() {
+    this.isPaused = true;
+    if (this.playPauseBtn) {
+      this.playPauseBtn.textContent = '▶️ Resume';
+    }
+  }
+
+  onAudioEnded() {
+    this.isPlaying = false;
+    this.isPaused = false;
+    if (this.playPauseBtn) {
+      this.playPauseBtn.textContent = '▶️ Play Response';
+    }
+    if (this.currentAudioUrl) {
+      window.URL.revokeObjectURL(this.currentAudioUrl);
+      this.currentAudioUrl = null;
+    }
+  }
+
+  onAudioError(_error) {
+    this.showError('Audio playback error occurred');
+    this.isPlaying = false;
+    this.isPaused = false;
+    if (this.playPauseBtn) {
+      this.playPauseBtn.textContent = '▶️ Play Response';
+    }
+  }
 }
 
 // Global function for correction toggling
@@ -1138,3 +1296,11 @@ window.addEventListener('blur', () => {
     console.log('Window blurred while recording - consider pausing');
   }
 });
+
+// Export for testing
+if (typeof window !== 'undefined') {
+  window.BulgarianVoiceCoach = BulgarianVoiceCoach;
+}
+
+// ES6 export for modules
+export default BulgarianVoiceCoach;

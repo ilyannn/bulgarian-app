@@ -4,6 +4,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Global mocks needed before main.js import
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+};
+
 describe('Warm-up Drills', () => {
   let voiceCoach;
   let mockElements;
@@ -19,6 +25,7 @@ describe('Warm-up Drills', () => {
       },
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
+      playLastBtn: { addEventListener: vi.fn() },
       playPauseBtn: { addEventListener: vi.fn(), disabled: false },
       replayBtn: { addEventListener: vi.fn(), disabled: false },
       stopBtn: { addEventListener: vi.fn(), disabled: false },
@@ -76,11 +83,22 @@ describe('Warm-up Drills', () => {
         close: vi.fn(),
         readyState: 1,
       })),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      location: {
+        protocol: 'http:',
+        host: 'localhost:3000',
+        hostname: 'localhost',
+        port: '3000',
+      },
       localStorage: {
         getItem: vi.fn(),
         setItem: vi.fn(),
       },
-      fetch: vi.fn(),
+      fetch: vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve([]),
+      }),
     };
 
     global.Audio = vi.fn(() => ({
@@ -92,13 +110,8 @@ describe('Warm-up Drills', () => {
     }));
 
     // Import and create voiceCoach instance after mocking
-    const mainModule = await import('../main.js');
-    const BulgarianVoiceCoach = mainModule.default || mainModule.BulgarianVoiceCoach || mainModule;
-    voiceCoach = new (
-      typeof BulgarianVoiceCoach === 'function'
-        ? BulgarianVoiceCoach
-        : BulgarianVoiceCoach.BulgarianVoiceCoach
-    )();
+    const { default: BulgarianVoiceCoach } = await import('../main.js');
+    voiceCoach = new BulgarianVoiceCoach();
   });
 
   afterEach(() => {
@@ -120,6 +133,10 @@ describe('Warm-up Drills', () => {
 
     it('should return existing user ID from localStorage', () => {
       const existingUserId = 'user_abc123def';
+
+      // Clear previous mock calls and set up fresh mock
+      global.window.localStorage.getItem.mockClear();
+      global.window.localStorage.setItem.mockClear();
       global.window.localStorage.getItem.mockReturnValue(existingUserId);
 
       const userId = voiceCoach.getUserId();

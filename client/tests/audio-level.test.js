@@ -4,6 +4,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Global mocks needed before main.js import
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+};
+
 describe('Audio Level Visualization', () => {
   let voiceCoach;
   let mockElements;
@@ -11,16 +17,12 @@ describe('Audio Level Visualization', () => {
   beforeEach(async () => {
     // Mock DOM elements
     mockElements = {
-      micLevelBar: {
-        style: { width: '0%', background: '' },
-        parentElement: {
-          appendChild: vi.fn(),
-        },
-      },
+      micLevelBar: {},
       micStatus: { textContent: '' },
       transcriptArea: { innerHTML: '', appendChild: vi.fn(), querySelector: vi.fn() },
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
+      playLastBtn: { addEventListener: vi.fn() },
       playPauseBtn: { addEventListener: vi.fn(), disabled: false },
       replayBtn: { addEventListener: vi.fn(), disabled: false },
       stopBtn: { addEventListener: vi.fn(), disabled: false },
@@ -39,19 +41,33 @@ describe('Audio Level Visualization', () => {
       ),
       addEventListener: vi.fn(),
       querySelector: vi.fn(() => null),
-      createElement: vi.fn(() => ({
-        className: '',
-        innerHTML: '',
-        appendChild: vi.fn(),
-        setAttribute: vi.fn(),
-        addEventListener: vi.fn(),
-        style: { cssText: '' },
-        textContent: '',
-        id: '',
-        parentNode: {
-          removeChild: vi.fn(),
-        },
-      })),
+      createElement: vi.fn(() => {
+        const element = {
+          className: '',
+          innerHTML: '',
+          appendChild: vi.fn(),
+          setAttribute: vi.fn(),
+          addEventListener: vi.fn(),
+          textContent: '',
+          id: '',
+          parentNode: {
+            removeChild: vi.fn(),
+          },
+        };
+        // Create a proper style object that won't cause recursion
+        Object.defineProperty(element, 'style', {
+          value: {
+            width: '',
+            background: '',
+            cssText: '',
+            setProperty: vi.fn(),
+            getPropertyValue: vi.fn(),
+          },
+          writable: true,
+          configurable: true,
+        });
+        return element;
+      }),
       head: { appendChild: vi.fn() },
     };
 
@@ -81,6 +97,14 @@ describe('Audio Level Visualization', () => {
         close: vi.fn(),
         readyState: 1,
       })),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      location: {
+        protocol: 'http:',
+        host: 'localhost:3000',
+        hostname: 'localhost',
+        port: '3000',
+      },
       localStorage: {
         getItem: vi.fn(),
         setItem: vi.fn(),
@@ -100,16 +124,42 @@ describe('Audio Level Visualization', () => {
       now: vi.fn(() => 1000),
     };
 
-    global.setTimeout = vi.fn((fn) => fn());
+    global.setTimeout = vi.fn((callback, delay) => {
+      // For tests, don't execute callbacks automatically to prevent infinite loops
+      // Tests can manually trigger callbacks if needed
+      return 1; // Return a mock timer ID
+    });
+    global.clearTimeout = vi.fn();
+    global.setInterval = vi.fn();
+    global.clearInterval = vi.fn();
+
+    // Set up proper style objects for mock elements after globals are set
+    Object.keys(mockElements).forEach((key) => {
+      if (mockElements[key] && typeof mockElements[key] === 'object') {
+        Object.defineProperty(mockElements[key], 'style', {
+          value: {
+            width: '0%',
+            background: '',
+            cssText: '',
+            setProperty: vi.fn(),
+            getPropertyValue: vi.fn(() => ''),
+          },
+          writable: true,
+          configurable: true,
+        });
+
+        // Add parentElement for micLevelBar if needed
+        if (key === 'micLevelBar') {
+          mockElements[key].parentElement = {
+            appendChild: vi.fn(),
+          };
+        }
+      }
+    });
 
     // Import and create voiceCoach instance after mocking
-    const mainModule = await import('../main.js');
-    const BulgarianVoiceCoach = mainModule.default || mainModule.BulgarianVoiceCoach || mainModule;
-    voiceCoach = new (
-      typeof BulgarianVoiceCoach === 'function'
-        ? BulgarianVoiceCoach
-        : BulgarianVoiceCoach.BulgarianVoiceCoach
-    )();
+    const { default: BulgarianVoiceCoach } = await import('../main.js');
+    voiceCoach = new BulgarianVoiceCoach();
   });
 
   afterEach(() => {
@@ -143,7 +193,10 @@ describe('Audio Level Visualization', () => {
       }
 
       expect(voiceCoach.audioLevelHistory.length).toBe(5);
-      expect(voiceCoach.audioLevelHistory).toEqual([0.2, 0.3, 0.4, 0.5, 0.6]);
+      // Use approximate equality for floating-point numbers
+      expect(voiceCoach.audioLevelHistory.map((v) => Math.round(v * 10) / 10)).toEqual([
+        0.2, 0.3, 0.4, 0.5, 0.6,
+      ]);
     });
 
     it('should calculate correct smoothed percentage', () => {
