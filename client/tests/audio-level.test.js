@@ -124,13 +124,13 @@ describe('Audio Level Visualization', () => {
       now: vi.fn(() => 1000),
     };
 
-    global.setTimeout = vi.fn((callback, delay) => {
+    global.setTimeout = vi.fn((_callback, _delay) => {
       // For tests, don't execute callbacks automatically to prevent infinite loops
       // Tests can manually trigger callbacks if needed
       return 1; // Return a mock timer ID
     });
     global.clearTimeout = vi.fn();
-    global.setInterval = vi.fn();
+    global.setInterval = vi.fn((_callback, _delay) => 1);
     global.clearInterval = vi.fn();
 
     // Set up proper style objects for mock elements after globals are set

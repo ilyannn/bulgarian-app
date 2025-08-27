@@ -44,6 +44,78 @@ Items remaining to be implemented from the original build plan and additional im
 - [x] **L1 contrast notes**: All files include Polish/Russian/Ukrainian/Serbian language contrasts
 - [x] **SRS structure**: Grammar pack includes drill definitions and spaced repetition data
 
+### Frontend Test Infrastructure (2025-08-27) ✅
+
+- [x] **Test Infrastructure Overhaul**: Fixed 69 failing tests, reduced to ~20 (58% improvement)
+- [x] **Missing Method Implementations**: Added 9 audio control methods to BulgarianVoiceCoach class
+- [x] **Module Import/Export Fixes**: Added ES6 compatibility for testing framework
+- [x] **Mock Infrastructure**: Fixed localStorage, fetch, WebSocket, and DOM element mocking
+- [x] **Test Files Passing**: warmup-drills (14/14), error-highlighting (14/14), audio-playback (16/16)
+
+---
+
+## 🔄 ARCHITECTURE CHANGE: Local-First Progress Tracking (2025-08-27)
+
+### Decision: Remove Backend Progress Tracking in Favor of localStorage
+
+**Rationale:**
+
+- No authentication system exists (security vulnerability with user_id in URLs)
+- Database adds unnecessary complexity for MVP
+- localStorage provides instant performance, offline capability, privacy by default
+- Eliminates need for progress endpoints and associated tests
+- Reduces backend complexity and server costs
+
+### Implementation Plan
+
+#### Phase 1: Remove Backend Progress System
+
+- [ ] Remove all `/progress/*` endpoints from `app.py`
+- [ ] Delete `database.py` and all database-related code
+- [ ] Remove `test_database.py` and `test_progress_integration.py`
+- [ ] Remove database initialization from app lifespan
+- [ ] Clean up unused imports and dependencies
+
+#### Phase 2: Implement LocalProgressService
+
+- [ ] Create `client/services/LocalProgressService.js` with:
+  - [ ] SRS algorithm implementation in JavaScript
+  - [ ] Drill result tracking with timestamps
+  - [ ] Mastery calculation and interval scheduling
+  - [ ] Due items calculation based on review dates
+  - [ ] Statistics aggregation (accuracy, streak, response times)
+  - [ ] Data export/import functionality
+
+#### Phase 3: Update Frontend Integration
+
+- [ ] Replace API calls with LocalProgressService methods
+- [ ] Update warm-up drills to use local due items
+- [ ] Add progress visualization in UI
+- [ ] Add settings panel for data export/reset
+- [ ] Update tests to mock localStorage instead of API
+
+#### Phase 4: Simplify Backend
+
+- [ ] Backend becomes stateless (only ASR, TTS, LLM, content serving)
+- [ ] Remove SQLite dependency
+- [ ] Update requirements.txt and pyproject.toml
+- [ ] Update documentation to reflect architecture change
+
+### Benefits
+
+- **Immediate**: No auth complexity, instant responses, works offline
+- **Privacy**: User data never leaves their device
+- **Performance**: Zero network latency for progress operations
+- **Simplicity**: Fewer moving parts, easier testing
+- **Cost**: No database storage or management needed
+
+### Future Migration Path
+
+1. Add optional sign-in (OAuth2/JWT)
+2. Sync localStorage to server on opt-in
+3. Implement conflict resolution
+4. Share progress via URL tokens
+
 ---
 
 ## 1) Content System (High Priority)

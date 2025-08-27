@@ -13,7 +13,36 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 
 ## Architecture
 
-### Backend (Python FastAPI)
+### 🔄 IMPORTANT: Local-First Progress Tracking (2025-08-27)
+
+**The app uses localStorage for all progress tracking - NO backend database or authentication.**
+
+This architectural decision was made because:
+
+- No auth system exists (security vulnerability with user_id in URLs)
+- Reduces complexity significantly for MVP
+- Provides instant performance and offline capability
+- Privacy by default - user data never leaves device
+- Eliminates need for database and associated tests
+
+Progress data structure in localStorage:
+
+```javascript
+{
+  userId: "user_abc123",  // Generated locally, never sent to server
+  drillResults: {
+    "bg.no_infinitive": {
+      attempts: [...],
+      currentInterval: 3,     // SRS interval in days
+      nextReview: "2025-08-30",
+      mastery: 75            // Percentage
+    }
+  },
+  statistics: { ... }
+}
+```
+
+### Backend (Python FastAPI) - STATELESS
 
 - `server/app.py` - Main FastAPI application with WebSocket support
 - `server/asr.py` - faster-whisper ASR with WebRTC VAD
@@ -21,12 +50,14 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 - `server/llm.py` - ChatProvider interface with Claude/OpenAI support
 - `server/bg_rules.py` - Bulgarian grammar rule detection
 - `server/content/` - Grammar packs and scenario data (JSON)
+- **NO DATABASE** - All progress tracking happens client-side
 
 ### Frontend (Vite + Vanilla JS)
 
 - `client/index.html` - Main UI with mic controls and transcript display
 - `client/main.js` - WebSocket client and audio handling
 - `client/audio-worklet.js` - Real-time audio capture (16kHz PCM)
+- `client/services/LocalProgressService.js` - Progress tracking with SRS (localStorage)
 
 ### Key Features
 
@@ -230,3 +261,52 @@ The project follows "secure by default, fast local feedback, automation first" p
 - **Error pattern**: "Behavior not supported, please either only include (VALIDATE=true) or exclude (VALIDATE=false)
   linters, but not both"
 - **Best practice**: Use positive validation approach for clarity and maintainability
+
+## Local-First Architecture Implications
+
+### What This Means for Development
+
+**DO**:
+
+- Store all user progress in localStorage
+- Implement SRS algorithm in JavaScript
+- Keep backend stateless (no user sessions)
+- Test with localStorage mocks
+- Export/import user data as JSON
+
+**DON'T**:
+
+- Send user_id to backend (security risk)
+- Store progress on server
+- Implement authentication (not needed for MVP)
+- Use database for user data
+- Worry about data sync (future feature)
+
+### Testing Strategy
+
+**Frontend Tests**:
+
+```javascript
+// Mock localStorage for tests
+global.localStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+};
+```
+
+**Backend Tests**:
+
+- No database tests needed
+- No progress endpoint tests needed
+- Focus on ASR, TTS, LLM, content serving
+
+### Future Migration Path
+
+If/when authentication is needed:
+
+1. Add OAuth2/JWT authentication
+2. Create user accounts table (not progress)
+3. Sync localStorage → server on login
+4. Handle conflicts (last-write-wins)
+5. Share progress via URL tokens

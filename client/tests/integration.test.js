@@ -84,7 +84,7 @@ class IntegrationWebSocketMock {
     }, 10);
   }
 
-  send(data) {
+  send(_data) {
     // Mock send behavior
   }
 
