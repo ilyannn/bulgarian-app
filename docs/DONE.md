@@ -1038,7 +1038,7 @@ tracking implementation, ensuring 100% test pass rate with proper async patterns
 ### Frontend Test Infrastructure Fixes
 
 - [x] **Window location mocking resolution**: Fixed `TypeError: Cannot redefine property: location` in vitest setup
-  - Removed problematic global window.location mocking from setup.js 
+  - Removed problematic global window.location mocking from setup.js
   - Implemented per-test location mocking where needed for WebSocket URL construction
   - Adjusted test expectations to match actual browser behavior in test environment
 
@@ -1063,7 +1063,7 @@ tracking implementation, ensuring 100% test pass rate with proper async patterns
 
 - [x] **252 passing frontend tests**: All JavaScript/TypeScript tests now pass reliably across 8 test files
   - Interactive drills: 45 tests passing
-  - Integration tests: 17 tests passing  
+  - Integration tests: 17 tests passing
   - BulgarianVoiceCoach: 27 tests passing
   - Dark mode system: 39 tests passing
   - Enhanced corrections: 25 tests passing

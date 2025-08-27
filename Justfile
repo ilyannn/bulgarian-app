@@ -572,14 +572,21 @@ screenshots:
     echo "   • Playwright must be installed: cd client && bun install"
     echo ""
 
-    # Check if Node.js is available
-    if ! command -v node >/dev/null 2>&1; then
-        echo "❌ Node.js not found! Please install Node.js to run screenshot script."
+    # Check if Bun is available
+    if ! command -v bun >/dev/null 2>&1; then
+        echo "❌ Bun not found! Please install Bun to run screenshot script."
         exit 1
     fi
 
-    # Run the official screenshot capture script
-    node scripts/capture-screenshots.js
+    # Run the official screenshot capture script with bun
+    # Try the new screenshot script first, fallback to original if it fails
+    if [ -f scripts/capture-new-screenshots.js ]; then
+        echo "📸 Running new screenshot capture script..."
+        cd client && bun ../scripts/capture-new-screenshots.js
+    else
+        echo "📸 Running original screenshot capture script..."
+        cd client && bun ../scripts/capture-screenshots.js
+    fi
 
 # Run all formatting: Python + Web + Markdown + YAML + JSON + TOML + Docs + Justfile
 [group('quality')]
