@@ -26,9 +26,7 @@ This document now contains only the core reference materials and data structures
     "SR": "Serbian uses da + present: hoću da naručim"
   },
   "examples": [{ "wrong": "Искам поръчвам кафе.", "right": "Искам да поръчам кафе." }],
-  "drills": [
-    { "type": "transform", "prompt_bg": "Искам ___ (поръчвам) кафе.", "answer_bg": "да поръчам" }
-  ],
+  "drills": [{ "type": "transform", "prompt_bg": "Искам ___ (поръчвам) кафе.", "answer_bg": "да поръчам" }],
   "srs": { "interval_days": [1, 3, 7, 21] },
   "triggers": ["infinitive_like_pattern", "modal_verb_bare_infinitive"]
 }
@@ -84,8 +82,8 @@ This document now contains only the core reference materials and data structures
 ```css
 /* Bulgarian font face (self-hosted) */
 @font-face {
-  font-family: 'Ysabeau';
-  src: url('/assets/fonts/Ysabeau[wght].woff2') format('woff2');
+  font-family: "Ysabeau";
+  src: url("/assets/fonts/Ysabeau[wght].woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -95,7 +93,7 @@ This document now contains only the core reference materials and data structures
 /* Bulgarian language spans with proper glyph forms */
 :lang(bg) {
   font-family:
-    'Ysabeau',
+    "Ysabeau",
     system-ui,
     -apple-system,
     Segoe UI,
@@ -103,13 +101,13 @@ This document now contains only the core reference materials and data structures
     Helvetica,
     Arial,
     sans-serif;
-  font-feature-settings: 'locl' 1; /* enable local language forms */
+  font-feature-settings: "locl" 1; /* enable local language forms */
 }
 
 /* Explicit class for Bulgarian content */
 .bg-text {
   font-family:
-    'Ysabeau',
+    "Ysabeau",
     system-ui,
     -apple-system,
     Segoe UI,
@@ -117,7 +115,7 @@ This document now contains only the core reference materials and data structures
     Helvetica,
     Arial,
     sans-serif;
-  font-feature-settings: 'locl' 1;
+  font-feature-settings: "locl" 1;
 }
 ```
 

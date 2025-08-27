@@ -1,0 +1,3 @@
+# Ignore DONE.md for line length check since it contains long achievement descriptions
+# that are better kept on single lines for readability
+docs/DONE.md

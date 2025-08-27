@@ -91,7 +91,8 @@ just dev         # Start development servers
 
 ### Git Hooks
 
-Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `git config core.hooksPath .githooks`. They enforce:
+Pre-commit and pre-push hooks are versioned in `.githooks/` and installed via `git config core.hooksPath .githooks`.
+They enforce:
 
 - Code formatting and linting
 - Type checking
@@ -181,9 +182,12 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 - Fixed documentation inconsistencies
 - Updated recipe naming for consistency (kebab-case)
 - Corrected date references to 2025
-- **Fixed CI/CD startup failures**: Resolved GitHub Actions organizational restrictions by replacing third-party actions with direct tool installation
-- **Implemented comprehensive client-side testing infrastructure**: Added 68 passing tests with Vitest, Playwright, and comprehensive coverage
-- **Resolved local/CI linting discrepancy**: Fixed vitest.config.js formatting to match CI Biome configuration (2-space indentation), ensuring local environment exactly matches CI requirements
+- **Fixed CI/CD startup failures**: Resolved GitHub Actions organizational restrictions by replacing third-party actions
+  with direct tool installation
+- **Implemented comprehensive client-side testing infrastructure**: Added 68 passing tests with Vitest, Playwright, and
+  comprehensive coverage
+- **Resolved local/CI linting discrepancy**: Fixed vitest.config.js formatting to match CI Biome configuration (2-space
+  indentation), ensuring local environment exactly matches CI requirements
 
 ## Development Philosophy
 
@@ -199,12 +203,16 @@ The project follows "secure by default, fast local feedback, automation first" p
 
 ### CI/CD in Enterprise Environments
 
-- **GitHub Actions restrictions**: Organizations may block third-party actions not from verified publishers or same organization
+- **GitHub Actions restrictions**: Organizations may block third-party actions not from verified publishers or same
+  organization
 - **startup_failure diagnosis**: Indicates workflow syntax/permission issues, not runtime errors
-- **Direct installation approach**: Official tool installers (curl + official scripts) often more reliable than GitHub Actions
+- **Direct installation approach**: Official tool installers (curl + official scripts) often more reliable than GitHub
+  Actions
 - **Path leak prevention**: Security scanners apply to CI workflow files, requiring relative paths
-- **Alternative debugging**: When GitHub Actions fail with organizational restrictions, investigate direct installation methods
-- **Clean environment testing**: CI failures often stem from missing dependencies that exist locally - always install dependencies explicitly in workflows
+- **Alternative debugging**: When GitHub Actions fail with organizational restrictions, investigate direct installation
+  methods
+- **Clean environment testing**: CI failures often stem from missing dependencies that exist locally - always install
+  dependencies explicitly in workflows
 
 ### Security-First Development
 
@@ -216,7 +224,9 @@ The project follows "secure by default, fast local feedback, automation first" p
 ### Super-Linter v7 Configuration
 
 - **Breaking change**: Cannot mix `VALIDATE_*: true` and `VALIDATE_*: false` settings
-- **Configuration approach**: Either specify only true values (enable specific linters) OR only false values (disable specific linters)
+- **Configuration approach**: Either specify only true values (enable specific linters) OR only false values (disable
+  specific linters)
 - **Migration strategy**: Remove all false values and keep only positive validation settings
-- **Error pattern**: "Behavior not supported, please either only include (VALIDATE=true) or exclude (VALIDATE=false) linters, but not both"
+- **Error pattern**: "Behavior not supported, please either only include (VALIDATE=true) or exclude (VALIDATE=false)
+  linters, but not both"
 - **Best practice**: Use positive validation approach for clarity and maintainability

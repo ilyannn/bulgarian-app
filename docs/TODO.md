@@ -133,8 +133,10 @@ Items remaining to be implemented from the original build plan and additional im
 
 ### Interactive Elements ✅ **PARTIALLY COMPLETED (2025-08-26)**
 
-- [x] ~~Add grammar chips with tap-to-expand functionality~~ ✅ **COMPLETED** - Interactive component with severity color coding
-- [x] ~~Implement inline drill interface (10-20 seconds each)~~ ✅ **COMPLETED** - 20-second timed drills with hints and progress tracking
+- [x] ~~Add grammar chips with tap-to-expand functionality~~ ✅ **COMPLETED** - Interactive component with severity
+      color coding
+- [x] ~~Implement inline drill interface (10-20 seconds each)~~ ✅ **COMPLETED** - 20-second timed drills with hints and
+      progress tracking
 - [ ] Add mini-lesson display (2-3 minutes) for repeated errors
 - [ ] Create level meter for audio input
 

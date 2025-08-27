@@ -1,6 +1,7 @@
 # Bulgarian Voice Coach
 
-A voice-enabled web application for teaching Bulgarian to Slavic speakers, featuring real-time speech recognition, grammar correction, and text-to-speech feedback.
+A voice-enabled web application for teaching Bulgarian to Slavic speakers, featuring real-time speech recognition,
+grammar correction, and text-to-speech feedback.
 
 ## Features
 
@@ -16,7 +17,8 @@ A voice-enabled web application for teaching Bulgarian to Slavic speakers, featu
 
 ### Grammar Chips UI
 
-Interactive grammar correction visualization that appears after speech recognition. Each chip represents a detected grammar error with severity-based color coding.
+Interactive grammar correction visualization that appears after speech recognition. Each chip represents a detected
+grammar error with severity-based color coding.
 
 **Features:**
 
@@ -27,8 +29,8 @@ Interactive grammar correction visualization that appears after speech recogniti
 - 📱 **Mobile responsive** - Touch-friendly design for all devices
 - 🎪 **Action buttons** - Direct access to practice drills and learning resources
 
-![Grammar Chips UI Section](screenshots/grammar-chips-collapsed.png)
-_Grammar Chips UI component demonstration showing Bulgarian text processing_
+![Grammar Chips UI Section](screenshots/grammar-chips-collapsed.png) _Grammar Chips UI component demonstration showing
+Bulgarian text processing_
 
 **Example Usage:**
 
@@ -36,11 +38,11 @@ _Grammar Chips UI component demonstration showing Bulgarian text processing_
 // Create grammar chips from corrections
 const corrections = [
   {
-    type: 'infinitive_usage',
-    before: 'искам поръчвам',
-    after: 'искам да поръчам',
-    note: 'Use да + present tense',
-    error_tag: 'bg.no_infinitive.da_present',
+    type: "infinitive_usage",
+    before: "искам поръчвам",
+    after: "искам да поръчам",
+    note: "Use да + present tense",
+    error_tag: "bg.no_infinitive.da_present",
   },
 ];
 
@@ -60,16 +62,16 @@ Quick 20-second practice drills that help users master grammar concepts through 
 - 🔄 **Seamless integration** - Triggered directly from grammar chips
 - 🎨 **Visual feedback** - Color-coded responses for correct/incorrect answers
 
-![Inline Drill Interface Section](screenshots/inline-drill-interface.png)
-_Inline Drill Interface component for quick grammar practice sessions_
+![Inline Drill Interface Section](screenshots/inline-drill-interface.png) _Inline Drill Interface component for quick
+grammar practice sessions_
 
 **Example Usage:**
 
 ```javascript
 // Create practice drill
 const drill = {
-  prompt_bg: 'Complete: Искам ___ поръчам кафе',
-  answer_bg: 'да',
+  prompt_bg: "Complete: Искам ___ поръчам кафе",
+  answer_bg: "да",
   note: 'Bulgarian uses "да" + present tense',
 };
 
@@ -78,13 +80,14 @@ window.inlineDrillInterface.createInlineDrill(drill, container);
 
 ### Live Application Interface
 
-The complete voice coaching workflow integrating speech recognition, grammar detection, and interactive learning components.
+The complete voice coaching workflow integrating speech recognition, grammar detection, and interactive learning
+components.
 
-![Main Interface](screenshots/main-interface.png)
-_Main voice coaching interface with microphone controls and transcript display_
+![Main Interface](screenshots/main-interface.png) _Main voice coaching interface with microphone controls and transcript
+display_
 
-![Voice Coaching Workflow](screenshots/voice-coaching-workflow.png)
-_Complete workflow from speech input to grammar correction and practice_
+![Voice Coaching Workflow](screenshots/voice-coaching-workflow.png) _Complete workflow from speech input to grammar
+correction and practice_
 
 ### Component Architecture
 
@@ -92,12 +95,12 @@ The UI components use a modern, event-driven architecture:
 
 ```javascript
 // Event-driven communication between components
-window.addEventListener('grammar-practice-requested', e => {
+window.addEventListener("grammar-practice-requested", e => {
   const correction = e.detail.correction;
   // Launch practice drill for specific grammar error
 });
 
-window.addEventListener('drill-completed', e => {
+window.addEventListener("drill-completed", e => {
   const result = e.detail;
   // Update SRS system with practice results
 });
@@ -116,7 +119,8 @@ window.addEventListener('drill-completed', e => {
 Both UI components are thoroughly tested with comprehensive test suites:
 
 - **Grammar Chips UI**: 34 tests covering initialization, chip creation, interactions, XSS protection, and edge cases
-- **Inline Drill Interface**: 41 tests covering drill creation, answer validation, timer functionality, and progress tracking
+- **Inline Drill Interface**: 41 tests covering drill creation, answer validation, timer functionality, and progress
+  tracking
 - **Total Coverage**: 75 passing tests ensuring reliability and robustness
 
 ```bash
