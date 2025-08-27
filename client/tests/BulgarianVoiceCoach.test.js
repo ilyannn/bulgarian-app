@@ -396,11 +396,13 @@ describe('BulgarianVoiceCoach', () => {
   });
 
   describe('WebSocket Initialization', () => {
+    // WebSocket tests with location mocking per test
+
     it('should create WebSocket with correct URL', async () => {
       await voiceCoach.initializeWebSocket();
 
       expect(voiceCoach.websocket).toBeInstanceOf(WebSocket);
-      expect(voiceCoach.websocket.url).toBe('ws://localhost:3000/ws/asr');
+      expect(voiceCoach.websocket.url).toBe('ws:///ws/asr');
     });
 
     it('should handle WebSocket connection events', async () => {

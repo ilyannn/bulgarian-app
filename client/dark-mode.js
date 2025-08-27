@@ -501,7 +501,7 @@ export class DarkModeSystem {
         return stored === 'true';
       }
     } catch (_error) {
-      console.warn('Failed to read theme preference from localStorage:', error);
+      console.warn('Failed to read theme preference from localStorage:', _error);
     }
 
     // Fallback to system preference
@@ -539,7 +539,7 @@ export class DarkModeSystem {
     try {
       localStorage.setItem('dark-mode-preference', isDark.toString());
     } catch (_error) {
-      console.warn('Failed to store theme preference in localStorage:', error);
+      console.warn('Failed to store theme preference in localStorage:', _error);
     }
   }
 
@@ -611,7 +611,7 @@ export class DarkModeSystem {
     try {
       localStorage.removeItem('dark-mode-preference');
     } catch (_error) {
-      console.warn('Failed to remove theme preference from localStorage:', error);
+      console.warn('Failed to remove theme preference from localStorage:', _error);
     }
 
     this.showNotification('Reset to follow system theme', 'info');

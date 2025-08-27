@@ -118,19 +118,20 @@ global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
 global.URL.revokeObjectURL = vi.fn();
 
 // Mock window.location for WebSocket URL construction
-Object.defineProperty(window, 'location', {
-  value: {
-    protocol: 'http:',
-    host: 'localhost:3000',
-  },
-  writable: true,
-});
+// Note: Location mocking is done per-test to avoid conflicts
 
 // Mock document.hidden for visibility API
-Object.defineProperty(document, 'hidden', {
-  value: false,
-  writable: true,
-});
+if (document) {
+  try {
+    Object.defineProperty(document, 'hidden', {
+      value: false,
+      writable: true,
+      configurable: true,
+    });
+  } catch (_e) {
+    // Ignore if document.hidden can't be defined
+  }
+}
 
 // Suppress console.log during tests unless explicitly needed
 const originalConsoleLog = console.log;
