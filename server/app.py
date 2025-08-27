@@ -6,6 +6,7 @@ import uvicorn
 from asr import ASRProcessor
 from bg_rules import detect_grammar_errors
 from config import ConfigError, get_config
+from database import user_progress_db
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -15,7 +16,15 @@ from pydantic import BaseModel
 from telemetry import get_telemetry, init_telemetry
 from tts import TTSProcessor
 
-from content import get_grammar_item, get_next_lesson, load_grammar_pack, load_scenarios
+from content import (
+    get_grammar_item,
+    get_next_lesson,
+    get_user_progress,
+    get_user_statistics,
+    load_grammar_pack,
+    load_scenarios,
+    update_drill_progress,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +64,11 @@ async def lifespan(app: FastAPI):
         # Initialize chat provider (dummy for now)
         logger.info(f"Initializing chat provider: {config.chat_provider}")
         chat_provider = DummyProvider()
+
+        # Initialize database
+        logger.info("Initializing user progress database...")
+        await user_progress_db.initialize()
+        logger.info("✅ Database initialized successfully")
 
         # Load content
         logger.info("Loading content system...")
@@ -284,7 +298,7 @@ async def get_grammar(grammar_id: str):
 @app.get("/content/lesson/next")
 async def get_next_lesson_endpoint(user_id: str = "default"):
     """Get next lesson based on SRS"""
-    return get_next_lesson(user_id)
+    return await get_next_lesson(user_id)
 
 
 @app.get("/content/drills/{grammar_id}")
@@ -331,6 +345,70 @@ async def analyze_text(request: dict):
         "corrections": corrections,
         "drill_suggestions": drill_suggestions,
     }
+
+
+# Progress tracking endpoints
+
+
+class DrillResultRequest(BaseModel):
+    user_id: str
+    grammar_id: str
+    drill_type: str
+    user_answer: str
+    correct_answer: str
+    is_correct: bool
+    response_time_ms: int | None = None
+    hint_used: bool = False
+
+
+@app.post("/progress/drill")
+async def submit_drill_result(request: DrillResultRequest):
+    """Submit drill result and update user progress"""
+    await update_drill_progress(
+        user_id=request.user_id,
+        grammar_id=request.grammar_id,
+        drill_type=request.drill_type,
+        user_answer=request.user_answer,
+        correct_answer=request.correct_answer,
+        is_correct=request.is_correct,
+        response_time_ms=request.response_time_ms,
+        hint_used=request.hint_used,
+    )
+    return {"status": "success", "message": "Progress updated"}
+
+
+@app.get("/progress/{user_id}")
+async def get_user_progress_endpoint(user_id: str, grammar_id: str | None = None):
+    """Get user progress for all or specific grammar items"""
+    return await get_user_progress(user_id, grammar_id)
+
+
+@app.get("/progress/{user_id}/statistics")
+async def get_user_statistics_endpoint(user_id: str):
+    """Get comprehensive user learning statistics"""
+    return await get_user_statistics(user_id)
+
+
+@app.get("/progress/{user_id}/due")
+async def get_due_items_endpoint(user_id: str, limit: int = 10):
+    """Get grammar items that are due for practice"""
+    due_items = await user_progress_db.get_due_items(user_id, limit)
+
+    # Enhance with grammar item details
+    detailed_items = []
+    for grammar_id in due_items:
+        item = get_grammar_item(grammar_id)
+        if item:
+            detailed_items.append(
+                {
+                    "grammar_id": grammar_id,
+                    "title_bg": item.get("title_bg", ""),
+                    "level": item.get("level", []),
+                    "micro_explanation_bg": item.get("micro_explanation_bg", ""),
+                }
+            )
+
+    return {"due_items": detailed_items}
 
 
 # Serve static files in production

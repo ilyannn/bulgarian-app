@@ -3,9 +3,14 @@ Content loading and management system for Bulgarian grammar and scenarios
 """
 
 import json
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from database import user_progress_db
+
+logger = logging.getLogger(__name__)
 
 # Content directory path
 CONTENT_DIR = Path(__file__).parent
@@ -109,36 +114,66 @@ def get_scenario(scenario_id: str) -> dict[str, Any] | None:
     return scenarios.get(scenario_id)
 
 
-def get_next_lesson(user_id: str) -> list[dict[str, Any]]:
+async def get_next_lesson(user_id: str, limit: int = 3) -> list[dict[str, Any]]:
     """
     Get next lesson drills based on SRS (Spaced Repetition System)
 
     Args:
         user_id: User identifier
+        limit: Maximum number of drills to return
 
     Returns:
         List of drill items due for practice
     """
-    # For MVP, return sample drills
-    # In production, this would query user progress from database
-
     grammar_pack = load_grammar_pack()
     due_drills = []
 
-    # Sample implementation - in practice, this would check user progress
-    sample_due_items = ["bg.no_infinitive.da_present", "bg.definite.article.postposed"]
+    try:
+        # Get due grammar items from database
+        due_grammar_ids = await user_progress_db.get_due_items(user_id, limit * 2)
 
-    for grammar_id in sample_due_items:
-        if grammar_id in grammar_pack:
-            item = grammar_pack[grammar_id]
-            if "drills" in item and item["drills"]:
-                # Add first drill from each due grammar item
-                drill = item["drills"][0].copy()
-                drill["grammar_id"] = grammar_id
-                drill["due_date"] = datetime.now().isoformat()
-                due_drills.append(drill)
+        # If no items in database, start with foundational grammar items
+        if not due_grammar_ids:
+            due_grammar_ids = [
+                "bg.no_infinitive.da_present",
+                "bg.definite.article.postposed",
+                "bg.future.shte",
+            ][:limit]
+            logger.info(f"New user {user_id}, providing foundational grammar items")
 
-    return due_drills[:3]  # Return max 3 drills at a time
+        for grammar_id in due_grammar_ids[:limit]:
+            if grammar_id in grammar_pack:
+                item = grammar_pack[grammar_id]
+                if "drills" in item and item["drills"]:
+                    # Add first drill from each due grammar item
+                    drill = item["drills"][0].copy()
+                    drill["grammar_id"] = grammar_id
+                    drill["due_date"] = datetime.now().isoformat()
+                    drill["title_bg"] = item.get("title_bg", "")
+                    drill["micro_explanation_bg"] = item.get("micro_explanation_bg", "")
+                    due_drills.append(drill)
+
+        logger.debug(f"Generated {len(due_drills)} drills for user {user_id}")
+        return due_drills
+
+    except Exception as e:
+        logger.error(f"Error getting next lesson for user {user_id}: {e}")
+        # Fallback to sample drills
+        sample_due_items = [
+            "bg.no_infinitive.da_present",
+            "bg.definite.article.postposed",
+        ]
+
+        for grammar_id in sample_due_items[:limit]:
+            if grammar_id in grammar_pack:
+                item = grammar_pack[grammar_id]
+                if "drills" in item and item["drills"]:
+                    drill = item["drills"][0].copy()
+                    drill["grammar_id"] = grammar_id
+                    drill["due_date"] = datetime.now().isoformat()
+                    due_drills.append(drill)
+
+        return due_drills
 
 
 def _create_sample_grammar_pack() -> dict[str, Any]:
@@ -284,67 +319,88 @@ def _create_sample_scenarios() -> dict[str, Any]:
     }
 
 
-# Progress tracking (simplified for MVP)
-class ProgressTracker:
-    """Simple progress tracking for SRS"""
+async def update_drill_progress(
+    user_id: str,
+    grammar_id: str,
+    drill_type: str,
+    user_answer: str,
+    correct_answer: str,
+    is_correct: bool,
+    response_time_ms: int | None = None,
+    hint_used: bool = False,
+) -> None:
+    """
+    Update user progress based on drill result
 
-    def __init__(self):
-        self.user_progress = {}  # In production, this would be a database
-
-    def update_drill_result(self, user_id: str, grammar_id: str, correct: bool):
-        """Update user progress for a drill"""
-        if user_id not in self.user_progress:
-            self.user_progress[user_id] = {}
-
-        if grammar_id not in self.user_progress[user_id]:
-            self.user_progress[user_id][grammar_id] = {
-                "correct_count": 0,
-                "total_count": 0,
-                "last_seen": None,
-                "interval_index": 0,
-            }
-
-        progress = self.user_progress[user_id][grammar_id]
-        progress["total_count"] += 1
-        progress["last_seen"] = datetime.now()
-
-        if correct:
-            progress["correct_count"] += 1
-            progress["interval_index"] = min(progress["interval_index"] + 1, 3)
-        else:
-            progress["interval_index"] = 0  # Reset on incorrect answer
-
-    def get_due_items(self, user_id: str) -> list[str]:
-        """Get grammar IDs that are due for review"""
-        if user_id not in self.user_progress:
-            return ["bg.no_infinitive.da_present"]  # Default for new users
-
-        due_items = []
-        grammar_pack = load_grammar_pack()
-
-        for grammar_id, progress in self.user_progress[user_id].items():
-            if grammar_id in grammar_pack:
-                item = grammar_pack[grammar_id]
-                intervals = item.get("srs", {}).get("interval_days", [1, 3, 7, 21])
-
-                if progress["last_seen"]:
-                    interval = intervals[
-                        min(progress["interval_index"], len(intervals) - 1)
-                    ]
-                    next_due = progress["last_seen"] + timedelta(days=interval)
-
-                    if datetime.now() >= next_due:
-                        due_items.append(grammar_id)
-                else:
-                    due_items.append(grammar_id)  # Never seen before
-
-        return due_items
+    Args:
+        user_id: User identifier
+        grammar_id: Grammar item ID
+        drill_type: Type of drill (transform, fill, reorder)
+        user_answer: User's answer
+        correct_answer: Expected correct answer
+        is_correct: Whether the answer was correct
+        response_time_ms: Time taken to answer in milliseconds
+        hint_used: Whether user used a hint
+    """
+    try:
+        await user_progress_db.update_drill_result(
+            user_id=user_id,
+            grammar_id=grammar_id,
+            drill_type=drill_type,
+            user_answer=user_answer,
+            correct_answer=correct_answer,
+            is_correct=is_correct,
+            response_time_ms=response_time_ms,
+            hint_used=hint_used,
+        )
+        logger.debug(f"Updated drill progress for user {user_id}, grammar {grammar_id}")
+    except Exception as e:
+        logger.error(f"Failed to update drill progress: {e}")
 
 
-# Global progress tracker instance
-progress_tracker = ProgressTracker()
+async def get_user_progress(
+    user_id: str, grammar_id: str | None = None
+) -> list[dict[str, Any]]:
+    """
+    Get user progress data
+
+    Args:
+        user_id: User identifier
+        grammar_id: Optional specific grammar item ID
+
+    Returns:
+        List of progress records
+    """
+    try:
+        return await user_progress_db.get_user_progress(user_id, grammar_id)
+    except Exception as e:
+        logger.error(f"Failed to get user progress: {e}")
+        return []
 
 
-def update_progress(user_id: str, grammar_id: str, correct: bool):
-    """Update user progress (convenience function)"""
-    progress_tracker.update_drill_result(user_id, grammar_id, correct)
+async def get_user_statistics(user_id: str) -> dict[str, Any]:
+    """
+    Get comprehensive user statistics
+
+    Args:
+        user_id: User identifier
+
+    Returns:
+        Dictionary with user statistics
+    """
+    try:
+        return await user_progress_db.get_user_statistics(user_id)
+    except Exception as e:
+        logger.error(f"Failed to get user statistics: {e}")
+        return {
+            "total_items_practiced": 0,
+            "total_correct_answers": 0,
+            "total_attempts": 0,
+            "overall_accuracy": 0.0,
+            "average_mastery_level": 0.0,
+            "mastered_items": 0,
+            "recent_sessions_count": 0,
+            "recent_accuracy": 0.0,
+            "avg_response_time_ms": 0,
+            "items_needing_attention": 0,
+        }
