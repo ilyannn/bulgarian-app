@@ -34,6 +34,17 @@ class BulgarianVoiceCoach {
     // Audio playback
     this.audioPlayer = new Audio();
     this.lastResponseText = '';
+    this.currentAudioUrl = null;
+    this.isPlaying = false;
+    this.isPaused = false;
+
+    // Error highlighting
+    this.lastDetectedErrors = [];
+
+    // Audio level visualization
+    this.audioLevelHistory = [];
+    this.audioLevelPeaks = [];
+    this.lastLevelUpdate = 0;
 
     // Timing for latency measurement
     this.speechStartTime = null;
@@ -42,6 +53,7 @@ class BulgarianVoiceCoach {
     // Initialize
     this.initializeEventListeners();
     this.initializeWebSocket();
+    this.loadWarmupDrills();
   }
 
   initializeEventListeners() {
@@ -412,7 +424,89 @@ class BulgarianVoiceCoach {
   }
 
   updateAudioLevel(level) {
-    this.micLevelBar.style.width = `${level * 100}%`;
+    const now = Date.now();
+
+    // Smooth the level using a moving average
+    this.audioLevelHistory.push(level);
+    if (this.audioLevelHistory.length > 5) {
+      this.audioLevelHistory.shift();
+    }
+
+    const smoothedLevel =
+      this.audioLevelHistory.reduce((a, b) => a + b, 0) / this.audioLevelHistory.length;
+
+    // Update level bar with animation
+    const percentage = Math.min(100, smoothedLevel * 100);
+    this.micLevelBar.style.width = `${percentage}%`;
+
+    // Update level bar color based on intensity
+    if (percentage < 20) {
+      this.micLevelBar.style.background = 'linear-gradient(90deg, #4ade80, #4ade80)';
+    } else if (percentage < 60) {
+      this.micLevelBar.style.background = 'linear-gradient(90deg, #4ade80, #fbbf24)';
+    } else if (percentage < 85) {
+      this.micLevelBar.style.background = 'linear-gradient(90deg, #4ade80, #fbbf24, #f87171)';
+    } else {
+      this.micLevelBar.style.background = 'linear-gradient(90deg, #f87171, #ef4444)';
+    }
+
+    // Add peak detection for visual feedback
+    if (level > 0.7 && now - this.lastLevelUpdate > 100) {
+      this.addLevelPeak(percentage);
+      this.lastLevelUpdate = now;
+    }
+
+    // Update mic status with level feedback
+    if (this.isRecording) {
+      if (percentage < 5) {
+        this.micStatus.textContent = 'Listening... (speak louder)';
+      } else if (percentage > 85) {
+        this.micStatus.textContent = 'Listening... (very loud!)';
+      } else if (percentage > 40) {
+        this.micStatus.textContent = 'Listening... (good level)';
+      } else {
+        this.micStatus.textContent = 'Listening...';
+      }
+    }
+  }
+
+  addLevelPeak(percentage) {
+    // Create a visual peak indicator
+    const levelContainer = this.micLevelBar.parentElement;
+    const peak = document.createElement('div');
+    peak.className = 'level-peak';
+    peak.style.cssText = `
+      position: absolute;
+      left: ${percentage}%;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      animation: fadeOutPeak 1s ease-out forwards;
+      pointer-events: none;
+    `;
+
+    // Add CSS animation if not already present
+    if (!document.querySelector('#peak-animation-styles')) {
+      const style = document.createElement('style');
+      style.id = 'peak-animation-styles';
+      style.textContent = `
+        @keyframes fadeOutPeak {
+          0% { opacity: 1; transform: scaleY(1.2); }
+          100% { opacity: 0; transform: scaleY(0.8); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    levelContainer.appendChild(peak);
+
+    // Clean up peak after animation
+    setTimeout(() => {
+      if (peak.parentNode) {
+        peak.parentNode.removeChild(peak);
+      }
+    }, 1000);
   }
 
   updateRecordingUI(recording) {
@@ -448,15 +542,21 @@ class BulgarianVoiceCoach {
       partialLine.remove();
     }
 
-    // Add final transcript
+    // Add final transcript with error highlighting
     const finalLine = document.createElement('div');
     finalLine.className = 'transcript-line final';
-    finalLine.innerHTML = `<strong>You:</strong> <span class="bg-text">${text}</span>`;
+
+    const highlightedText = this.highlightErrors(text, this.lastDetectedErrors);
+    finalLine.innerHTML = `<strong>You:</strong> <span class="bg-text">${highlightedText}</span>`;
+
     this.transcriptArea.appendChild(finalLine);
     this.scrollToBottom();
   }
 
   addCoachResponse(payload) {
+    // Store corrections for error highlighting
+    this.lastDetectedErrors = payload.corrections || [];
+
     const coachLine = document.createElement('div');
     coachLine.className = 'transcript-line coach';
 
@@ -570,8 +670,15 @@ class BulgarianVoiceCoach {
                 Start speaking to practice Bulgarian...
             </div>
         `;
-    this.playLastBtn.disabled = true;
     this.lastResponseText = '';
+    this.enableAudioControls(false);
+
+    // Clean up any current audio
+    this.stopAudio();
+    if (this.currentAudioUrl) {
+      URL.revokeObjectURL(this.currentAudioUrl);
+      this.currentAudioUrl = null;
+    }
   }
 
   scrollToBottom() {
@@ -743,6 +850,10 @@ class BulgarianVoiceCoach {
 
   cleanupBlobUrls() {
     // Clean up any blob URLs that might be lingering
+    if (this.currentAudioUrl) {
+      URL.revokeObjectURL(this.currentAudioUrl);
+      this.currentAudioUrl = null;
+    }
     if (this.audioPlayer?.src?.startsWith('blob:')) {
       URL.revokeObjectURL(this.audioPlayer.src);
       this.audioPlayer.src = '';
@@ -783,6 +894,188 @@ class BulgarianVoiceCoach {
         this.showInfo('Page visible again. Click microphone to resume recording.');
       }
     }
+  }
+
+  async loadWarmupDrills() {
+    try {
+      // Generate a simple user ID for demo purposes
+      const userId = this.getUserId();
+
+      // Fetch due items for warm-up
+      const response = await fetch(
+        `/progress/due-items?user_id=${encodeURIComponent(userId)}&limit=3`
+      );
+      if (!response.ok) {
+        console.warn('Could not load warm-up drills:', response.statusText);
+        this.displayWelcomeMessage();
+        return;
+      }
+
+      const dueItems = await response.json();
+
+      if (dueItems.length > 0) {
+        this.displayWarmupDrills(dueItems);
+      } else {
+        this.displayWelcomeMessage();
+      }
+    } catch (error) {
+      console.warn('Failed to load warm-up drills:', error);
+      this.displayWelcomeMessage();
+    }
+  }
+
+  getUserId() {
+    // Simple user ID generation for demo
+    // In a real app, this would come from authentication
+    let userId = localStorage.getItem('bulgarian_coach_user_id');
+    if (!userId) {
+      userId = `user_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('bulgarian_coach_user_id', userId);
+    }
+    return userId;
+  }
+
+  displayWarmupDrills(dueItems) {
+    const warmupHtml = `
+      <div class="warmup-section" style="text-align: center; padding: 2rem; background: rgba(102, 126, 234, 0.1); border-radius: 12px; margin-bottom: 1rem;">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">🏃‍♀️ Warm-up Practice</h3>
+        <p style="color: #666; margin-bottom: 1.5rem;">You have ${dueItems.length} grammar ${dueItems.length === 1 ? 'item' : 'items'} due for review!</p>
+        <div class="warmup-items">
+          ${dueItems
+            .map(
+              (grammarId) => `
+            <div class="warmup-item" style="background: white; margin: 0.5rem 0; padding: 1rem; border-radius: 8px; border-left: 4px solid #667eea;">
+              <strong>Grammar:</strong> <code>${grammarId}</code>
+              <button class="btn btn-primary warmup-practice-btn" data-grammar="${grammarId}" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                ⚡ Practice Now
+              </button>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+        <p style="color: #888; font-size: 0.9rem; margin-top: 1rem;">💡 Start speaking to practice, or click "Practice Now" for specific drills</p>
+      </div>
+      <div style="text-align: center; color: #999; padding: 1rem;">
+        Ready for your Bulgarian practice session...
+      </div>
+    `;
+
+    this.transcriptArea.innerHTML = warmupHtml;
+
+    // Add event listeners for practice buttons
+    const practiceButtons = this.transcriptArea.querySelectorAll('.warmup-practice-btn');
+    practiceButtons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        const grammarId = e.target.getAttribute('data-grammar');
+        this.startGrammarPractice(grammarId);
+      });
+    });
+  }
+
+  displayWelcomeMessage() {
+    this.transcriptArea.innerHTML = `
+      <div style="text-align: center; padding: 2rem;">
+        <div style="background: rgba(76, 175, 80, 0.1); border-radius: 12px; padding: 2rem; margin-bottom: 1rem;">
+          <h3 style="color: #4caf50; margin-bottom: 1rem;">🎉 Welcome to Bulgarian Voice Coach!</h3>
+          <p style="color: #666; margin-bottom: 1rem;">You're all caught up with your reviews. Great job!</p>
+          <p style="color: #888; font-size: 0.9rem;">Start speaking to begin practicing Bulgarian...</p>
+        </div>
+      </div>
+    `;
+  }
+
+  async startGrammarPractice(grammarId) {
+    try {
+      // Fetch specific drills for this grammar item
+      const response = await fetch(`/content/drills/${encodeURIComponent(grammarId)}`);
+      if (!response.ok) {
+        this.showError('Could not load practice drills');
+        return;
+      }
+
+      const drills = await response.json();
+
+      if (drills.length > 0) {
+        // Take the first drill for quick practice
+        const drill = drills[0];
+
+        this.transcriptArea.innerHTML = `
+          <div class="practice-drill" style="background: rgba(255, 193, 7, 0.1); border-radius: 12px; padding: 2rem; text-align: center;">
+            <h3 style="color: #ffc107; margin-bottom: 1rem;">⚡ Quick Practice: ${grammarId}</h3>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; margin: 1rem 0;">
+              <p style="font-weight: 500; margin-bottom: 1rem; color: #333;">${drill.prompt}</p>
+              <div style="color: #28a745; font-weight: 600; font-size: 1.1rem;">
+                Answer: "${drill.expected_answer}"
+              </div>
+            </div>
+            <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
+              💬 Try saying this out loud, then start your conversation!
+            </p>
+            <button class="btn btn-secondary" onclick="document.getElementById('transcript-area').innerHTML='<div style='text-align: center; color: #999; padding: 2rem;'>Start speaking to practice Bulgarian...</div>'">✖ Close Practice</button>
+          </div>
+        `;
+      } else {
+        this.showToast('No practice drills available for this grammar item', 'info');
+      }
+    } catch (error) {
+      console.error('Failed to start grammar practice:', error);
+      this.showError('Could not start practice session');
+    }
+  }
+
+  highlightErrors(text, corrections) {
+    if (!corrections || corrections.length === 0) {
+      return text;
+    }
+
+    let highlightedText = text;
+
+    // Sort corrections by position (if available) to avoid overlap issues
+    const sortedCorrections = [...corrections].sort((a, b) => {
+      const aPos = a.position ? a.position.start : 0;
+      const bPos = b.position ? b.position.start : 0;
+      return bPos - aPos; // Reverse order to avoid index shifting
+    });
+
+    sortedCorrections.forEach((correction, index) => {
+      const beforeText = correction.before;
+      const afterText = correction.after;
+      const errorType = correction.type || 'grammar';
+
+      if (beforeText && highlightedText.includes(beforeText)) {
+        // Create a highlighted version with tooltip
+        const highlightHtml = `<span class="error-highlight error-${this.getErrorClass(errorType)}" 
+          title="${errorType}: ${beforeText} → ${afterText}" 
+          data-correction-index="${index}"
+          onclick="this.classList.toggle('error-expanded')">
+          ${beforeText}
+          <span class="error-tooltip">
+            <strong>${errorType}:</strong><br>
+            ${beforeText} → <span class="error-correction">${afterText}</span>
+          </span>
+        </span>`;
+
+        // Replace the error text with highlighted version
+        highlightedText = highlightedText.replace(beforeText, highlightHtml);
+      }
+    });
+
+    return highlightedText;
+  }
+
+  getErrorClass(errorType) {
+    // Map error types to CSS classes for different colors
+    const typeMap = {
+      grammar: 'grammar',
+      agreement: 'agreement',
+      article: 'article',
+      case: 'case',
+      tense: 'tense',
+      spelling: 'spelling',
+      vocab: 'vocab',
+    };
+    return typeMap[errorType] || 'general';
   }
 }
 
