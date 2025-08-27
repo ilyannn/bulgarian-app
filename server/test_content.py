@@ -9,7 +9,6 @@ import pytest
 
 from content import (
     get_grammar_item,
-    get_next_lesson,
     get_scenario,
     load_grammar_pack,
     load_scenarios,
@@ -203,35 +202,6 @@ class TestGetGrammarItem:
         assert result is None
 
 
-class TestGetNextLesson:
-    """Test lesson sequencing functionality."""
-
-    async def test_get_next_lesson_returns_drills(self):
-        """Test getting next lesson returns drill list."""
-        result = await get_next_lesson("test_user")
-
-        assert isinstance(result, list)
-        # Should return drills for practice
-
-    async def test_get_next_lesson_with_different_user(self):
-        """Test getting next lesson for different user."""
-        result1 = await get_next_lesson("user1")
-        result2 = await get_next_lesson("user2")
-
-        # Both should return drill lists
-        assert isinstance(result1, list)
-        assert isinstance(result2, list)
-
-    async def test_get_next_lesson_drill_structure(self):
-        """Test that returned drills have proper structure."""
-        result = await get_next_lesson("test_user")
-
-        for drill in result:
-            assert isinstance(drill, dict)
-            # Drills should have certain fields based on implementation
-            assert "grammar_id" in drill or "type" in drill
-
-
 class TestGetScenario:
     """Test scenario retrieval functionality."""
 
@@ -277,7 +247,6 @@ class TestIntegration:
         """Test that expected functions exist."""
         from content import (
             get_grammar_item,
-            get_next_lesson,
             get_scenario,
             load_grammar_pack,
             load_scenarios,
@@ -287,7 +256,6 @@ class TestIntegration:
         assert callable(load_grammar_pack)
         assert callable(load_scenarios)
         assert callable(get_grammar_item)
-        assert callable(get_next_lesson)
         assert callable(get_scenario)
 
     def test_real_content_files_loading(self):

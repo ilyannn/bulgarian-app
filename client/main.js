@@ -2,6 +2,8 @@
  * Bulgarian Voice Coach - Main Application
  */
 
+import LocalProgressService from './services/LocalProgressService.js';
+
 class BulgarianVoiceCoach {
   constructor() {
     // Audio context and processing
@@ -54,6 +56,9 @@ class BulgarianVoiceCoach {
     // Timing for latency measurement
     this.speechStartTime = null;
     this.responseStartTime = null;
+
+    // Progress tracking service
+    this.progressService = new LocalProgressService();
 
     // Initialize
     this.initializeEventListeners();
@@ -120,6 +125,19 @@ class BulgarianVoiceCoach {
           document.dispatchEvent(drillEvent);
         }
       }
+    });
+
+    // Listen for drill completion events to track progress
+    window.addEventListener('drill-completed', (event) => {
+      this.progressService.updateDrillResult({
+        grammarId: event.detail.drill.grammarId,
+        drillType: event.detail.drill.type,
+        userAnswer: event.detail.drill.userAnswer,
+        correctAnswer: event.detail.drill.correctAnswer,
+        isCorrect: event.detail.correct,
+        responseTimeMs: event.detail.timeSpent,
+        hintUsed: event.detail.hintUsed || false,
+      });
     });
   }
 
@@ -916,20 +934,8 @@ class BulgarianVoiceCoach {
 
   async loadWarmupDrills() {
     try {
-      // Generate a simple user ID for demo purposes
-      const userId = this.getUserId();
-
-      // Fetch due items for warm-up
-      const response = await window.fetch(
-        `/progress/due-items?user_id=${encodeURIComponent(userId)}&limit=3`
-      );
-      if (!response.ok) {
-        console.warn('Could not load warm-up drills:', response.statusText);
-        this.displayWelcomeMessage();
-        return;
-      }
-
-      const dueItems = await response.json();
+      // Get due items from local progress service
+      const dueItems = this.progressService.getWarmupItems(3);
 
       if (dueItems.length > 0) {
         this.displayWarmupDrills(dueItems);
@@ -943,14 +949,8 @@ class BulgarianVoiceCoach {
   }
 
   getUserId() {
-    // Simple user ID generation for demo
-    // In a real app, this would come from authentication
-    let userId = window.localStorage.getItem('bulgarian_coach_user_id');
-    if (!userId) {
-      userId = `user_${Math.random().toString(36).substr(2, 7)}`;
-      window.localStorage.setItem('bulgarian_coach_user_id', userId);
-    }
-    return userId;
+    // Get user ID from progress service
+    return this.progressService.getUserId();
   }
 
   displayWarmupDrills(dueItems) {
@@ -961,10 +961,12 @@ class BulgarianVoiceCoach {
         <div class="warmup-items">
           ${dueItems
             .map(
-              (grammarId) => `
+              (item) => `
             <div class="warmup-item" style="background: white; margin: 0.5rem 0; padding: 1rem; border-radius: 8px; border-left: 4px solid #667eea;">
-              <strong>Grammar:</strong> <code>${grammarId}</code>
-              <button class="btn btn-primary warmup-practice-btn" data-grammar="${grammarId}" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+              <strong>Grammar:</strong> <code>${item.grammarId}</code>
+              ${item.title ? `<div style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${item.title}</div>` : ''}
+              <div style="font-size: 0.8rem; color: #888; margin-top: 0.3rem;">Level ${item.masteryLevel}/6</div>
+              <button class="btn btn-primary warmup-practice-btn" data-grammar="${item.grammarId}" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.9rem;">
                 ⚡ Practice Now
               </button>
             </div>

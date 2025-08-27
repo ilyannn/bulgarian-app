@@ -119,61 +119,61 @@ describe('Warm-up Drills', () => {
   });
 
   describe('User ID Generation', () => {
-    it('should generate a new user ID when none exists', () => {
-      global.window.localStorage.getItem.mockReturnValue(null);
+    it('should delegate to LocalProgressService for user ID generation', () => {
+      const expectedUserId = 'user_test123';
+      voiceCoach.progressService.getUserId = vi.fn().mockReturnValue(expectedUserId);
 
       const userId = voiceCoach.getUserId();
 
-      expect(userId).toMatch(/^user_[a-z0-9]{7}$/);
-      expect(global.window.localStorage.setItem).toHaveBeenCalledWith(
-        'bulgarian_coach_user_id',
-        userId
-      );
+      expect(userId).toBe(expectedUserId);
+      expect(voiceCoach.progressService.getUserId).toHaveBeenCalled();
     });
 
-    it('should return existing user ID from localStorage', () => {
-      const existingUserId = 'user_abc123def';
+    it('should return consistent user ID from LocalProgressService', () => {
+      const expectedUserId = 'user_abc123def';
+      voiceCoach.progressService.getUserId = vi.fn().mockReturnValue(expectedUserId);
 
-      // Clear previous mock calls and set up fresh mock
-      global.window.localStorage.getItem.mockClear();
-      global.window.localStorage.setItem.mockClear();
-      global.window.localStorage.getItem.mockReturnValue(existingUserId);
+      const userId1 = voiceCoach.getUserId();
+      const userId2 = voiceCoach.getUserId();
 
-      const userId = voiceCoach.getUserId();
-
-      expect(userId).toBe(existingUserId);
-      expect(global.window.localStorage.setItem).not.toHaveBeenCalled();
+      expect(userId1).toBe(expectedUserId);
+      expect(userId2).toBe(expectedUserId);
+      expect(voiceCoach.progressService.getUserId).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('Loading Warm-up Drills', () => {
     beforeEach(() => {
-      voiceCoach.getUserId = vi.fn().mockReturnValue('user_test123');
       voiceCoach.displayWarmupDrills = vi.fn();
       voiceCoach.displayWelcomeMessage = vi.fn();
     });
 
     it('should load and display warm-up drills when items are due', async () => {
-      const mockDueItems = ['bg.no_infinitive.da_present', 'bg.definite_article.postposed'];
+      const mockDueItems = [
+        {
+          grammarId: 'bg.no_infinitive.da_present',
+          title: 'No Infinitive: да + Present',
+          dueDate: Date.now() - 1000,
+          masteryLevel: 1,
+        },
+        {
+          grammarId: 'bg.definite_article.postposed',
+          title: 'Postposed Definite Article',
+          dueDate: Date.now() - 2000,
+          masteryLevel: 2,
+        },
+      ];
 
-      global.window.fetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(mockDueItems),
-      });
+      voiceCoach.progressService.getWarmupItems = vi.fn().mockReturnValue(mockDueItems);
 
       await voiceCoach.loadWarmupDrills();
 
-      expect(global.window.fetch).toHaveBeenCalledWith(
-        '/progress/due-items?user_id=user_test123&limit=3'
-      );
+      expect(voiceCoach.progressService.getWarmupItems).toHaveBeenCalledWith(3);
       expect(voiceCoach.displayWarmupDrills).toHaveBeenCalledWith(mockDueItems);
     });
 
     it('should display welcome message when no items are due', async () => {
-      global.window.fetch.mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve([]),
-      });
+      voiceCoach.progressService.getWarmupItems = vi.fn().mockReturnValue([]);
 
       await voiceCoach.loadWarmupDrills();
 
@@ -181,21 +181,10 @@ describe('Warm-up Drills', () => {
       expect(voiceCoach.displayWarmupDrills).not.toHaveBeenCalled();
     });
 
-    it('should handle API errors gracefully', async () => {
-      global.window.fetch.mockResolvedValue({
-        ok: false,
-        statusText: 'Server Error',
+    it('should handle localStorage errors gracefully', async () => {
+      voiceCoach.progressService.getWarmupItems = vi.fn().mockImplementation(() => {
+        throw new Error('localStorage not available');
       });
-
-      console.warn = vi.fn();
-      await voiceCoach.loadWarmupDrills();
-
-      expect(console.warn).toHaveBeenCalledWith('Could not load warm-up drills:', 'Server Error');
-      expect(voiceCoach.displayWelcomeMessage).toHaveBeenCalled();
-    });
-
-    it('should handle network errors gracefully', async () => {
-      global.window.fetch.mockRejectedValue(new Error('Network error'));
 
       console.warn = vi.fn();
       await voiceCoach.loadWarmupDrills();
@@ -210,7 +199,20 @@ describe('Warm-up Drills', () => {
 
   describe('Displaying Warm-up Drills', () => {
     it('should render warm-up drills with correct HTML structure', () => {
-      const dueItems = ['bg.no_infinitive.da_present', 'bg.definite_article.postposed'];
+      const dueItems = [
+        {
+          grammarId: 'bg.no_infinitive.da_present',
+          title: 'No Infinitive: да + Present',
+          dueDate: Date.now() - 1000,
+          masteryLevel: 1,
+        },
+        {
+          grammarId: 'bg.definite_article.postposed',
+          title: 'Postposed Definite Article',
+          dueDate: Date.now() - 2000,
+          masteryLevel: 2,
+        },
+      ];
       mockElements.transcriptArea.querySelectorAll = vi.fn(() => [
         { addEventListener: vi.fn(), getAttribute: vi.fn() },
         { addEventListener: vi.fn(), getAttribute: vi.fn() },
@@ -225,7 +227,14 @@ describe('Warm-up Drills', () => {
     });
 
     it('should handle singular grammar item correctly', () => {
-      const dueItems = ['bg.no_infinitive.da_present'];
+      const dueItems = [
+        {
+          grammarId: 'bg.no_infinitive.da_present',
+          title: 'No Infinitive: да + Present',
+          dueDate: Date.now() - 1000,
+          masteryLevel: 1,
+        },
+      ];
       mockElements.transcriptArea.querySelectorAll = vi.fn(() => [
         { addEventListener: vi.fn(), getAttribute: vi.fn() },
       ]);
@@ -236,7 +245,14 @@ describe('Warm-up Drills', () => {
     });
 
     it('should add event listeners to practice buttons', () => {
-      const dueItems = ['bg.no_infinitive.da_present'];
+      const dueItems = [
+        {
+          grammarId: 'bg.no_infinitive.da_present',
+          title: 'No Infinitive: да + Present',
+          dueDate: Date.now() - 1000,
+          masteryLevel: 1,
+        },
+      ];
       const mockButton = {
         addEventListener: vi.fn(),
         getAttribute: vi.fn().mockReturnValue('bg.no_infinitive.da_present'),
