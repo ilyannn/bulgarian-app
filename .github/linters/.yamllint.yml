@@ -1,0 +1,48 @@
+# yamllint configuration for Bulgarian Voice Coach
+# See: https://yamllint.readthedocs.io/en/stable/configuration.html
+
+extends: default
+
+# Ignore patterns - exclude directories we don't control
+ignore: |
+  node_modules/
+  .venv/
+  .git/
+  dist/
+  build/
+  coverage/
+
+rules:
+  # Allow longer lines for readability
+  line-length:
+    max: 120
+    level: warning
+
+  # Be more lenient with indentation in complex nested structures
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Allow trailing spaces (useful for YAML multiline strings)
+  trailing-spaces:
+    level: warning
+
+  # Don't require document start markers (---)
+  document-start: disable
+
+  # Allow empty lines in certain contexts
+  empty-lines:
+    max: 2
+    max-start: 1
+    max-end: 1
+
+  # Be flexible with comments
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: true
+
+  # Allow truthy values like 'yes', 'no' (common in CI)
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false

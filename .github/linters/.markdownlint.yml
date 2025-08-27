@@ -1,0 +1,40 @@
+# Markdownlint configuration for Bulgarian Voice Coach
+# Using YAML format for better readability
+
+# Extends default rules with project-specific adjustments
+extends: null
+
+# Global settings - start with defaults then override
+default: true
+
+# Override specific rules
+MD009:  # no-trailing-spaces
+  br_spaces: 2  # Allow 2 spaces for line breaks
+
+MD013:  # line-length  
+  line_length: 120  # Longer lines for technical documentation
+  heading_line_length: 120  # Also apply to headings
+  code_block_line_length: 120  # Also apply to code blocks
+  tables: false     # Don't enforce length on tables
+  headings: false   # Don't enforce length on headings  
+  code_blocks: false # Don't enforce length on code blocks
+
+MD025:  # single-title/single-h1
+  front_matter_title: ""  # Allow H1 in front matter
+
+MD033:  # no-inline-html
+  allowed_elements:
+    - details
+    - summary
+    - img
+    - br
+    - kbd
+
+MD031: false  # Disable blanks around fences (too strict for technical docs)
+
+MD041: false  # Allow documents without top-level H1 (like README sections)
+
+MD046:  # code-block-style
+  style: "fenced"  # Prefer ``` over indented code blocks
+
+MD053: false  # Disable link reference style checking (too strict)

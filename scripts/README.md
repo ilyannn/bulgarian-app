@@ -13,7 +13,7 @@ This directory contains utility scripts for the Bulgarian Voice Coach project.
 
 **Prerequisites**:
 1. Development servers must be running: `just dev`
-2. Playwright must be installed: `cd client && bun install` 
+2. Playwright must be installed: `cd client && bun install`
 
 **Usage**:
 
