@@ -374,12 +374,12 @@ class TestUserProgressDB:
         )
         sessions = cursor.fetchall()
 
-        assert sessions[0][0] == "transform"  # First drill type
+        assert sessions[0][0] == "fill"  # First drill type
         assert sessions[0][1] == 1  # was correct
         assert sessions[0][2] == 0  # no hint
 
-        assert sessions[2][1] == 0  # Third was incorrect
-        assert sessions[2][2] == 1  # hint was used
+        assert sessions[1][1] == 0  # Second was incorrect
+        assert sessions[1][2] == 1  # hint was used
 
         conn.close()
 

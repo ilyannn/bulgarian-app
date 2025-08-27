@@ -206,25 +206,25 @@ class TestGetGrammarItem:
 class TestGetNextLesson:
     """Test lesson sequencing functionality."""
 
-    def test_get_next_lesson_returns_drills(self):
+    async def test_get_next_lesson_returns_drills(self):
         """Test getting next lesson returns drill list."""
-        result = get_next_lesson("test_user")
+        result = await get_next_lesson("test_user")
 
         assert isinstance(result, list)
         # Should return drills for practice
 
-    def test_get_next_lesson_with_different_user(self):
+    async def test_get_next_lesson_with_different_user(self):
         """Test getting next lesson for different user."""
-        result1 = get_next_lesson("user1")
-        result2 = get_next_lesson("user2")
+        result1 = await get_next_lesson("user1")
+        result2 = await get_next_lesson("user2")
 
         # Both should return drill lists
         assert isinstance(result1, list)
         assert isinstance(result2, list)
 
-    def test_get_next_lesson_drill_structure(self):
+    async def test_get_next_lesson_drill_structure(self):
         """Test that returned drills have proper structure."""
-        result = get_next_lesson("test_user")
+        result = await get_next_lesson("test_user")
 
         for drill in result:
             assert isinstance(drill, dict)
