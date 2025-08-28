@@ -1,0 +1,175 @@
+{
+  "optimal_configuration": {
+    "configuration": {
+      "name": "fast_vad_200",
+      "vad_tail_ms": 200,
+      "beam_size": 5,
+      "temperature": 0.0,
+      "no_speech_threshold": 0.6,
+      "description": "Aggressive VAD for fast response"
+    },
+    "latency": {
+      "mean": 71.82609159790445,
+      "median": 72.11374999315012,
+      "stdev": 0.5197127411923156,
+      "min": 71.08370900095906,
+      "max": 72.26204099424649,
+      "p90": 72.26204099424649,
+      "p99": 72.26204099424649
+    },
+    "accuracy": {
+      "mean": 0.9,
+      "median": 0.9,
+      "min": 0.9,
+      "max": 0.9
+    },
+    "samples_tested": 5,
+    "meets_target": true
+  },
+  "all_results": [
+    {
+      "configuration": {
+        "name": "baseline",
+        "vad_tail_ms": 500,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Current production settings"
+      },
+      "latency": {
+        "mean": 102.09868300007656,
+        "median": 102.1901659987634,
+        "stdev": 0.2615571903324558,
+        "min": 101.63508300320245,
+        "max": 102.2528329922352,
+        "p90": 102.2528329922352,
+        "p99": 102.2528329922352
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 5,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "fast_vad_200",
+        "vad_tail_ms": 200,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Aggressive VAD for fast response"
+      },
+      "latency": {
+        "mean": 71.82609159790445,
+        "median": 72.11374999315012,
+        "stdev": 0.5197127411923156,
+        "min": 71.08370900095906,
+        "max": 72.26204099424649,
+        "p90": 72.26204099424649,
+        "p99": 72.26204099424649
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 5,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "fast_vad_300",
+        "vad_tail_ms": 300,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Moderate VAD timing"
+      },
+      "latency": {
+        "mean": 82.11721680418123,
+        "median": 82.13520800927654,
+        "stdev": 0.3176678605891507,
+        "min": 81.65287500014529,
+        "max": 82.49812500434928,
+        "p90": 82.49812500434928,
+        "p99": 82.49812500434928
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 5,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "fast_vad_400",
+        "vad_tail_ms": 400,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Conservative VAD timing"
+      },
+      "latency": {
+        "mean": 92.02165000024252,
+        "median": 92.11675000551622,
+        "stdev": 0.27867217078292283,
+        "min": 91.52733400696889,
+        "max": 92.2049579967279,
+        "p90": 92.2049579967279,
+        "p99": 92.2049579967279
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 5,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "small_beam",
+        "vad_tail_ms": 300,
+        "beam_size": 1,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Faster ASR with smaller beam"
+      },
+      "latency": {
+        "mean": 72.03769159968942,
+        "median": 72.0870829973137,
+        "stdev": 0.17217050522991775,
+        "min": 71.84704201063141,
+        "max": 72.24816600501072,
+        "p90": 72.24816600501072,
+        "p99": 72.24816600501072
+      },
+      "accuracy": {
+        "mean": 0.86,
+        "median": 0.86,
+        "min": 0.86,
+        "max": 0.86
+      },
+      "samples_tested": 5,
+      "meets_target": true
+    }
+  ],
+  "passing_count": 5,
+  "recommendations": {
+    "name": "fast_vad_200",
+    "vad_tail_ms": 200,
+    "beam_size": 5,
+    "temperature": 0.0,
+    "no_speech_threshold": 0.6,
+    "description": "Aggressive VAD for fast response"
+  }
+}
