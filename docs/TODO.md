@@ -7,7 +7,7 @@ Items remaining to be implemented from the original build plan and additional im
 The Bulgarian Voice Coach has achieved major milestones:
 
 - ✅ **Core Architecture Complete**: localStorage-based progress tracking, stateless backend
-- ✅ **Content System Integrated**: Bulgarian grammar detection, SRS scheduling, interactive drills  
+- ✅ **Content System Integrated**: Bulgarian grammar detection, SRS scheduling, interactive drills
 - ✅ **Frontend UX Enhanced**: Grammar chips, inline drills, audio visualization
 - ✅ **Testing Infrastructure Solid**: 79+ frontend tests, comprehensive backend coverage
 
@@ -154,5 +154,5 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 1. **Performance Optimization**: Reduce end-to-end latency to 1.2-2.0s target
 2. **Audio Enhancements**: Progressive audio loading, latency indicators
 3. **Transcript Polish**: Partial display, confidence indicators
-4. **Mini-Lessons**: 2-3 minute focused error remediation  
+4. **Mini-Lessons**: 2-3 minute focused error remediation
 5. **Production Deployment**: Docker config, health checks, monitoring
