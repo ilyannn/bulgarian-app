@@ -15,26 +15,17 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 
 ## 1) Performance & Latency Optimization (High Priority)
 
-### Audio Pipeline
+### Remaining Performance Tasks
 
-- [ ] Optimize for 1.2-2.0s end-to-end latency target
-- [ ] Fine-tune VAD tail timing (200-400ms)
-- [ ] Optimize ASR model selection and parameters
-- [ ] Improve WebSocket frame handling
-
-### ASR Configuration
-
-- [ ] Implement environment-based model path configuration
-- [ ] Add `no_speech_threshold` tuning
-- [ ] Optimize beam_size and temperature parameters
 - [ ] Add retry logic for no-speech scenarios
+- [ ] Implement model preloading at startup to avoid first-use delay
+- [ ] Add caching for common phrases and responses
 
 ## 2) Audio & Media Enhancements (Medium Priority)
 
 ### Audio Pipeline Improvements
 
 - [ ] Enhance MediaSource integration for progressive audio
-- [ ] Implement latency indicator
 
 ### Transcript Display Improvements
 
