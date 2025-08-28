@@ -3,6 +3,7 @@
  */
 
 import LocalProgressService from './services/LocalProgressService.js';
+import PerformanceMonitor from './services/PerformanceMonitor.js';
 
 class BulgarianVoiceCoach {
   constructor() {
@@ -59,6 +60,9 @@ class BulgarianVoiceCoach {
 
     // Progress tracking service
     this.progressService = new LocalProgressService();
+
+    // Performance monitoring
+    this.performanceMonitor = new PerformanceMonitor();
 
     // Initialize
     this.initializeEventListeners();
@@ -245,14 +249,45 @@ class BulgarianVoiceCoach {
     switch (message.type) {
       case 'partial':
         this.updatePartialTranscript(message.text);
+        // Mark ASR start on first partial
+        if (!this.hasReceivedPartial) {
+          this.performanceMonitor.mark('asrStart');
+          this.hasReceivedPartial = true;
+        }
         break;
       case 'final':
         this.addFinalTranscript(message.text);
         this.measureLatency('transcription');
+        // Mark ASR end
+        this.performanceMonitor.mark('asrEnd', {
+          transcriptLength: message.text?.length || 0,
+        });
+        // Mark LLM start (processing begins)
+        this.performanceMonitor.mark('llmStart');
+        this.hasReceivedPartial = false;
         break;
       case 'coach':
         this.addCoachResponse(message.payload);
         this.measureLatency('response');
+        // Mark LLM end and TTS start
+        this.performanceMonitor.mark('llmEnd', {
+          responseLength: message.payload?.text?.length || 0,
+        });
+        if (message.payload?.audio) {
+          this.performanceMonitor.mark('ttsStart');
+        }
+        break;
+      case 'audio_ready':
+        // Mark TTS end when audio is ready
+        this.performanceMonitor.mark('ttsEnd');
+        this.performanceMonitor.mark('end');
+        this.updateLatencyDisplay();
+        break;
+      case 'performance':
+        // Server-side performance metrics
+        if (message.metrics) {
+          this.handleServerMetrics(message.metrics);
+        }
         break;
       default:
         console.log('Unknown message type:', message.type);
@@ -279,6 +314,13 @@ class BulgarianVoiceCoach {
       // Start recording
       this.isRecording = true;
       this.speechStartTime = Date.now();
+      this.hasReceivedPartial = false;
+      this.vadStartMarked = false;
+
+      // Start performance session
+      const sessionId = this.performanceMonitor.startSession();
+      this.currentSessionId = sessionId;
+
       this.workletNode.port.postMessage({ type: 'start' });
 
       // Update UI
@@ -299,6 +341,9 @@ class BulgarianVoiceCoach {
 
     this.isRecording = false;
     this.workletNode?.port.postMessage({ type: 'stop' });
+
+    // Mark VAD end (speech detection complete)
+    this.performanceMonitor.mark('vadEnd');
 
     // Update UI
     this.updateRecordingUI(false);
@@ -425,11 +470,29 @@ class BulgarianVoiceCoach {
     switch (message.type) {
       case 'audioFrame':
         if (this.isRecording && this.isConnected) {
+          // Track WebSocket latency for critical messages
+          if (this.shouldTrackMessage()) {
+            const messageId = this.generateMessageId();
+            this.performanceMonitor.startWebSocketTiming(messageId);
+            // Note: We'd need server support to echo back the messageId
+          }
           this.websocket.send(message.data);
+          // Mark speech detected on first audio frame with significant level
+          if (!this.vadStartMarked && message.level > 0.01) {
+            this.markSpeechDetected();
+          }
         }
         break;
       case 'level':
         this.updateAudioLevel(message.value);
+        // Detect speech start based on audio level
+        if (this.isRecording && !this.vadStartMarked && message.value > 0.02) {
+          this.markSpeechDetected();
+        }
+        break;
+      case 'speechStart':
+        // Explicit speech start detection from worklet
+        this.markSpeechDetected();
         break;
     }
   }
@@ -751,6 +814,84 @@ class BulgarianVoiceCoach {
     if (type === 'response') {
       this.speechStartTime = null; // Reset for next measurement
     }
+  }
+
+  /**
+   * Update latency display with performance monitor data
+   */
+  updateLatencyDisplay() {
+    const stats = this.performanceMonitor.getStatistics();
+    const breakdown = this.performanceMonitor.getSessionBreakdown();
+
+    if (!breakdown || !stats.e2e.count) {
+      this.latencyText.textContent = 'Latency: --';
+      return;
+    }
+
+    // Get performance level for color coding
+    const level = this.performanceMonitor.getPerformanceLevel(breakdown.total);
+
+    // Update main latency display
+    this.latencyText.textContent = `${level.icon} ${breakdown.total}ms`;
+    this.latencyText.style.color = level.color;
+
+    // Add detailed breakdown on hover (via title attribute)
+    if (breakdown.stages) {
+      const details = [];
+      if (breakdown.stages.vad) details.push(`VAD: ${breakdown.stages.vad.duration}ms`);
+      if (breakdown.stages.asr) details.push(`ASR: ${breakdown.stages.asr.duration}ms`);
+      if (breakdown.stages.llm) details.push(`LLM: ${breakdown.stages.llm.duration}ms`);
+      if (breakdown.stages.tts) details.push(`TTS: ${breakdown.stages.tts.duration}ms`);
+
+      this.latencyText.title = details.join(' | ');
+    }
+
+    // Log performance warnings
+    if (level.level === 'warning' || level.level === 'critical') {
+      console.warn('Performance degradation detected:', breakdown);
+    }
+  }
+
+  /**
+   * Handle server-side performance metrics
+   */
+  handleServerMetrics(metrics) {
+    // Add server metrics to our monitor
+    if (metrics.asr_time) {
+      this.performanceMonitor.addMetric('asr', metrics.asr_time * 1000);
+    }
+    if (metrics.llm_time) {
+      this.performanceMonitor.addMetric('llm', metrics.llm_time * 1000);
+    }
+    if (metrics.tts_time) {
+      this.performanceMonitor.addMetric('tts', metrics.tts_time * 1000);
+    }
+  }
+
+  /**
+   * Mark VAD start when speech is detected
+   */
+  markSpeechDetected() {
+    if (this.currentSessionId && !this.vadStartMarked) {
+      this.performanceMonitor.mark('vadStart');
+      this.vadStartMarked = true;
+    }
+  }
+
+  /**
+   * Determine if we should track this message for latency
+   * Track only a sample to avoid overhead
+   */
+  shouldTrackMessage() {
+    // Track 1 in 50 messages to avoid overhead
+    return Math.random() < 0.02;
+  }
+
+  /**
+   * Generate unique message ID for tracking
+   */
+  generateMessageId() {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   showError(message, duration = 5000) {
