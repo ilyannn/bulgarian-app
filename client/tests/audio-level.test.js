@@ -19,7 +19,11 @@ describe('Audio Level Visualization', () => {
     mockElements = {
       micLevelBar: {},
       micStatus: { textContent: '' },
-      transcriptArea: { innerHTML: '', appendChild: vi.fn(), querySelector: vi.fn() },
+      transcriptArea: {
+        innerHTML: '',
+        appendChild: vi.fn(),
+        querySelector: vi.fn(),
+      },
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
       playLastBtn: { addEventListener: vi.fn() },

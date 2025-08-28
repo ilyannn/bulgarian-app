@@ -35,7 +35,11 @@ describe('Audio Playback Controls', () => {
       micButton: { addEventListener: vi.fn() },
       clearBtn: { addEventListener: vi.fn() },
       playLastBtn: { addEventListener: vi.fn() },
-      transcriptArea: { innerHTML: '', appendChild: vi.fn(), querySelector: vi.fn() },
+      transcriptArea: {
+        innerHTML: '',
+        appendChild: vi.fn(),
+        querySelector: vi.fn(),
+      },
       connectionStatus: {},
       audioStatus: {},
       latencyText: {},
