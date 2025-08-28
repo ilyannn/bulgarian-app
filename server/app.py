@@ -184,8 +184,8 @@ async def websocket_asr_endpoint(websocket: WebSocket):
                         metrics["llm_time"] = time.time() - llm_start
 
                     # Add ASR timing if available
-                    if "duration" in locals():
-                        metrics["asr_time"] = duration
+                    if result and "duration" in locals():
+                        metrics["asr_time"] = locals()["duration"]
 
                     await websocket.send_json(
                         {"type": "coach", "payload": coach_response.model_dump()}

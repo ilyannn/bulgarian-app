@@ -120,6 +120,7 @@ Based on testing, the optimal configuration achieves:
 - Total end-to-end: 1.2-1.8s with LLM and TTS
 
 For detailed benchmark results, see [benchmark_results.json](../benchmark_results.json) which contains:
+
 - Latency measurements for 5 different configurations
 - Statistical analysis (mean, median, p90, p99)
 - Accuracy metrics for each configuration
