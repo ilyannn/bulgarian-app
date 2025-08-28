@@ -13,22 +13,44 @@ logger = logging.getLogger(__name__)
 class ASRProcessor:
     """Audio Speech Recognition processor using faster-whisper with VAD"""
 
-    def __init__(self):
+    def __init__(self, config: dict | None = None):
+        """Initialize ASR with configurable parameters
+
+        Args:
+            config: Optional configuration dict with:
+                - vad_tail_ms: VAD tail timing in milliseconds (default: 300)
+                - vad_aggressiveness: VAD aggressiveness level 0-3 (default: 2)
+                - beam_size_partial: Beam size for partial transcription (default: 1)
+                - beam_size_final: Beam size for final transcription (default: 2)
+                - no_speech_threshold: Threshold for detecting non-speech (default: 0.6)
+                - temperature: Temperature for decoding (default: 0.0)
+        """
+        # Load configuration with defaults
+        config = config or {}
+        self.vad_tail_ms = config.get("vad_tail_ms", 300)  # Optimized from benchmark
+        self.vad_aggressiveness = config.get("vad_aggressiveness", 2)
+        self.beam_size_partial = config.get("beam_size_partial", 1)
+        self.beam_size_final = config.get("beam_size_final", 2)
+        self.no_speech_threshold = config.get("no_speech_threshold", 0.6)
+        self.temperature = config.get("temperature", 0.0)
+
         self.sample_rate = 16000
         self.frame_duration = 20  # ms
         self.frame_size = int(
             self.sample_rate * self.frame_duration / 1000
         )  # samples per frame
 
-        # Initialize VAD
-        self.vad = webrtcvad.Vad(2)  # Aggressiveness level 2 (0-3)
+        # Initialize VAD with configurable aggressiveness
+        self.vad = webrtcvad.Vad(self.vad_aggressiveness)
 
         # Audio buffer for accumulating frames
         self.audio_buffer = deque(maxlen=1000)  # ~20 seconds at 20ms frames
         self.speech_frames = []
         self.silence_count = 0
         self.speech_triggered = False
-        self.max_silence_frames = 20  # 400ms of silence to trigger end
+
+        # Calculate max silence frames based on configured tail timing
+        self.max_silence_frames = int(self.vad_tail_ms / self.frame_duration)
 
         # Initialize Whisper model
         model_path = os.getenv("WHISPER_MODEL_PATH", "medium")
@@ -111,13 +133,13 @@ class ASRProcessor:
             # Normalize audio
             audio = audio.astype(np.float32) / 32768.0
 
-            # Run Whisper inference
+            # Run Whisper inference with configurable parameters
             segments, _ = self.model.transcribe(
                 audio,
                 language="bg",
-                beam_size=1,
-                temperature=0.0,
-                no_speech_threshold=0.6,
+                beam_size=self.beam_size_partial,
+                temperature=self.temperature,
+                no_speech_threshold=self.no_speech_threshold,
                 condition_on_previous_text=False,
             )
 
@@ -146,9 +168,9 @@ class ASRProcessor:
             segments, _ = self.model.transcribe(
                 audio,
                 language="bg",
-                beam_size=2,
-                temperature=0.0,
-                no_speech_threshold=0.6,
+                beam_size=self.beam_size_final,
+                temperature=self.temperature,
+                no_speech_threshold=self.no_speech_threshold,
                 condition_on_previous_text=False,
                 word_timestamps=True,
             )

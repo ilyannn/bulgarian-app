@@ -49,9 +49,17 @@ async def lifespan(app: FastAPI):
         else:
             logger.info("ℹ️  OpenTelemetry instrumentation disabled")
 
-        # Initialize processors
-        logger.info("Initializing ASR processor...")
-        asr_processor = ASRProcessor()
+        # Initialize processors with optimized configuration
+        logger.info("Initializing ASR processor with optimized config...")
+        asr_config = {
+            "vad_tail_ms": 250,  # Optimized for faster response
+            "vad_aggressiveness": 2,
+            "beam_size_partial": 1,
+            "beam_size_final": 3,  # Balance speed and accuracy
+            "no_speech_threshold": 0.6,
+            "temperature": 0.0,
+        }
+        asr_processor = ASRProcessor(asr_config)
 
         logger.info("Initializing TTS processor...")
         tts_processor = TTSProcessor()
@@ -157,18 +165,37 @@ async def websocket_asr_endpoint(websocket: WebSocket):
                 elif result["type"] == "final":
                     await websocket.send_json({"type": "final", "text": result["text"]})
 
+                    # Track performance metrics
+                    import time
+
+                    metrics = {}
+
                     # Process through chat provider with telemetry
                     if telemetry_context:
                         with telemetry_context.trace_operation(
                             "coaching_pipeline", input_text=result["text"][:100]
                         ):
+                            llm_start = time.time()
                             coach_response = await process_user_input(result["text"])
+                            metrics["llm_time"] = time.time() - llm_start
                     else:
+                        llm_start = time.time()
                         coach_response = await process_user_input(result["text"])
+                        metrics["llm_time"] = time.time() - llm_start
+
+                    # Add ASR timing if available
+                    if "duration" in locals():
+                        metrics["asr_time"] = duration
 
                     await websocket.send_json(
                         {"type": "coach", "payload": coach_response.model_dump()}
                     )
+
+                    # Send performance metrics to client
+                    if metrics:
+                        await websocket.send_json(
+                            {"type": "performance", "metrics": metrics}
+                        )
 
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
@@ -240,7 +267,7 @@ async def process_user_input(text: str) -> CoachResponse:
 
 
 @app.get("/tts")
-async def text_to_speech(text: str):
+async def text_to_speech(text: str, track_timing: bool = False):
     """Convert text to speech and stream audio"""
     telemetry_context = get_telemetry()
 
@@ -250,7 +277,10 @@ async def text_to_speech(text: str):
     if telemetry_context:
         telemetry_context.count_request("GET", "/tts", 200)
 
+    tts_duration = 0
+
     def generate_audio():
+        nonlocal tts_duration
         assert tts_processor is not None
         if telemetry_context:
             with telemetry_context.trace_operation(
@@ -260,14 +290,20 @@ async def text_to_speech(text: str):
 
                 start_time = time.time()
                 yield from tts_processor.synthesize_streaming(text)
-                duration = time.time() - start_time
-                telemetry_context.record_audio_processing(duration, "tts_synthesis")
+                tts_duration = time.time() - start_time
+                telemetry_context.record_audio_processing(tts_duration, "tts_synthesis")
         else:
-            yield from tts_processor.synthesize_streaming(text)
+            import time
 
-    return StreamingResponse(
-        generate_audio(), media_type="audio/wav", headers={"Cache-Control": "no-cache"}
-    )
+            start_time = time.time()
+            yield from tts_processor.synthesize_streaming(text)
+            tts_duration = time.time() - start_time
+
+    headers = {"Cache-Control": "no-cache"}
+    if track_timing and tts_duration > 0:
+        headers["X-TTS-Duration"] = str(tts_duration)
+
+    return StreamingResponse(generate_audio(), media_type="audio/wav", headers=headers)
 
 
 @app.get("/content/scenarios")
