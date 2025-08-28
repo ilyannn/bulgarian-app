@@ -985,12 +985,12 @@ class BulgarianVoiceCoach {
 
     // Add event listeners for practice buttons
     const practiceButtons = this.transcriptArea.querySelectorAll('.warmup-practice-btn');
-    practiceButtons.forEach((button) => {
+    for (const button of practiceButtons) {
       button.addEventListener('click', (e) => {
         const grammarId = e.target.getAttribute('data-grammar');
         this.startGrammarPractice(grammarId);
       });
-    });
+    }
   }
 
   displayWelcomeMessage() {

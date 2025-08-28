@@ -334,7 +334,7 @@ describe('LocalProgressService', () => {
     it('should limit returned items to specified limit', () => {
       const grammarIds = ['bg.grammar.1', 'bg.grammar.2', 'bg.grammar.3'];
 
-      grammarIds.forEach((grammarId) => {
+      for (const grammarId of grammarIds) {
         service.updateDrillResult({
           grammarId,
           drillType: 'transform',
@@ -342,13 +342,13 @@ describe('LocalProgressService', () => {
           correctAnswer: 'correct',
           isCorrect: true,
         });
-      });
+      }
 
       // Set all as overdue
       const data = service.getStoredData();
-      grammarIds.forEach((grammarId) => {
+      for (const grammarId of grammarIds) {
         data.progress[grammarId].nextDueDate = '2024-01-10T12:00:00Z';
-      });
+      }
       service.saveData(data);
 
       const dueItems = service.getDueItems(2);
@@ -371,7 +371,7 @@ describe('LocalProgressService', () => {
       const grammarIds = ['bg.grammar.1', 'bg.grammar.2'];
 
       // Add some practice data
-      grammarIds.forEach((grammarId) => {
+      for (const grammarId of grammarIds) {
         // 2 correct, 1 incorrect per grammar item
         for (let i = 0; i < 2; i++) {
           service.updateDrillResult({
@@ -390,7 +390,7 @@ describe('LocalProgressService', () => {
           correctAnswer: 'correct',
           isCorrect: false,
         });
-      });
+      }
 
       const stats = service.getUserStatistics();
 
@@ -407,7 +407,7 @@ describe('LocalProgressService', () => {
       // Submit sequence: correct, correct, incorrect, correct, correct
       const sequence = [true, true, false, true, true];
 
-      sequence.forEach((isCorrect) => {
+      for (const isCorrect of sequence) {
         service.updateDrillResult({
           grammarId,
           drillType: 'transform',
@@ -415,7 +415,7 @@ describe('LocalProgressService', () => {
           correctAnswer: 'correct',
           isCorrect,
         });
-      });
+      }
 
       const stats = service.getUserStatistics();
       expect(stats.currentStreak).toBe(2); // Last 2 were correct

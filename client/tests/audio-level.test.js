@@ -134,7 +134,7 @@ describe('Audio Level Visualization', () => {
     global.clearInterval = vi.fn();
 
     // Set up proper style objects for mock elements after globals are set
-    Object.keys(mockElements).forEach((key) => {
+    for (const key of Object.keys(mockElements)) {
       if (mockElements[key] && typeof mockElements[key] === 'object') {
         Object.defineProperty(mockElements[key], 'style', {
           value: {
@@ -155,7 +155,7 @@ describe('Audio Level Visualization', () => {
           };
         }
       }
-    });
+    }
 
     // Import and create voiceCoach instance after mocking
     const { default: BulgarianVoiceCoach } = await import('../main.js');

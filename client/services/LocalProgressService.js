@@ -428,10 +428,10 @@ class LocalProgressService {
 
     // Count practice sessions this week
     const sessionsThisWeek = new Set();
-    recentResults.forEach((result) => {
+    for (const result of recentResults) {
       const dateStr = result.timestamp.split('T')[0];
       sessionsThisWeek.add(dateStr);
-    });
+    }
     stats.practiceSessionsThisWeek = sessionsThisWeek.size;
 
     // Calculate average response time from recent results
