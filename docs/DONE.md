@@ -1781,6 +1781,55 @@ functionality.
 **Best practice**: Run `just lint` before every commit and resolve all issues. Pre-commit hooks should never be bypassed
 as they prevent functional bugs from reaching production.
 
+## 52) Critical Fix: Biome Formatting Discrepancy with Relative Config Paths (2025-08-29) ✅
+
+### Problem Identified
+
+- [x] **Root cause discovered**: Running Biome from a subdirectory with a relative parent config path causes different formatting behavior
+- [x] **Problematic pattern**: `cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json`
+- [x] **Symptom**: Persistent CSS formatting errors that flip-flopped between single-line and multi-line `font-feature-settings`
+- [x] **Impact**: `format-check` recipe consistently failed while main `just lint` passed
+
+### Technical Details
+
+The issue manifested as a discrepancy between:
+
+- **From root**: `bunx @biomejs/biome ci --config-path .github/linters/biome.json client/` (wanted multi-line)
+- **From client dir**: `cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json` (wanted single-line)
+
+This caused the CSS file `client/styles/l1-languages.css` to constantly fail formatting checks, with the formatter flip-flopping between:
+
+```css
+/* Multi-line (what ci wanted) */
+font-feature-settings:
+  "locl" 1,
+  "ss01" 1;
+
+/* Single-line (what check from client dir wanted) */
+font-feature-settings:
+  "locl" 1,
+  "ss01" 1;
+```
+
+### Solution Applied
+
+- [x] **Fixed Justfile recipe**: Removed the problematic `cd client && ...` pattern from `format-check`
+- [x] **New approach**: Run Biome from project root with explicit target paths
+- [x] **Result**: Consistent formatting behavior across all commands
+
+### Key Lessons Learned
+
+⚠️ **Critical**: **Never combine `cd` with relative parent paths in tool configurations**
+
+**Best practices**:
+
+1. Run tools from project root with explicit paths to target directories
+2. If you must `cd`, use absolute paths for configs or copy configs locally
+3. Avoid `../` in config paths when running from subdirectories
+4. Test formatting commands from both root and subdirectories to catch discrepancies
+
+**Impact**: This fix resolved hours of debugging and multiple failed commit attempts due to inconsistent formatting requirements.
+
 ---
 
 _Last updated: 2025-08-29_

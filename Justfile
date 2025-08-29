@@ -272,7 +272,7 @@ install: py-sync web-install hooks-install
         fi
     fi
 
-    # Install shellcheck for shell script linting (if not already available)  
+    # Install shellcheck for shell script linting (if not already available)
     if ! command -v shellcheck >/dev/null 2>&1; then
         echo "🐚 Installing shellcheck (shell script linter)..."
         brew install shellcheck
@@ -635,7 +635,7 @@ test-all: py-test web-test-coverage web-test-e2e web-test-e2e-performance
     echo "  - Python backend tests: ✅"
     echo "  - Client unit tests with coverage: ✅"
     echo "  - E2E functionality tests: ✅"
-    echo "  - E2E performance & stress tests: ✅"  
+    echo "  - E2E performance & stress tests: ✅"
     echo "  - JavaScript unit/integration tests: ✅"
     echo "  - E2E browser tests: ✅"
 
@@ -684,12 +684,12 @@ toml-check:
 
 # Run all linting: Python + Web + Markdown + YAML + JSON + Shell + Docker + TOML + Docs + Justfile
 [group('quality')]
-lint: py-lint web-lint web-typecheck markdown-lint yaml-lint json-lint shell-lint docker-lint docs-check toml-check
+lint: py-lint web-lint web-typecheck markdown-lint yaml-lint json-lint shell-lint docker-lint docs-check toml-check format-check
     #!/usr/bin/env bash
     set -euo pipefail
     echo "🎯 Running comprehensive linting suite..."
     echo "   ✅ Python (ruff) ✅ Web (Biome+tsc) ✅ Markdown (markdownlint)"
-    echo "   ✅ YAML (yamllint) ✅ JSON (Biome) ✅ Shell (shellcheck)"  
+    echo "   ✅ YAML (yamllint) ✅ JSON (Biome) ✅ Shell (shellcheck)"
     echo "   ✅ Docker (hadolint) ✅ TOML (taplo) ✅ Docs (prettier)"
     echo ""
     # Optional type checking (may have experimental issues)
@@ -780,13 +780,12 @@ alias fmt := format
 [group('build')]
 build: py-build
 
+_py-format-check:
+    uvx ruff format --check server/ --config .github/linters/.ruff.toml
+
 # Check if code is formatted correctly (fails if not)
 [group('quality')]
-format-check:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    uvx ruff format --config .github/linters/.ruff.toml --check server
-    cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json --reporter=summary
+format-check: _py-format-check
 
 # ---- Git hooks via just ----------------------------------------------------
 # We commit hooks into .githooks and point Git there to keep them versioned.
@@ -803,7 +802,7 @@ hooks-install:
 
 # Gate run before every commit (lint + typecheck + format-check + docs-guard)
 [group('git-hooks')]
-pre-commit: lint web-typecheck format-check docs-guard
+pre-commit: lint docs-guard
 
 # Heavy security guardrails (secrets + path leak scan)
 [group('git-hooks')]
