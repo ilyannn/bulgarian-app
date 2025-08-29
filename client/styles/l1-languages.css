@@ -95,6 +95,26 @@
   font-language-override: "BGR";
 }
 
+/* ===========================
+   Contrast Note Base Styles
+   =========================== */
+
+/* Base contrast note styles (must come BEFORE L1-specific overrides) */
+.contrast-note {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin: 0.25rem 0;
+  background: rgba(var(--contrast-bg, 108, 117, 125), 0.1);
+  border-left: 3px solid currentColor;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.contrast-note::before {
+  content: "💡 ";
+  font-style: normal;
+}
+
 /* Polish speakers (Latin script for UI) */
 body.l1-pl {
   --ui-font: "Lato", "Roboto", system-ui, sans-serif;
@@ -109,6 +129,7 @@ body.l1-pl .contrast-note {
   font-family: "Lato", "Roboto", system-ui, sans-serif;
   font-style: italic;
   color: var(--contrast-pl, #1976d2);
+  --contrast-bg: 25, 118, 210; /* Blue */
 }
 
 /* Russian speakers */
@@ -127,6 +148,7 @@ body.l1-ru .contrast-note {
   font-family: "PT Sans", "Roboto", system-ui, sans-serif;
   font-style: italic;
   color: var(--contrast-ru, #d32f2f);
+  --contrast-bg: 211, 47, 47; /* Red */
 }
 
 /* Ukrainian speakers */
@@ -146,6 +168,7 @@ body.l1-uk .contrast-note {
   font-family: "e-Ukraine", "Arsenal", system-ui, sans-serif;
   font-style: italic;
   color: var(--contrast-uk, #ffa000);
+  --contrast-bg: 255, 160, 0; /* Orange */
 }
 
 /* Serbian speakers (both scripts) */
@@ -165,43 +188,7 @@ body.l1-sr .contrast-note {
   font-family: "Noto Sans Serbian", "Ubuntu", system-ui, sans-serif;
   font-style: italic;
   color: var(--contrast-sr, #7b1fa2);
-}
-
-/* ===========================
-   Contrast Note Highlighting
-   =========================== */
-
-/* Base contrast note styles */
-.contrast-note {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  margin: 0.25rem 0;
-  background: rgba(var(--contrast-bg, 108, 117, 125), 0.1);
-  border-left: 3px solid currentColor;
-  border-radius: 0.25rem;
-  font-size: 0.9em;
-}
-
-/* L1-specific contrast colors (higher specificity, comes after base styles) */
-body.l1-pl .contrast-note {
-  --contrast-bg: 25, 118, 210; /* Blue */
-}
-
-body.l1-ru .contrast-note {
-  --contrast-bg: 211, 47, 47; /* Red */
-}
-
-body.l1-uk .contrast-note {
-  --contrast-bg: 255, 160, 0; /* Orange */
-}
-
-body.l1-sr .contrast-note {
   --contrast-bg: 123, 31, 162; /* Purple */
-}
-
-.contrast-note::before {
-  content: "💡 ";
-  font-style: normal;
 }
 
 /* ===========================
