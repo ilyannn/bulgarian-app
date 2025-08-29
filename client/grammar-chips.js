@@ -217,12 +217,14 @@ export class GrammarChipsUI {
     const chipsContainer = document.createElement('div');
     chipsContainer.className = 'grammar-chips-container';
 
-    corrections.forEach((correction, index) => {
+    let index = 0;
+    for (const correction of corrections) {
       const chipId = `chip-${Date.now()}-${index}`;
       const chip = this.createChip(correction, chipId);
       this.chips.set(chipId, { element: chip, data: correction });
       chipsContainer.appendChild(chip);
-    });
+      index++;
+    }
 
     container.appendChild(chipsContainer);
   }

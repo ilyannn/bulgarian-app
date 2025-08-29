@@ -167,7 +167,7 @@ export class L1LanguageService {
 
     // Add options
     if (this.supportedLanguages && this.languageNames) {
-      this.supportedLanguages.forEach((lang) => {
+      for (const lang of this.supportedLanguages) {
         const option = document.createElement('option');
         option.value = lang;
         const names = this.languageNames[lang];
@@ -177,7 +177,7 @@ export class L1LanguageService {
           option.selected = true;
         }
         select.appendChild(option);
-      });
+      }
     }
 
     // Add change handler

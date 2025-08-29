@@ -283,13 +283,13 @@ class BulgarianVoiceCoach {
   reloadContrastNotes() {
     // If there are any active grammar chips or drills, reload them with new L1 contrast
     const grammarChips = document.querySelectorAll('.grammar-chip');
-    grammarChips.forEach((chip) => {
+    for (const chip of grammarChips) {
       const grammarId = chip.dataset.grammarId;
       if (grammarId) {
         // Re-fetch and update the contrast note for this grammar item
         this.updateGrammarChipContrast(chip, grammarId);
       }
-    });
+    }
   }
 
   async updateGrammarChipContrast(chip, grammarId) {
@@ -1204,7 +1204,8 @@ class BulgarianVoiceCoach {
       return bPos - aPos; // Reverse order to avoid index shifting
     });
 
-    sortedCorrections.forEach((correction, index) => {
+    let index = 0;
+    for (const correction of sortedCorrections) {
       const beforeText = correction.before;
       const afterText = correction.after;
       const errorType = correction.type || 'grammar';
@@ -1225,7 +1226,8 @@ class BulgarianVoiceCoach {
         // Replace the error text with highlighted version
         highlightedText = highlightedText.replace(beforeText, highlightHtml);
       }
-    });
+      index++;
+    }
 
     return highlightedText;
   }
