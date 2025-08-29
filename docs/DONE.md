@@ -1698,6 +1698,82 @@ See [PERFORMANCE_OPTIMIZATION.md](./PERFORMANCE_OPTIMIZATION.md) for detailed co
 - [x] **Running instructions**: Clear commands for test execution
 - [x] **Known issues documented**: WebSocket and build failures noted as non-critical
 
+## 51) L1 (Native Language) Support System Implementation (2025-08-29) ✅
+
+### Complete L1 Language Feature Implementation
+
+- [x] **Fixed critical server configuration error**: Resolved `NameError: name 'config' is not defined` that was blocking L1 language features
+  - Updated 5 instances in `server/app.py` from `config.default_l1_language` to `get_config().default_l1_language`
+  - Fixed endpoints: `/content/grammar/{grammar_id}`, `/content/drills/{grammar_id}`, `/content/analyze`
+  - Enabled proper L1-specific contrast note retrieval for Polish, Russian, Ukrainian, Serbian speakers
+- [x] **CSS cascade bug fixes**: Resolved legitimate CSS specificity warnings that were preventing proper style application
+  - **Root cause**: Base `.contrast-note` styles (lines 175-183) came AFTER L1-specific overrides, breaking cascade
+  - **Solution**: Moved base styles to line 103 BEFORE L1-specific styles to ensure proper inheritance
+  - **Result**: L1-specific colors and fonts now properly apply while maintaining base styling
+  - **Biome linting compliance**: Fixed 2 `noDescendingSpecificity` warnings by correcting actual cascade bugs
+
+### L1 Language Service Features
+
+- [x] **Complete language support**: Polish (PL), Russian (RU), Ukrainian (SR), Serbian (SR) with native/English names
+- [x] **localStorage persistence**: User L1 preference stored with key `'bgvc_l1_preference'`
+- [x] **Dynamic typography**: Body classes (`l1-pl`, `l1-ru`, etc.) for language-specific font rendering
+- [x] **Interactive language selector**: Dropdown with native names "Polski (Polish)", "Русский (Russian)", etc.
+- [x] **Elegant notifications**: Toast notifications for language changes with smooth animations
+- [x] **Session-based API updates**: Backend endpoint `/api/config/l1` for server-side session management
+- [x] **Cross-component integration**: Custom events (`l1-language-changed`) for system-wide updates
+
+### CSS Typography System
+
+- [x] **Font family hierarchy**: L1-specific fonts with Bulgarian text remaining in Ysabeau for all users
+  - Polish: "Lato", "Roboto" for UI elements
+  - Russian: "PT Sans", "Roboto" for UI elements
+  - Ukrainian: "e-Ukraine", "Arsenal" for UI elements
+  - Serbian: "Noto Sans Serbian", "Ubuntu" for UI elements
+- [x] **Color-coded contrast notes**: Unique color scheme per L1 language for contrastive explanations
+  - Polish: Blue (#1976d2)
+  - Russian: Red (#d32f2f)
+  - Ukrainian: Orange (#ffa000)
+  - Serbian: Purple (#7b1fa2)
+- [x] **CSS custom properties**: `--contrast-bg` variables for consistent theming across all L1 languages
+
+### Backend Integration
+
+- [x] **Configuration API endpoints**:
+  - `GET /api/config` - Returns current L1 language and supported languages list
+  - `POST /api/config/l1` - Updates L1 language preference (session-based)
+- [x] **Content system integration**: L1-specific contrast notes in grammar items and drill responses
+- [x] **Fallback mechanisms**: Default L1 language from environment configuration when user preference unavailable
+- [x] **Input validation**: Server-side validation ensuring only supported L1 codes (PL, RU, UK, SR) accepted
+
+### Code Quality Improvements
+
+- [x] **Biome linting compliance**: Achieved 100% linting success by fixing actual CSS cascade issues rather than bypassing rules
+- [x] **Maintained beneficial linting**: Kept `noDescendingSpecificity` rule enabled as it catches legitimate bugs
+- [x] **Proper error handling**: All L1 language operations include graceful fallback and error recovery
+- [x] **TypeScript compatibility**: All JavaScript files formatted with proper 2-space indentation for CI consistency
+
+### Integration with Existing Systems
+
+- [x] **Grammar detection**: L1-specific contrast notes automatically included in error corrections
+- [x] **Content endpoints**: All content APIs now accept `l1` parameter for personalized responses
+- [x] **WebSocket coaching**: Real-time coaching responses include L1-specific contrastive explanations
+- [x] **UI components**: TranscriptDisplay and other components respect L1 language settings
+
+### Testing Coverage
+
+- [x] **Server endpoint tests**: All L1-related API endpoints validated in existing test suite
+- [x] **CSS regression testing**: Verified cascade order fixes don't break existing functionality
+- [x] **Configuration validation**: Environment configuration properly handles L1 language settings
+- [x] **Error handling tests**: Graceful failure when invalid L1 codes provided
+
+### Critical Development Note: Linting Discipline
+
+⚠️ **Important**: During this implementation, we discovered the importance of **NOT bypassing linting checks** with `--no-verify` or similar flags. The CSS specificity warnings were actually **legitimate cascade bugs** that prevented L1-specific styling from working properly.
+
+**Key lesson**: Always fix linting issues rather than bypassing them - linting rules often catch real bugs that impact functionality.
+
+**Best practice**: Run `just lint` before every commit and resolve all issues. Pre-commit hooks should never be bypassed as they prevent functional bugs from reaching production.
+
 ---
 
 _Last updated: 2025-08-29_
