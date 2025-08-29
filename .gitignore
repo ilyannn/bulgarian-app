@@ -1,7 +1,11 @@
+# Playwright
+playwright-report/
+
 # Development process files
 .dev-pids/
 
 # Python
+.*_cache/
 __pycache__/
 *.py[cod]
 *$py.class
