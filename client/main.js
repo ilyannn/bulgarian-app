@@ -4,6 +4,7 @@
 
 import LocalProgressService from './services/LocalProgressService.js';
 import PerformanceMonitor from './services/PerformanceMonitor.js';
+import { TranscriptDisplay } from './services/TranscriptDisplay.js';
 
 class BulgarianVoiceCoach {
   constructor() {
@@ -17,6 +18,10 @@ class BulgarianVoiceCoach {
     // WebSocket connection
     this.websocket = null;
     this.isConnected = false;
+
+    // Enhanced transcript display
+    this.transcriptDisplay = new TranscriptDisplay();
+    this.lastConfidenceScore = 0.85; // Default confidence
 
     // UI elements
     this.micButton = document.getElementById('mic-button');
@@ -63,6 +68,9 @@ class BulgarianVoiceCoach {
 
     // Performance monitoring
     this.performanceMonitor = new PerformanceMonitor();
+
+    // Initialize enhanced transcript display
+    this.transcriptDisplay.init(this.transcriptArea);
 
     // Initialize
     this.initializeEventListeners();
@@ -248,6 +256,10 @@ class BulgarianVoiceCoach {
   handleWebSocketMessage(message) {
     switch (message.type) {
       case 'partial':
+        // Extract confidence score if available
+        if (message.confidence !== undefined) {
+          this.lastConfidenceScore = message.confidence;
+        }
         this.updatePartialTranscript(message.text);
         // Mark ASR start on first partial
         if (!this.hasReceivedPartial) {
@@ -256,11 +268,16 @@ class BulgarianVoiceCoach {
         }
         break;
       case 'final':
+        // Extract confidence score if available
+        if (message.confidence !== undefined) {
+          this.lastConfidenceScore = message.confidence;
+        }
         this.addFinalTranscript(message.text);
         this.measureLatency('transcription');
         // Mark ASR end
         this.performanceMonitor.mark('asrEnd', {
           transcriptLength: message.text?.length || 0,
+          confidence: this.lastConfidenceScore,
         });
         // Mark LLM start (processing begins)
         this.performanceMonitor.mark('llmStart');
@@ -622,112 +639,28 @@ class BulgarianVoiceCoach {
   }
 
   updatePartialTranscript(text) {
-    let partialLine = document.querySelector('.transcript-line.partial');
-
-    if (!partialLine) {
-      partialLine = document.createElement('div');
-      partialLine.className = 'transcript-line partial';
-      this.transcriptArea.appendChild(partialLine);
-    }
-
-    partialLine.innerHTML = `<strong>You (partial):</strong> <span class="bg-text">${text}</span>`;
-    this.scrollToBottom();
+    // Use enhanced transcript display with confidence indicator
+    const confidence = this.lastConfidenceScore || 0.7;
+    this.transcriptDisplay.updatePartialTranscript(text, confidence);
   }
 
   addFinalTranscript(text) {
-    // Remove partial line
-    const partialLine = document.querySelector('.transcript-line.partial');
-    if (partialLine) {
-      partialLine.remove();
-    }
-
-    // Add final transcript with error highlighting
-    const finalLine = document.createElement('div');
-    finalLine.className = 'transcript-line final';
-
-    const highlightedText = this.highlightErrors(text, this.lastDetectedErrors);
-    finalLine.innerHTML = `<strong>You:</strong> <span class="bg-text">${highlightedText}</span>`;
-
-    this.transcriptArea.appendChild(finalLine);
-    this.scrollToBottom();
+    // Use enhanced transcript display with bubbles and confidence
+    const confidence = this.lastConfidenceScore || 0.85;
+    this.transcriptDisplay.addFinalTranscript(text, confidence, this.lastDetectedErrors);
   }
 
   addCoachResponse(payload) {
     // Store corrections for error highlighting
     this.lastDetectedErrors = payload.corrections || [];
 
-    const coachLine = document.createElement('div');
-    coachLine.className = 'transcript-line coach';
+    // Use enhanced transcript display for coach responses
+    this.transcriptDisplay.addCoachResponse(payload);
 
-    let html = `<strong>Coach:</strong> <span class="bg-text bg-response">${payload.reply_bg}</span>`;
-
-    // Add grammar chips UI if available
-    if (payload.corrections && payload.corrections.length > 0) {
-      if (window.grammarChipsUI) {
-        // Create container for grammar chips
-        const chipsContainer = document.createElement('div');
-        chipsContainer.className = 'grammar-chips-wrapper';
-        coachLine.innerHTML = html;
-        this.transcriptArea.appendChild(coachLine);
-
-        // Add chips to the coach response
-        window.grammarChipsUI.createChips(payload.corrections, coachLine);
-
-        // Don't add HTML for corrections since chips handle it
-        html = null;
-      } else if (window.enhancedCorrections) {
-        // Fallback to enhanced corrections if grammar chips not available
-        html += window.enhancedCorrections.processCorrections(payload.corrections);
-      } else {
-        // Fallback to basic corrections
-        html += '<div class="corrections">';
-        html += '<div style="margin-top: 0.5rem; font-weight: 500;">Corrections:</div>';
-
-        payload.corrections.forEach((correction, index) => {
-          html += `<span class="correction-chip" onclick="toggleCorrection(${index})" data-correction-index="${index}">
-                      ${correction.before} → ${correction.after}
-                  </span>`;
-        });
-        html += '</div>';
-
-        // Add correction details (hidden by default)
-        payload.corrections.forEach((correction, index) => {
-          html += `<div class="correction-details" id="correction-${index}">
-                      <strong>Error:</strong> ${correction.type}<br>
-                      <strong>Note:</strong> ${correction.note}
-                  </div>`;
-        });
-      }
-    }
-
-    // Add drills if any - with interactive practice option
-    if (html && payload.drills && payload.drills.length > 0) {
-      html += '<div class="drills-section">';
-      html +=
-        '<div style="font-weight: 500; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">';
-      html += '<span>Practice Drills:</span>';
-      html +=
-        '<button class="btn btn-primary start-drill-practice" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">🎯 Start Interactive Practice</button>';
-      html += '</div>';
-
-      for (const drill of payload.drills) {
-        html += `<div class="drill-item">
-                    <div class="drill-prompt">${drill.prompt_bg}</div>
-                    <div class="drill-answer">Answer: ${drill.answer_bg}</div>
-                </div>`;
-      }
-      html += '</div>';
-
-      // Store drills for interactive practice
+    // Store drills for interactive practice if any
+    if (payload.drills && payload.drills.length > 0) {
       window.currentDrills = payload.drills;
     }
-
-    // Only update innerHTML if html is not null (grammar chips handle their own rendering)
-    if (html) {
-      coachLine.innerHTML = html;
-      this.transcriptArea.appendChild(coachLine);
-    }
-    this.scrollToBottom();
 
     // Store for playback
     this.lastResponseText = payload.reply_bg;
@@ -764,11 +697,9 @@ class BulgarianVoiceCoach {
   }
 
   clearTranscript() {
-    this.transcriptArea.innerHTML = `
-            <div style="text-align: center; color: #999; padding: 2rem;">
-                Start speaking to practice Bulgarian...
-            </div>
-        `;
+    // Use enhanced transcript display clear method
+    this.transcriptDisplay.clearTranscripts();
+    this.lastDetectedErrors = [];
     this.lastResponseText = '';
     this.enableAudioControls(false);
 
@@ -781,7 +712,8 @@ class BulgarianVoiceCoach {
   }
 
   scrollToBottom() {
-    this.transcriptArea.scrollTop = this.transcriptArea.scrollHeight;
+    // Use enhanced transcript display scroll method
+    this.transcriptDisplay.scrollToBottom();
   }
 
   updateConnectionStatus(status, text) {

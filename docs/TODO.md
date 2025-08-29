@@ -26,9 +26,9 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 
 ### Transcript Display Improvements
 
-- [ ] Improve partial transcript display
-- [ ] Add finalized transcript bubbles
-- [ ] Add confidence indicators
+- [x] ✅ Improve partial transcript display (DONE - 2025-08-29)
+- [x] ✅ Add finalized transcript bubbles (DONE - 2025-08-29)
+- [x] ✅ Add confidence indicators (DONE - 2025-08-29)
 
 ## 3) Typography & Localization (Medium Priority)
 

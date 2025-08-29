@@ -159,7 +159,7 @@ class ASRProcessor:
     def _get_partial_transcription(self) -> dict:
         """Get partial transcription from current speech frames"""
         if not self.speech_frames:
-            return {"type": "partial", "text": ""}
+            return {"type": "partial", "text": "", "confidence": 0.0}
 
         try:
             # Concatenate frames
@@ -169,9 +169,20 @@ class ASRProcessor:
             audio_hash = self._get_audio_hash(audio)
             if audio_hash in self.transcription_cache:
                 logger.debug("Cache hit for partial transcription")
-                cached_text = self.transcription_cache[audio_hash]
+                cached_entry = self.transcription_cache[audio_hash]
+                # Support both old (text-only) and new (dict with confidence) cache format
+                if isinstance(cached_entry, dict):
+                    cached_text = cached_entry.get("text", "")
+                    cached_confidence = cached_entry.get("confidence", 0.7)
+                else:
+                    cached_text = cached_entry
+                    cached_confidence = 0.7
                 self.partial_text = cached_text
-                return {"type": "partial", "text": cached_text}
+                return {
+                    "type": "partial",
+                    "text": cached_text,
+                    "confidence": cached_confidence,
+                }
 
             # Normalize audio
             audio = audio.astype(np.float32) / 32768.0
@@ -187,6 +198,16 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+
+            # Calculate confidence from segments
+            confidences = []
+            for segment in segments:
+                if hasattr(segment, "avg_logprob"):
+                    # Convert log probability to confidence score
+                    confidence = min(1.0, max(0.0, (segment.avg_logprob + 1.0) / 1.0))
+                    confidences.append(confidence)
+
+            avg_confidence = sum(confidences) / len(confidences) if confidences else 0.7
 
             # Retry with adjusted parameters if no speech detected
             if (
@@ -207,24 +228,39 @@ class ASRProcessor:
                 )
                 text = " ".join([segment.text.strip() for segment in segments])
 
+                # Recalculate confidence for retry
+                confidences = []
+                for segment in segments:
+                    if hasattr(segment, "avg_logprob"):
+                        confidence = min(
+                            1.0, max(0.0, (segment.avg_logprob + 1.0) / 1.0)
+                        )
+                        confidences.append(confidence)
+                avg_confidence = (
+                    sum(confidences) / len(confidences) if confidences else 0.5
+                )
+
             # Store in cache if we got text
             if text and len(self.transcription_cache) < self.cache_max_size:
-                self.transcription_cache[audio_hash] = text
+                self.transcription_cache[audio_hash] = {
+                    "text": text,
+                    "confidence": avg_confidence,
+                }
                 logger.debug(
                     f"Cached partial transcription (cache size: {len(self.transcription_cache)})"
                 )
 
             self.partial_text = text
-            return {"type": "partial", "text": text}
+            return {"type": "partial", "text": text, "confidence": avg_confidence}
 
         except Exception as e:
             logger.error(f"Error in partial transcription: {e}")
-            return {"type": "partial", "text": ""}
+            return {"type": "partial", "text": "", "confidence": 0.0}
 
     def _finalize_transcription(self) -> dict:
         """Finalize transcription and reset state"""
         if not self.speech_frames:
-            return {"type": "final", "text": ""}
+            return {"type": "final", "text": "", "confidence": 0.0}
 
         try:
             # Concatenate all speech frames
@@ -234,14 +270,27 @@ class ASRProcessor:
             audio_hash = self._get_audio_hash(audio)
             if audio_hash in self.transcription_cache:
                 logger.debug("Cache hit for final transcription")
-                cached_text = self.transcription_cache[audio_hash]
+                cached_entry = self.transcription_cache[audio_hash]
+                # Support both old (text-only) and new (dict with confidence) cache format
+                if isinstance(cached_entry, dict):
+                    cached_text = cached_entry.get("text", "")
+                    cached_confidence = cached_entry.get("confidence", 0.85)
+                else:
+                    cached_text = cached_entry
+                    cached_confidence = 0.85
                 # Reset state
                 self.speech_frames = []
                 self.silence_count = 0
                 self.speech_triggered = False
                 self.partial_text = ""
-                print(f"Final transcription (cached): {cached_text}")
-                return {"type": "final", "text": cached_text}
+                print(
+                    f"Final transcription (cached): {cached_text} (confidence: {cached_confidence:.2f})"
+                )
+                return {
+                    "type": "final",
+                    "text": cached_text,
+                    "confidence": cached_confidence,
+                }
 
             # Normalize audio
             audio = audio.astype(np.float32) / 32768.0
@@ -258,6 +307,18 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+
+            # Calculate confidence from segments
+            confidences = []
+            for segment in segments:
+                if hasattr(segment, "avg_logprob"):
+                    # Convert log probability to confidence score
+                    confidence = min(1.0, max(0.0, (segment.avg_logprob + 1.0) / 1.0))
+                    confidences.append(confidence)
+
+            avg_confidence = (
+                sum(confidences) / len(confidences) if confidences else 0.85
+            )
 
             # Retry with adjusted parameters if no speech detected
             if (
@@ -280,9 +341,24 @@ class ASRProcessor:
                 )
                 text = " ".join([segment.text.strip() for segment in segments])
 
+                # Recalculate confidence for retry
+                confidences = []
+                for segment in segments:
+                    if hasattr(segment, "avg_logprob"):
+                        confidence = min(
+                            1.0, max(0.0, (segment.avg_logprob + 1.0) / 1.0)
+                        )
+                        confidences.append(confidence)
+                avg_confidence = (
+                    sum(confidences) / len(confidences) if confidences else 0.6
+                )
+
             # Store in cache if we got text
             if text and len(self.transcription_cache) < self.cache_max_size:
-                self.transcription_cache[audio_hash] = text
+                self.transcription_cache[audio_hash] = {
+                    "text": text,
+                    "confidence": avg_confidence,
+                }
                 logger.debug(
                     f"Cached final transcription (cache size: {len(self.transcription_cache)})"
                 )
@@ -293,8 +369,8 @@ class ASRProcessor:
             self.speech_triggered = False
             self.partial_text = ""
 
-            print(f"Final transcription: {text}")
-            return {"type": "final", "text": text}
+            print(f"Final transcription: {text} (confidence: {avg_confidence:.2f})")
+            return {"type": "final", "text": text, "confidence": avg_confidence}
 
         except Exception as e:
             print(f"Error in final transcription: {e}")
@@ -303,7 +379,7 @@ class ASRProcessor:
             self.silence_count = 0
             self.speech_triggered = False
             self.partial_text = ""
-            return {"type": "final", "text": ""}
+            return {"type": "final", "text": "", "confidence": 0.0}
 
     async def process_audio(self, audio_data: np.ndarray | None) -> dict:
         """Process audio data and return transcription result (async interface for tests)"""

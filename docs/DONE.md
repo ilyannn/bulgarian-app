@@ -307,6 +307,36 @@ Items that have been successfully implemented from the original build plan.
 - [x] **Improved clarity**: Each recipe's execution model is now explicit and self-documenting
 - [x] **Better maintainability**: No hidden global shell configuration affecting all recipes
 - [x] **Flexible execution**: Simple recipes run faster without shell wrapper overhead
+
+## 23) Transcript Display Improvements ✅ (2025-08-29)
+
+### Enhanced Partial Transcript Display
+
+- [x] **Chat-like bubble UI**: Professional message bubble interface with smooth animations
+- [x] **Typing indicators**: Visual feedback during speech with animated dots
+- [x] **Real-time updates**: Smooth transitions between partial and final transcripts
+- [x] **Dark mode support**: Full theming support with CSS custom properties
+
+### Finalized Transcript Bubbles
+
+- [x] **Message grouping**: Smart grouping for consecutive messages from same sender
+- [x] **Timestamps and metadata**: Clear time indicators for each message
+- [x] **Error highlighting**: Visual distinction for grammar corrections
+- [x] **Scroll management**: Auto-scroll with smart scroll-to-bottom button
+
+### Confidence Indicators
+
+- [x] **Visual confidence bars**: 5-dot indicator system for ASR confidence
+- [x] **Color-coded levels**: High (≥85%), medium (≥70%), low (<70%) thresholds
+- [x] **Server-side calculation**: Confidence scores from Whisper log probabilities
+- [x] **Cache-aware storage**: Enhanced cache to store confidence with transcriptions
+
+### Technical Implementation
+
+- [x] **TranscriptDisplay service**: Complete UI service in `client/services/TranscriptDisplay.js`
+- [x] **ASR confidence calculation**: Enhanced ASR processor with confidence scoring
+- [x] **WebSocket integration**: Messages now include confidence data
+- [x] **Test updates**: Fixed ASR tests to account for model warm-up
 - [x] **Consistent error handling**: Each recipe explicitly defines its error handling behavior
 
 ## 23) TOML Linting Configuration ✅ (2025-08-25)

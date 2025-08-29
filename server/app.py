@@ -161,10 +161,20 @@ async def websocket_asr_endpoint(websocket: WebSocket):
             if result:
                 if result["type"] == "partial":
                     await websocket.send_json(
-                        {"type": "partial", "text": result["text"]}
+                        {
+                            "type": "partial",
+                            "text": result["text"],
+                            "confidence": result.get("confidence", 0.7),
+                        }
                     )
                 elif result["type"] == "final":
-                    await websocket.send_json({"type": "final", "text": result["text"]})
+                    await websocket.send_json(
+                        {
+                            "type": "final",
+                            "text": result["text"],
+                            "confidence": result.get("confidence", 0.85),
+                        }
+                    )
 
                     # Track performance metrics
                     import time

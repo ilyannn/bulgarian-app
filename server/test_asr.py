@@ -235,11 +235,12 @@ class TestAudioPreprocessing:
 
         await processor.process_audio(loud_audio)
 
-        # Check that transcribe was called (audio was processed)
-        mock_model.transcribe.assert_called_once()
+        # Check that transcribe was called twice (once for warmup, once for processing)
+        assert mock_model.transcribe.call_count == 2
 
-        # The audio passed to transcribe should be the same as input (no normalization for float32)
-        call_args = mock_model.transcribe.call_args[0][0]
+        # The second call (index 1) should be our actual audio processing
+        # First call (index 0) is the warmup with silent audio
+        call_args = mock_model.transcribe.call_args_list[1][0][0]
         np.testing.assert_array_equal(call_args, loud_audio)
 
     @patch("asr.WhisperModel")
@@ -338,7 +339,8 @@ class TestVADIntegration:
 
         # Should process through Whisper
         assert result["text"] == "Speech detected"
-        mock_model.transcribe.assert_called_once()
+        # Check that transcribe was called twice (once for warmup, once for processing)
+        assert mock_model.transcribe.call_count == 2
 
 
 class TestLanguageDetection:
