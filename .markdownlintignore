@@ -1,3 +1,4 @@
-# Ignore DONE.md for line length check since it contains long achievement descriptions
-# that are better kept on single lines for readability
+# Ignore DONE.md and TODO.md for line length check since they contain long achievement 
+# descriptions and links that are better kept on single lines for readability
 docs/DONE.md
+docs/TODO.md

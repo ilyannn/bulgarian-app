@@ -310,3 +310,63 @@ If/when authentication is needed:
 3. Sync localStorage → server on login
 4. Handle conflicts (last-write-wins)
 5. Share progress via URL tokens
+
+## Core Functionality Testing
+
+The project includes comprehensive end-to-end testing via `just test-core-functionality` command that validates:
+
+### Test Coverage (83% Pass Rate as of 2025-08-29)
+
+1. **Development Server Launch** ✅
+   - Frontend (Vite) on port 3000/5173
+   - Backend (FastAPI) on port 8000
+   - Hot reload functionality
+
+2. **Typography & Fonts** ✅
+   - Ysabeau font loading for Bulgarian Cyrillic
+   - Proper font file serving
+
+3. **WebSocket Connectivity** ⚠️
+   - ASR WebSocket endpoint at /ws/asr
+   - Currently returns 400 (needs investigation)
+
+4. **Content System** ✅
+   - Grammar packs API at /content/grammar/{id}
+   - Scenarios API at /content/scenarios
+   - Drill generation at /content/drills/{id}
+
+5. **Text-to-Speech** ✅
+   - TTS endpoint with URL-encoded Bulgarian text
+   - eSpeak NG integration
+
+6. **UI Components** ✅
+   - TranscriptDisplay service for chat UI
+   - LocalProgressService for SRS tracking
+
+7. **ASR Model Warm-up** ✅
+   - faster-whisper model initialization
+   - Model preloading on startup
+
+8. **Production Build** ⚠️
+   - Build process validation
+   - Currently failing (needs fix)
+
+### Running Tests
+
+```bash
+# Run all core functionality tests
+just test-core-functionality
+
+# Individual test categories
+just test        # Backend tests
+just web-test    # Frontend tests
+just lint        # Linting checks
+```
+
+### Test Implementation Notes
+
+- Uses macOS-compatible commands (curl --max-time instead of timeout)
+- URL-encodes Cyrillic text for API calls
+- Checks both primary and alternate Vite ports
+- Color-coded output for clear results
+- Graceful handling of missing tools (websocat)

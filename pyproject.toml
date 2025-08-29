@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "bulgarian-voice-coach"
 version = "0.1.0"
@@ -97,3 +101,8 @@ extra-paths = [".", "server"]
 include = ["server"]
 # ignore these directories
 exclude = ["client", "docs"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["server*"]
+exclude = ["client*", "docs*", "screenshots*", "scripts*", "content*", "data*"]
