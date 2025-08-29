@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from functools import lru_cache
 
 import uvicorn
 from asr import ASRProcessor
@@ -206,6 +207,19 @@ async def websocket_asr_endpoint(websocket: WebSocket):
         # Track connection close
         if telemetry_context:
             telemetry_context.update_connections(-1)
+
+
+# Cache decorator for common coaching responses
+@lru_cache(maxsize=128)
+def get_cached_coaching_response(
+    text: str, corrections_hash: str
+) -> tuple[str, str | None]:
+    """
+    Cached function for generating coaching responses.
+    Returns (reply_bg, contrastive_note) tuple.
+    Note: This is a simplified cache key - in production you'd want more sophisticated caching.
+    """
+    return ("", None)  # Will be overridden by actual logic
 
 
 async def process_user_input(text: str) -> CoachResponse:

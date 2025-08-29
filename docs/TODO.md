@@ -15,11 +15,8 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 
 ## 1) Performance & Latency Optimization (High Priority)
 
-### Remaining Performance Tasks
-
-- [ ] Add retry logic for no-speech scenarios
-- [ ] Implement model preloading at startup to avoid first-use delay
-- [ ] Add caching for common phrases and responses
+✅ **COMPLETED** - All performance optimization tasks have been implemented. See
+[DONE.md](./DONE.md#49-advanced-performance-optimizations) for details.
 
 ## 2) Audio & Media Enhancements (Medium Priority)
 

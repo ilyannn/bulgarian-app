@@ -1,29 +1,29 @@
 {
   "optimal_configuration": {
     "configuration": {
-      "name": "fast_vad_200",
-      "vad_tail_ms": 200,
-      "beam_size": 5,
+      "name": "large_beam",
+      "vad_tail_ms": 300,
+      "beam_size": 10,
       "temperature": 0.0,
       "no_speech_threshold": 0.6,
-      "description": "Aggressive VAD for fast response"
+      "description": "Higher accuracy with larger beam"
     },
     "latency": {
-      "mean": 71.82609159790445,
-      "median": 72.11374999315012,
-      "stdev": 0.5197127411923156,
-      "min": 71.08370900095906,
-      "max": 72.26204099424649,
-      "p90": 72.26204099424649,
-      "p99": 72.26204099424649
+      "mean": 94.26103739970131,
+      "median": 94.39312499307562,
+      "stdev": 0.46734197776749886,
+      "min": 93.23920801398344,
+      "max": 94.64074998686556,
+      "p90": 94.64074998686556,
+      "p99": 94.64074998686556
     },
     "accuracy": {
-      "mean": 0.9,
-      "median": 0.9,
-      "min": 0.9,
-      "max": 0.9
+      "mean": 0.95,
+      "median": 0.95,
+      "min": 0.95,
+      "max": 0.95
     },
-    "samples_tested": 5,
+    "samples_tested": 10,
     "meets_target": true
   },
   "all_results": [
@@ -37,13 +37,13 @@
         "description": "Current production settings"
       },
       "latency": {
-        "mean": 102.09868300007656,
-        "median": 102.1901659987634,
-        "stdev": 0.2615571903324558,
-        "min": 101.63508300320245,
-        "max": 102.2528329922352,
-        "p90": 102.2528329922352,
-        "p99": 102.2528329922352
+        "mean": 102.10815010213992,
+        "median": 102.13368749828078,
+        "stdev": 0.30413778418432375,
+        "min": 101.29687500011642,
+        "max": 102.39841700240504,
+        "p90": 102.39841700240504,
+        "p99": 102.39841700240504
       },
       "accuracy": {
         "mean": 0.9,
@@ -51,7 +51,7 @@
         "min": 0.9,
         "max": 0.9
       },
-      "samples_tested": 5,
+      "samples_tested": 10,
       "meets_target": true
     },
     {
@@ -64,13 +64,13 @@
         "description": "Aggressive VAD for fast response"
       },
       "latency": {
-        "mean": 71.82609159790445,
-        "median": 72.11374999315012,
-        "stdev": 0.5197127411923156,
-        "min": 71.08370900095906,
-        "max": 72.26204099424649,
-        "p90": 72.26204099424649,
-        "p99": 72.26204099424649
+        "mean": 71.9241497979965,
+        "median": 72.02135399711551,
+        "stdev": 0.31026101537449874,
+        "min": 71.32929099316243,
+        "max": 72.25533299788367,
+        "p90": 72.25533299788367,
+        "p99": 72.25533299788367
       },
       "accuracy": {
         "mean": 0.9,
@@ -78,7 +78,7 @@
         "min": 0.9,
         "max": 0.9
       },
-      "samples_tested": 5,
+      "samples_tested": 10,
       "meets_target": true
     },
     {
@@ -91,13 +91,13 @@
         "description": "Moderate VAD timing"
       },
       "latency": {
-        "mean": 82.11721680418123,
-        "median": 82.13520800927654,
-        "stdev": 0.3176678605891507,
-        "min": 81.65287500014529,
-        "max": 82.49812500434928,
-        "p90": 82.49812500434928,
-        "p99": 82.49812500434928
+        "mean": 81.88415409676963,
+        "median": 81.94431249285117,
+        "stdev": 0.2876761780076151,
+        "min": 81.25145800295286,
+        "max": 82.17199999489821,
+        "p90": 82.17199999489821,
+        "p99": 82.17199999489821
       },
       "accuracy": {
         "mean": 0.9,
@@ -105,7 +105,7 @@
         "min": 0.9,
         "max": 0.9
       },
-      "samples_tested": 5,
+      "samples_tested": 10,
       "meets_target": true
     },
     {
@@ -118,13 +118,13 @@
         "description": "Conservative VAD timing"
       },
       "latency": {
-        "mean": 92.02165000024252,
-        "median": 92.11675000551622,
-        "stdev": 0.27867217078292283,
-        "min": 91.52733400696889,
-        "max": 92.2049579967279,
-        "p90": 92.2049579967279,
-        "p99": 92.2049579967279
+        "mean": 91.5958708996186,
+        "median": 91.6490414965665,
+        "stdev": 0.600202635109849,
+        "min": 90.38941700418945,
+        "max": 92.14854199672118,
+        "p90": 92.14854199672118,
+        "p99": 92.14854199672118
       },
       "accuracy": {
         "mean": 0.9,
@@ -132,7 +132,7 @@
         "min": 0.9,
         "max": 0.9
       },
-      "samples_tested": 5,
+      "samples_tested": 10,
       "meets_target": true
     },
     {
@@ -145,13 +145,13 @@
         "description": "Faster ASR with smaller beam"
       },
       "latency": {
-        "mean": 72.03769159968942,
-        "median": 72.0870829973137,
-        "stdev": 0.17217050522991775,
-        "min": 71.84704201063141,
-        "max": 72.24816600501072,
-        "p90": 72.24816600501072,
-        "p99": 72.24816600501072
+        "mean": 71.89906249986961,
+        "median": 72.13170849718153,
+        "stdev": 0.47329248415321007,
+        "min": 70.96399999863934,
+        "max": 72.31058299657889,
+        "p90": 72.31058299657889,
+        "p99": 72.31058299657889
       },
       "accuracy": {
         "mean": 0.86,
@@ -159,17 +159,233 @@
         "min": 0.86,
         "max": 0.86
       },
-      "samples_tested": 5,
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "medium_beam",
+        "vad_tail_ms": 300,
+        "beam_size": 3,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Balanced beam size"
+      },
+      "latency": {
+        "mean": 77.08230439893669,
+        "median": 77.17764599510701,
+        "stdev": 0.21878469121875188,
+        "min": 76.60816700081341,
+        "max": 77.2971249971306,
+        "p90": 77.2971249971306,
+        "p99": 77.2971249971306
+      },
+      "accuracy": {
+        "mean": 0.88,
+        "median": 0.88,
+        "min": 0.88,
+        "max": 0.88
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "large_beam",
+        "vad_tail_ms": 300,
+        "beam_size": 10,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Higher accuracy with larger beam"
+      },
+      "latency": {
+        "mean": 94.26103739970131,
+        "median": 94.39312499307562,
+        "stdev": 0.46734197776749886,
+        "min": 93.23920801398344,
+        "max": 94.64074998686556,
+        "p90": 94.64074998686556,
+        "p99": 94.64074998686556
+      },
+      "accuracy": {
+        "mean": 0.95,
+        "median": 0.95,
+        "min": 0.95,
+        "max": 0.95
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "low_threshold",
+        "vad_tail_ms": 300,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.3,
+        "description": "More sensitive to speech"
+      },
+      "latency": {
+        "mean": 81.8493708022288,
+        "median": 81.99893750133924,
+        "stdev": 0.327912791683689,
+        "min": 81.3345000060508,
+        "max": 82.18391600530595,
+        "p90": 82.18391600530595,
+        "p99": 82.18391600530595
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "high_threshold",
+        "vad_tail_ms": 300,
+        "beam_size": 5,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.8,
+        "description": "Less sensitive to noise"
+      },
+      "latency": {
+        "mean": 81.92948740033899,
+        "median": 82.04035450035008,
+        "stdev": 0.3639184708458742,
+        "min": 81.32425000076182,
+        "max": 82.26112500415184,
+        "p90": 82.26112500415184,
+        "p99": 82.26112500415184
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "with_temperature",
+        "vad_tail_ms": 300,
+        "beam_size": 5,
+        "temperature": 0.2,
+        "no_speech_threshold": 0.6,
+        "description": "Slight randomness in decoding"
+      },
+      "latency": {
+        "mean": 82.05538329930278,
+        "median": 82.14643749670358,
+        "stdev": 0.26213966325639493,
+        "min": 81.56449999660254,
+        "max": 82.25700000184588,
+        "p90": 82.25700000184588,
+        "p99": 82.25700000184588
+      },
+      "accuracy": {
+        "mean": 0.9,
+        "median": 0.9,
+        "min": 0.9,
+        "max": 0.9
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "speed_optimized",
+        "vad_tail_ms": 250,
+        "beam_size": 2,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.5,
+        "description": "Maximum speed configuration"
+      },
+      "latency": {
+        "mean": 69.6905875010998,
+        "median": 69.65597900125431,
+        "stdev": 0.13588169881863624,
+        "min": 69.52904199715704,
+        "max": 70.04970900015905,
+        "p90": 70.04970900015905,
+        "p99": 70.04970900015905
+      },
+      "accuracy": {
+        "mean": 0.87,
+        "median": 0.87,
+        "min": 0.87,
+        "max": 0.87
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "accuracy_optimized",
+        "vad_tail_ms": 400,
+        "beam_size": 8,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.7,
+        "description": "Maximum accuracy configuration"
+      },
+      "latency": {
+        "mean": 99.50885000143899,
+        "median": 99.65393750462681,
+        "stdev": 0.27140858554545705,
+        "min": 98.83000000263564,
+        "max": 99.67475000303239,
+        "p90": 99.67475000303239,
+        "p99": 99.67475000303239
+      },
+      "accuracy": {
+        "mean": 0.9299999999999999,
+        "median": 0.9299999999999999,
+        "min": 0.9299999999999999,
+        "max": 0.9299999999999999
+      },
+      "samples_tested": 10,
+      "meets_target": true
+    },
+    {
+      "configuration": {
+        "name": "balanced_optimal",
+        "vad_tail_ms": 300,
+        "beam_size": 4,
+        "temperature": 0.0,
+        "no_speech_threshold": 0.6,
+        "description": "Hypothetical optimal balance"
+      },
+      "latency": {
+        "mean": 79.27966659917729,
+        "median": 79.40170798974577,
+        "stdev": 0.4649392062039956,
+        "min": 78.51575000677258,
+        "max": 79.75929199892562,
+        "p90": 79.75929199892562,
+        "p99": 79.75929199892562
+      },
+      "accuracy": {
+        "mean": 0.89,
+        "median": 0.89,
+        "min": 0.89,
+        "max": 0.89
+      },
+      "samples_tested": 10,
       "meets_target": true
     }
   ],
-  "passing_count": 5,
+  "passing_count": 13,
   "recommendations": {
-    "name": "fast_vad_200",
-    "vad_tail_ms": 200,
-    "beam_size": 5,
+    "name": "large_beam",
+    "vad_tail_ms": 300,
+    "beam_size": 10,
     "temperature": 0.0,
     "no_speech_threshold": 0.6,
-    "description": "Aggressive VAD for fast response"
+    "description": "Higher accuracy with larger beam"
   }
 }

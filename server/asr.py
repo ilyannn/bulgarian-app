@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import threading
@@ -58,12 +59,40 @@ class ASRProcessor:
         try:
             self.model = WhisperModel(model_path, device="cpu", compute_type="int8")
             logger.info("✅ Whisper model initialized successfully")
+
+            # Preload model by running a warm-up inference
+            self._warmup_model()
         except Exception as e:
             logger.error(f"❌ Failed to initialize Whisper model: {e}")
             raise
 
         self.partial_text = ""
         self.lock = threading.Lock()
+
+        # Cache for common phrases (stores audio hash -> transcription)
+        self.transcription_cache = {}
+        self.cache_max_size = 100  # Maximum number of cached transcriptions
+
+    def _warmup_model(self):
+        """Warm up the Whisper model to avoid first-use delay"""
+        try:
+            logger.info("🔥 Warming up Whisper model...")
+            # Create a small silent audio sample (0.5 seconds)
+            warmup_audio = np.zeros(int(self.sample_rate * 0.5), dtype=np.float32)
+
+            # Run inference to load model into memory
+            segments, _ = self.model.transcribe(
+                warmup_audio,
+                language="bg",
+                beam_size=1,
+                temperature=0.0,
+                no_speech_threshold=0.9,  # High threshold since it's silence
+                condition_on_previous_text=False,
+            )
+
+            logger.info("✅ Model warm-up complete")
+        except Exception as e:
+            logger.warning(f"⚠️ Model warm-up failed (non-critical): {e}")
 
     def process_audio_chunk(self, audio_data: bytes) -> dict | None:
         """Process incoming audio chunk and return ASR result"""
@@ -121,6 +150,12 @@ class ASRProcessor:
 
         return None
 
+    def _get_audio_hash(self, audio: np.ndarray) -> str:
+        """Generate a hash for audio data for caching"""
+        # Use a simplified hash of audio characteristics for speed
+        audio_bytes = audio.tobytes()
+        return hashlib.md5(audio_bytes).hexdigest()
+
     def _get_partial_transcription(self) -> dict:
         """Get partial transcription from current speech frames"""
         if not self.speech_frames:
@@ -130,11 +165,19 @@ class ASRProcessor:
             # Concatenate frames
             audio = np.concatenate(self.speech_frames)
 
+            # Check cache first
+            audio_hash = self._get_audio_hash(audio)
+            if audio_hash in self.transcription_cache:
+                logger.debug("Cache hit for partial transcription")
+                cached_text = self.transcription_cache[audio_hash]
+                self.partial_text = cached_text
+                return {"type": "partial", "text": cached_text}
+
             # Normalize audio
             audio = audio.astype(np.float32) / 32768.0
 
             # Run Whisper inference with configurable parameters
-            segments, _ = self.model.transcribe(
+            segments, info = self.model.transcribe(
                 audio,
                 language="bg",
                 beam_size=self.beam_size_partial,
@@ -144,12 +187,38 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
-            self.partial_text = text
 
+            # Retry with adjusted parameters if no speech detected
+            if (
+                not text
+                and hasattr(info, "no_speech_prob")
+                and info.no_speech_prob > 0.8
+            ):
+                logger.info(
+                    "No speech detected in partial, retrying with lower threshold"
+                )
+                segments, _ = self.model.transcribe(
+                    audio,
+                    language="bg",
+                    beam_size=self.beam_size_partial,
+                    temperature=0.2,  # Add slight temperature for retry
+                    no_speech_threshold=0.3,  # Lower threshold
+                    condition_on_previous_text=False,
+                )
+                text = " ".join([segment.text.strip() for segment in segments])
+
+            # Store in cache if we got text
+            if text and len(self.transcription_cache) < self.cache_max_size:
+                self.transcription_cache[audio_hash] = text
+                logger.debug(
+                    f"Cached partial transcription (cache size: {len(self.transcription_cache)})"
+                )
+
+            self.partial_text = text
             return {"type": "partial", "text": text}
 
         except Exception as e:
-            print(f"Error in partial transcription: {e}")
+            logger.error(f"Error in partial transcription: {e}")
             return {"type": "partial", "text": ""}
 
     def _finalize_transcription(self) -> dict:
@@ -161,11 +230,24 @@ class ASRProcessor:
             # Concatenate all speech frames
             audio = np.concatenate(self.speech_frames)
 
+            # Check cache first
+            audio_hash = self._get_audio_hash(audio)
+            if audio_hash in self.transcription_cache:
+                logger.debug("Cache hit for final transcription")
+                cached_text = self.transcription_cache[audio_hash]
+                # Reset state
+                self.speech_frames = []
+                self.silence_count = 0
+                self.speech_triggered = False
+                self.partial_text = ""
+                print(f"Final transcription (cached): {cached_text}")
+                return {"type": "final", "text": cached_text}
+
             # Normalize audio
             audio = audio.astype(np.float32) / 32768.0
 
             # Run final Whisper inference with higher quality settings
-            segments, _ = self.model.transcribe(
+            segments, info = self.model.transcribe(
                 audio,
                 language="bg",
                 beam_size=self.beam_size_final,
@@ -176,6 +258,34 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+
+            # Retry with adjusted parameters if no speech detected
+            if (
+                not text
+                and hasattr(info, "no_speech_prob")
+                and info.no_speech_prob > 0.8
+            ):
+                logger.info(
+                    "No speech detected in final, retrying with lower threshold"
+                )
+                segments, _ = self.model.transcribe(
+                    audio,
+                    language="bg",
+                    beam_size=self.beam_size_final
+                    + 1,  # Slightly higher beam for retry
+                    temperature=0.2,  # Add slight temperature
+                    no_speech_threshold=0.3,  # Lower threshold
+                    condition_on_previous_text=False,
+                    word_timestamps=True,
+                )
+                text = " ".join([segment.text.strip() for segment in segments])
+
+            # Store in cache if we got text
+            if text and len(self.transcription_cache) < self.cache_max_size:
+                self.transcription_cache[audio_hash] = text
+                logger.debug(
+                    f"Cached final transcription (cache size: {len(self.transcription_cache)})"
+                )
 
             # Reset state
             self.speech_frames = []
