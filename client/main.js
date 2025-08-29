@@ -2,6 +2,7 @@
  * Bulgarian Voice Coach - Main Application
  */
 
+import { l1LanguageService } from './services/L1LanguageService.js';
 import LocalProgressService from './services/LocalProgressService.js';
 import PerformanceMonitor from './services/PerformanceMonitor.js';
 import { TranscriptDisplay } from './services/TranscriptDisplay.js';
@@ -75,6 +76,7 @@ class BulgarianVoiceCoach {
     // Initialize
     this.initializeEventListeners();
     this.initializeWebSocket();
+    this.initializeL1Language();
     this.loadWarmupDrills();
   }
 
@@ -235,6 +237,77 @@ class BulgarianVoiceCoach {
       console.error('Failed to initialize WebSocket:', error);
       this.updateConnectionStatus('error', 'Connection Failed');
       this.handleConnectionFailure();
+    }
+  }
+
+  async initializeL1Language() {
+    try {
+      // Initialize the L1 language service
+      await l1LanguageService.initialize();
+
+      // Create the language selector UI
+      const languageSelector = l1LanguageService.createLanguageSelector();
+
+      // Find or create a settings panel to add the selector
+      let settingsPanel = document.getElementById('settings-panel');
+      if (!settingsPanel) {
+        // Create a settings panel if it doesn't exist
+        settingsPanel = document.createElement('div');
+        settingsPanel.id = 'settings-panel';
+        settingsPanel.className = 'settings-panel';
+
+        // Insert after the mic panel
+        const micPanel = document.getElementById('mic-panel');
+        if (micPanel) {
+          micPanel.parentNode.insertBefore(settingsPanel, micPanel.nextSibling);
+        } else {
+          // Fallback to adding at the beginning of the body
+          document.body.insertBefore(settingsPanel, document.body.firstChild);
+        }
+      }
+
+      // Add the language selector to the settings panel
+      settingsPanel.appendChild(languageSelector);
+
+      // Listen for language changes to update contrast notes
+      window.addEventListener('l1-language-changed', (event) => {
+        console.log('L1 language changed to:', event.detail.language);
+        // Reload any active grammar content with new contrast notes
+        this.reloadContrastNotes();
+      });
+    } catch (error) {
+      console.error('Failed to initialize L1 language service:', error);
+    }
+  }
+
+  reloadContrastNotes() {
+    // If there are any active grammar chips or drills, reload them with new L1 contrast
+    const grammarChips = document.querySelectorAll('.grammar-chip');
+    grammarChips.forEach((chip) => {
+      const grammarId = chip.dataset.grammarId;
+      if (grammarId) {
+        // Re-fetch and update the contrast note for this grammar item
+        this.updateGrammarChipContrast(chip, grammarId);
+      }
+    });
+  }
+
+  async updateGrammarChipContrast(chip, grammarId) {
+    try {
+      const response = await fetch(`/content/grammar/${grammarId}`);
+      if (response.ok) {
+        const grammarItem = await response.json();
+        const contrastNote = l1LanguageService.filterContrastNotes(grammarItem);
+
+        // Update the chip's tooltip or expand content with new contrast
+        const contrastElement = chip.querySelector('.contrast-note');
+        if (contrastElement && contrastNote) {
+          contrastElement.textContent = contrastNote;
+          contrastElement.className = `contrast-note ${l1LanguageService.getTypographyClass()}`;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update grammar chip contrast:', error);
     }
   }
 

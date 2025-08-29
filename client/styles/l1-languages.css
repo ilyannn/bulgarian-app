@@ -1,0 +1,263 @@
+/**
+ * L1 Language Selector and Typography Styles
+ *
+ * This stylesheet handles:
+ * - Language selector UI component
+ * - L1-specific typography rules
+ * - Font fallbacks for each language
+ * - Notification styling
+ */
+
+/* ===========================
+   Language Selector Component
+   =========================== */
+.l1-language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface-color, #f5f5f5);
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.l1-language-selector label {
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+}
+
+.l1-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 0.25rem;
+  background: white;
+  color: var(--text-primary, #333);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.l1-select:hover {
+  border-color: var(--primary-color, #007bff);
+}
+
+.l1-select:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* Dark mode support */
+.dark-mode .l1-language-selector {
+  background: var(--surface-dark, #2a2a2a);
+}
+
+.dark-mode .l1-select {
+  background: var(--input-dark, #1a1a1a);
+  border-color: var(--border-dark, #444);
+  color: var(--text-dark, #e0e0e0);
+}
+
+/* ===========================
+   Language Change Notification
+   =========================== */
+.l1-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  background: var(--success-color, #4caf50);
+  color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  z-index: 10000;
+  font-size: 0.9rem;
+}
+
+.l1-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===========================
+   L1-Specific Typography
+   =========================== */
+
+/* Base Bulgarian text (all languages see this) */
+.bg-text {
+  font-family: "Ysabeau", system-ui, -apple-system, sans-serif;
+  font-feature-settings:
+    "locl" 1,
+    "ss01" 1;
+  font-language-override: "BGR";
+}
+
+/* Polish speakers (Latin script for UI) */
+body.l1-pl {
+  --ui-font: "Lato", "Roboto", system-ui, sans-serif;
+}
+
+body.l1-pl .bg-text {
+  /* Bulgarian text remains in Ysabeau */
+  font-family: "Ysabeau", system-ui, sans-serif;
+}
+
+body.l1-pl .contrast-note {
+  font-family: "Lato", "Roboto", system-ui, sans-serif;
+  font-style: italic;
+  color: var(--contrast-pl, #1976d2);
+}
+
+/* Russian speakers */
+body.l1-ru {
+  --ui-font: "PT Sans", "Roboto", system-ui, sans-serif;
+}
+
+body.l1-ru .bg-text {
+  /* Bulgarian with Russian comparison in mind */
+  font-family: "Ysabeau", "PT Sans", system-ui, sans-serif;
+  /* Russian italics are different from Bulgarian */
+  font-feature-settings: "locl" 1;
+}
+
+body.l1-ru .contrast-note {
+  font-family: "PT Sans", "Roboto", system-ui, sans-serif;
+  font-style: italic;
+  color: var(--contrast-ru, #d32f2f);
+}
+
+/* Ukrainian speakers */
+body.l1-uk {
+  --ui-font: "e-Ukraine", "Arsenal", system-ui, sans-serif;
+}
+
+body.l1-uk .bg-text {
+  font-family: "Ysabeau", "e-Ukraine", system-ui, sans-serif;
+  /* Ensure Ukrainian-specific letters don't break */
+  font-feature-settings:
+    "locl" 1,
+    "ss02" 1;
+}
+
+body.l1-uk .contrast-note {
+  font-family: "e-Ukraine", "Arsenal", system-ui, sans-serif;
+  font-style: italic;
+  color: var(--contrast-uk, #ffa000);
+}
+
+/* Serbian speakers (both scripts) */
+body.l1-sr {
+  --ui-font: "Noto Sans Serbian", "Ubuntu", system-ui, sans-serif;
+}
+
+body.l1-sr .bg-text {
+  font-family: "Ysabeau", "Noto Sans Serbian", system-ui, sans-serif;
+  /* Serbian Cyrillic has specific italic forms */
+  font-feature-settings:
+    "locl" 1,
+    "ss03" 1;
+}
+
+body.l1-sr .contrast-note {
+  font-family: "Noto Sans Serbian", "Ubuntu", system-ui, sans-serif;
+  font-style: italic;
+  color: var(--contrast-sr, #7b1fa2);
+}
+
+/* ===========================
+   Contrast Note Highlighting
+   =========================== */
+
+/* Base contrast note styles */
+.contrast-note {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin: 0.25rem 0;
+  background: rgba(var(--contrast-bg, 108, 117, 125), 0.1);
+  border-left: 3px solid currentColor;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+/* L1-specific contrast colors (higher specificity, comes after base styles) */
+body.l1-pl .contrast-note {
+  --contrast-bg: 25, 118, 210; /* Blue */
+}
+
+body.l1-ru .contrast-note {
+  --contrast-bg: 211, 47, 47; /* Red */
+}
+
+body.l1-uk .contrast-note {
+  --contrast-bg: 255, 160, 0; /* Orange */
+}
+
+body.l1-sr .contrast-note {
+  --contrast-bg: 123, 31, 162; /* Purple */
+}
+
+.contrast-note::before {
+  content: "💡 ";
+  font-style: normal;
+}
+
+/* ===========================
+   Font Loading States
+   =========================== */
+.fonts-loading .bg-text {
+  /* Fallback while custom fonts load */
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.fonts-loaded .bg-text {
+  /* Smooth transition when fonts are ready */
+  animation: fontFadeIn 0.3s ease;
+}
+
+@keyframes fontFadeIn {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+@media (max-width: 768px) {
+  .l1-language-selector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .l1-select {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .l1-notification {
+    right: 10px;
+    left: 10px;
+    text-align: center;
+  }
+}
+
+/* ===========================
+   Print Styles
+   =========================== */
+@media print {
+  .l1-language-selector,
+  .l1-notification {
+    display: none;
+  }
+
+  body .contrast-note {
+    border: 1px solid currentColor;
+    page-break-inside: avoid;
+  }
+}

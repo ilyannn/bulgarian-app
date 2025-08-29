@@ -337,49 +337,113 @@ async def get_scenarios():
 
 
 @app.get("/content/grammar/{grammar_id}")
-async def get_grammar(grammar_id: str):
-    """Get specific grammar item by ID"""
+async def get_grammar(grammar_id: str, l1: str | None = None):
+    """Get specific grammar item by ID with L1-specific contrast notes"""
     item = get_grammar_item(grammar_id)
     if not item:
         raise HTTPException(status_code=404, detail="Grammar item not found")
-    return item
+
+    # Create a copy to avoid modifying the original
+    result = dict(item)
+
+    # Add L1-specific contrast note
+    if l1 and "contrast_notes" in item:
+        result["contrast_note"] = item["contrast_notes"].get(l1.upper())
+    elif "contrast_notes" in item:
+        # Default to config L1 if not specified
+        result["contrast_note"] = item["contrast_notes"].get(
+            get_config().default_l1_language
+        )
+
+    return result
 
 
 @app.get("/content/drills/{grammar_id}")
-async def get_drills_for_grammar(grammar_id: str):
-    """Get drills for a specific grammar item"""
+async def get_drills_for_grammar(grammar_id: str, l1: str | None = None):
+    """Get drills for a specific grammar item with L1-specific contrast"""
     item = get_grammar_item(grammar_id)
     if not item:
         raise HTTPException(status_code=404, detail="Grammar item not found")
+
+    # Get L1-specific contrast note
+    contrast_note = None
+    if l1 and "contrast_notes" in item:
+        contrast_note = item["contrast_notes"].get(l1.upper())
+    elif "contrast_notes" in item:
+        contrast_note = item["contrast_notes"].get(get_config().default_l1_language)
 
     return {
         "grammar_id": grammar_id,
         "drills": item.get("drills", []),
         "examples": item.get("examples", []),
         "explanation": item.get("micro_explanation_bg", ""),
+        "contrast_note": contrast_note,
     }
+
+
+@app.get("/api/config")
+async def get_app_config():
+    """Get current application configuration for frontend"""
+    return {
+        "l1_language": get_config().default_l1_language,
+        "supported_languages": ["PL", "RU", "UK", "SR"],
+        "language_names": {
+            "PL": "Polski (Polish)",
+            "RU": "Русский (Russian)",
+            "UK": "Українська (Ukrainian)",
+            "SR": "Српски (Serbian)",
+        },
+    }
+
+
+@app.post("/api/config/l1")
+async def update_l1_language(request: dict):
+    """Update L1 language preference (session-based, not persistent)"""
+    new_l1 = request.get("l1_language", "").upper()
+    if new_l1 not in ["PL", "RU", "UK", "SR"]:
+        raise HTTPException(
+            status_code=400, detail="Invalid L1 language. Use PL, RU, UK, or SR"
+        )
+
+    # Note: This is session-based. For persistence, we'd need user auth
+    # For now, return the validated language for frontend to store in localStorage
+    return {"l1_language": new_l1, "status": "updated"}
 
 
 @app.post("/content/analyze")
 async def analyze_text(request: dict):
-    """Analyze Bulgarian text for grammar errors and generate drills"""
+    """Analyze Bulgarian text for grammar errors and generate drills with L1 contrast"""
     text = request.get("text", "")
+    l1 = request.get("l1", get_config().default_l1_language)
+
     if not text:
         raise HTTPException(status_code=400, detail="Text is required")
 
     # Detect grammar errors
     corrections = detect_grammar_errors(text)
 
-    # Generate drill suggestions
+    # Generate drill suggestions with L1-specific contrast
     drill_suggestions = []
     for correction in corrections:
         error_tag = correction.get("error_tag")
         if error_tag and error_tag in grammar_index:
             grammar_item = grammar_index[error_tag]
+
+            # Get L1-specific contrast note
+            contrast_note = None
+            if "contrast_notes" in grammar_item:
+                contrast_note = grammar_item["contrast_notes"].get(
+                    l1.upper(),
+                    grammar_item["contrast_notes"].get(
+                        get_config().default_l1_language
+                    ),
+                )
+
             drill_suggestions.append(
                 {
                     "grammar_id": error_tag,
                     "explanation": grammar_item.get("micro_explanation_bg", ""),
+                    "contrast_note": contrast_note,
                     "drills": grammar_item.get("drills", [])[:2],  # Limit to 2 drills
                 }
             )
@@ -388,6 +452,7 @@ async def analyze_text(request: dict):
         "text": text,
         "corrections": corrections,
         "drill_suggestions": drill_suggestions,
+        "l1_language": l1,
     }
 
 
