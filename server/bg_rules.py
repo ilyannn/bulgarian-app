@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from bg_normalization import normalize_bulgarian
+
 from content import load_grammar_pack
 
 
@@ -130,7 +132,7 @@ class BulgarianGrammarDetector:
         Detect grammar errors in a Bulgarian sentence
 
         Args:
-            sentence: Input sentence in Bulgarian
+            sentence: Input sentence in Bulgarian (will be normalized for grammar checking)
 
         Returns:
             List of detected grammar errors
@@ -153,14 +155,10 @@ class BulgarianGrammarDetector:
         return errors
 
     def _normalize_text(self, text: str) -> str:
-        """Normalize text for analysis"""
-        # Remove extra whitespace
-        text = re.sub(r"\s+", " ", text.strip())
-
-        # Handle stress marks and apostrophes
-        text = text.replace("́", "").replace(""", "'").replace(""", "'")
-
-        return text.lower()
+        """Normalize text for analysis using comprehensive Bulgarian normalization"""
+        # Use the Bulgarian normalizer for grammar checking
+        # This preserves case for proper nouns but fixes common issues
+        return normalize_bulgarian(text, mode="grammar")
 
     def _check_content_rules(self, text: str) -> list[GrammarError]:
         """Check grammar rules loaded from content files"""

@@ -37,7 +37,7 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 - [x] ✅ Add per-L1 selector (Polish/Russian/Ukrainian/Serbian) (DONE - 2025-08-29)
 - [x] ✅ Implement contrast note switching based on L1 (DONE - 2025-08-29)
 - [x] ✅ Add localized UI elements (DONE - 2025-08-29)
-- [ ] Implement proper Bulgarian text normalization
+- [x] ✅ Implement proper Bulgarian text normalization (DONE - 2025-08-31)
 
 ## 4) Advanced Features (Low Priority)
 

@@ -6,6 +6,7 @@ from collections import deque
 
 import numpy as np
 import webrtcvad
+from bg_normalization import normalize_bulgarian
 from faster_whisper import WhisperModel
 
 logger = logging.getLogger(__name__)
@@ -198,6 +199,8 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+            # Apply Bulgarian text normalization for ASR
+            text = normalize_bulgarian(text, mode="asr")
 
             # Calculate confidence from segments
             confidences = []
@@ -227,6 +230,8 @@ class ASRProcessor:
                     condition_on_previous_text=False,
                 )
                 text = " ".join([segment.text.strip() for segment in segments])
+                # Apply Bulgarian text normalization for ASR
+                text = normalize_bulgarian(text, mode="asr")
 
                 # Recalculate confidence for retry
                 confidences = []
@@ -307,6 +312,8 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+            # Apply Bulgarian text normalization for ASR
+            text = normalize_bulgarian(text, mode="asr")
 
             # Calculate confidence from segments
             confidences = []
@@ -340,6 +347,8 @@ class ASRProcessor:
                     word_timestamps=True,
                 )
                 text = " ".join([segment.text.strip() for segment in segments])
+                # Apply Bulgarian text normalization for ASR
+                text = normalize_bulgarian(text, mode="asr")
 
                 # Recalculate confidence for retry
                 confidences = []
@@ -407,6 +416,8 @@ class ASRProcessor:
             )
 
             text = " ".join([segment.text.strip() for segment in segments])
+            # Apply Bulgarian text normalization for ASR
+            text = normalize_bulgarian(text, mode="asr")
 
             # Calculate confidence from segments
             confidences = []
