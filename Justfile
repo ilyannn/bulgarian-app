@@ -733,6 +733,29 @@ docs-format:
     bunx prettier --config .github/linters/.prettierrc.json --write "docs/**/*.{md,mdx}" --log-level warn
     bunx prettier --config .github/linters/.prettierrc.json --write "README.md" --log-level warn || echo "No README.md found"
 
+# Generate OpenAPI documentation
+[group('docs')]
+api-docs:
+    #!/usr/bin/env python
+    """Generate OpenAPI spec from FastAPI app and save to docs/api-reference.json"""
+    import json
+    import sys
+
+    sys.path.insert(0, "server")
+    from app import app
+
+    FILENAME = "docs/api/openapi.json"
+    with open(FILENAME, "w") as f:
+        f.write(json.dumps(app.openapi(), indent=2))
+
+    print(f"✅ API documentation saved to {FILENAME}")
+
+# Lint OpenAPI spec using Spectral (APIStyleGuide.com ruleset)
+[group('docs')]
+[group('quality')]
+api-lint: api-docs
+    cd docs/api && bunx @stoplight/spectral-cli lint openapi.json
+
 # Capture professional screenshots for documentation (requires dev servers running)
 [group('docs')]
 screenshots:

@@ -1,0 +1,5 @@
+extends:
+  [
+    "spectral:oas",
+    "https://unpkg.com/@apisyouwonthate/style-guide@1.5.0/dist/ruleset.js",
+  ]
