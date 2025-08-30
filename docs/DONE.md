@@ -1923,6 +1923,23 @@ requirements.
 - [x] **Logging setup**: Structured logging to stdout/stderr
 - [x] **Resource limits**: Memory and CPU limits configured
 
+### Enhanced with Wolfi and Bun (2025-08-31)
+
+- [x] **Wolfi-based images**: Switched to Chainguard's Wolfi-based images for improved security
+  - cgr.dev/chainguard/wolfi-base for minimal attack surface
+  - cgr.dev/chainguard/python:3.11-dev for Python runtime
+  - Pinned image versions for reproducibility
+  
+- [x] **Bun package manager**: Replaced npm with Bun for frontend builds
+  - Faster dependency installation and build times
+  - Better memory efficiency
+  - Native TypeScript support
+  
+- [x] **Docker linting compliance**: Fixed all critical hadolint warnings
+  - Added SHELL with pipefail for better error handling
+  - Pinned base image versions
+  - Proper user permissions and security practices
+
 ## 55) Bulgarian Text Normalization Implementation (2025-08-31) ✅
 
 ### Comprehensive Normalization Module
