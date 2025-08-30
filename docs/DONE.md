@@ -1837,4 +1837,92 @@ requirements.
 
 ---
 
-_Last updated: 2025-08-29_
+## 53) Mini-Lesson System Implementation (2025-08-30) ✅
+
+### Complete Mini-Lesson Infrastructure
+
+- [x] **Mini-lesson display system**: Created MiniLessonModal component with 2-3 minute focused grammar lessons
+- [x] **Micro-learning content**: Integrated mini-lessons from bg_mini_lessons.json with error pattern mapping
+- [x] **Lesson completion tracking**: SRS-based tracking with LocalProgressService integration
+- [x] **Progress indicators**: Visual progress bars and completion status in modal UI
+
+### Frontend Components
+
+- [x] **MiniLessonModal.js**: Complete modal interface with Bulgarian typography support
+  - Interactive lesson display with title, content, and examples
+  - Progress tracking with "Mark Complete" functionality
+  - Visual indicators for lesson difficulty and estimated time
+  - Close button and ESC key support for dismissal
+
+- [x] **MiniLessonTrigger.js**: Automatic lesson triggering based on error patterns
+  - Monitors error frequency and triggers lessons after repeated errors
+  - Integrates with grammar detection system
+  - Respects user preferences and lesson completion status
+
+- [x] **MiniLessonService.js**: Service layer for mini-lesson management
+  - Fetches lessons from server based on error patterns
+  - Manages due lessons using SRS intervals
+  - Caches lesson data for performance
+
+### Backend API Endpoints
+
+- [x] **GET /content/mini-lessons**: List all available mini-lessons
+- [x] **GET /content/mini-lessons/{lesson_id}**: Get specific mini-lesson details
+- [x] **POST /content/mini-lessons/due**: Get due lessons based on user progress
+- [x] **GET /content/mini-lessons/for-error/{error_pattern}**: Get lessons for specific error patterns
+
+### Content Integration
+
+- [x] **Mini-lesson content loading**: `load_mini_lessons()` function in content module
+- [x] **Error pattern mapping**: Links grammar errors to relevant mini-lessons
+- [x] **SRS integration**: Mini-lessons follow spaced repetition scheduling
+- [x] **L1-specific content**: Lessons adapt based on user's native language
+
+### Technical Features
+
+- [x] **Error tracking**: Monitors repeated errors to trigger relevant lessons
+- [x] **Completion persistence**: Lesson progress saved in localStorage
+- [x] **Due lesson calculation**: SRS-based scheduling for optimal learning
+- [x] **Performance optimization**: Lesson caching and lazy loading
+
+## 54) Docker Containerization Implementation (2025-08-30) ✅
+
+### Complete Docker Infrastructure
+
+- [x] **Multi-stage Dockerfile**: Production-optimized build with separate frontend and backend stages
+  - Frontend builder stage with Bun and Vite
+  - Python backend with FastAPI and all dependencies
+  - eSpeak-NG and Whisper model support
+  - Non-root user for security
+
+- [x] **Docker Compose configuration**: Complete orchestration for development and production
+  - docker-compose.yml for production deployment
+  - docker-compose.dev.yml for development with hot reload
+  - Volume management for models and persistent data
+  - Health checks and restart policies
+
+### Docker Features
+
+- [x] **Production optimization**: Multi-stage builds minimize image size
+- [x] **Development support**: Volume mounting for code hot-reload
+- [x] **Model management**: Whisper models cached in Docker volumes
+- [x] **Security hardening**: Non-root user, minimal base images
+- [x] **Health monitoring**: Liveness and readiness probes configured
+
+### Build Configuration
+
+- [x] **Efficient caching**: Layer optimization for faster rebuilds
+- [x] **Dependency management**: Separate dependency and code layers
+- [x] **Asset compilation**: Frontend built and optimized in container
+- [x] **Environment configuration**: Support for all environment variables
+
+### Deployment Ready
+
+- [x] **Production server**: Gunicorn with optimal worker configuration
+- [x] **Static file serving**: Nginx-ready static asset structure
+- [x] **Logging setup**: Structured logging to stdout/stderr
+- [x] **Resource limits**: Memory and CPU limits configured
+
+---
+
+_Last updated: 2025-08-30_
