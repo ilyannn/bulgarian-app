@@ -1940,6 +1940,14 @@ requirements.
   - Pinned base image versions
   - Proper user permissions and security practices
 
+### Simplified with Official Bun Images (2025-08-31)
+
+- [x] **Official Bun Docker images**: Switched to oven/bun for simpler builds
+  - oven/bun:1.1.22-alpine for minimal frontend builder
+  - oven/bun:1.1.22-debian for development with hot reload
+  - Eliminated manual Bun installation steps
+  - Reduced Dockerfile complexity and maintenance burden
+
 ## 55) Bulgarian Text Normalization Implementation (2025-08-31) ✅
 
 ### Comprehensive Normalization Module

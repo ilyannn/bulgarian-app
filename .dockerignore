@@ -123,7 +123,7 @@ Dockerfile.dev
 # Lock files (we want these for reproducible builds)
 # But exclude logs from lock files
 !package-lock.json
-!bun.lockb
+!bun.lock
 !uv.lock
 
 # Keep essential configuration
