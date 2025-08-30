@@ -38,6 +38,28 @@ class ErrorResponse(BaseModel):
     details: dict | None = Field(None, description="Additional error details")
 
 
+# Health check response models
+class HealthCheckInfo(BaseModel):
+    """Individual health check information"""
+
+    status: str = Field(..., description="Health check status: pass/fail/warn")
+    componentType: str = Field(..., description="Type of component being checked")
+    observedValue: bool = Field(..., description="Observed value for this check")
+    output: str = Field(..., description="Human-readable output message")
+
+
+class HealthCheckResponse(BaseModel):
+    """Health Check Response Format following RFC draft"""
+
+    status: str = Field(..., description="Overall status: pass/fail/warn")
+    version: str = Field(..., description="API version")
+    serviceId: str = Field(..., description="Service identifier")
+    description: str = Field(..., description="Service description")
+    checks: dict[str, list[HealthCheckInfo]] = Field(
+        ..., description="Individual health checks"
+    )
+
+
 # Global state
 grammar_index: dict = {}
 scenarios: dict = {}
@@ -351,7 +373,12 @@ async def root():
     }
 
 
-@app.get("/health", tags=["health"])
+@app.get(
+    "/health",
+    tags=["health"],
+    response_model=HealthCheckResponse,
+    responses={503: {"model": HealthCheckResponse}},
+)
 async def health_check():
     """Health check endpoint following Health Check Response Format"""
     # Check service status
@@ -365,63 +392,63 @@ async def health_check():
     all_healthy = all(services_status.values())
 
     # Follow Health Check Response Format (RFC draft)
-    health_response = {
-        "status": "pass" if all_healthy else "fail",
-        "version": "0.1.0",
-        "serviceId": "bulgarian-voice-coach-api",
-        "description": "Bulgarian Voice Coach API health status",
-        "checks": {
+    health_response = HealthCheckResponse(
+        status="pass" if all_healthy else "fail",
+        version="0.1.0",
+        serviceId="bulgarian-voice-coach-api",
+        description="Bulgarian Voice Coach API health status",
+        checks={
             "asr:availability": [
-                {
-                    "status": "pass" if services_status["asr"] else "fail",
-                    "componentType": "service",
-                    "observedValue": services_status["asr"],
-                    "output": "ASR processor initialized"
+                HealthCheckInfo(
+                    status="pass" if services_status["asr"] else "fail",
+                    componentType="service",
+                    observedValue=services_status["asr"],
+                    output="ASR processor initialized"
                     if services_status["asr"]
                     else "ASR not initialized",
-                }
+                )
             ],
             "tts:availability": [
-                {
-                    "status": "pass" if services_status["tts"] else "fail",
-                    "componentType": "service",
-                    "observedValue": services_status["tts"],
-                    "output": "TTS processor initialized"
+                HealthCheckInfo(
+                    status="pass" if services_status["tts"] else "fail",
+                    componentType="service",
+                    observedValue=services_status["tts"],
+                    output="TTS processor initialized"
                     if services_status["tts"]
                     else "TTS not initialized",
-                }
+                )
             ],
             "llm:availability": [
-                {
-                    "status": "pass" if services_status["llm"] else "fail",
-                    "componentType": "service",
-                    "observedValue": services_status["llm"],
-                    "output": "LLM provider initialized"
+                HealthCheckInfo(
+                    status="pass" if services_status["llm"] else "fail",
+                    componentType="service",
+                    observedValue=services_status["llm"],
+                    output="LLM provider initialized"
                     if services_status["llm"]
                     else "LLM not initialized",
-                }
+                )
             ],
             "content:availability": [
-                {
-                    "status": "pass" if services_status["content"] else "fail",
-                    "componentType": "datastore",
-                    "observedValue": services_status["content"],
-                    "output": "Content loaded"
+                HealthCheckInfo(
+                    status="pass" if services_status["content"] else "fail",
+                    componentType="datastore",
+                    observedValue=services_status["content"],
+                    output="Content loaded"
                     if services_status["content"]
                     else "Content not loaded",
-                }
+                )
             ],
         },
-    }
+    )
 
     # Return appropriate status code
     if not all_healthy:
-        raise HTTPException(status_code=503, detail=health_response)
+        raise HTTPException(status_code=503, detail=health_response.model_dump())
 
     return health_response
 
 
-@app.get("/tts", tags=["tts"])
+@app.get("/tts", tags=["tts"], responses={422: {"model": ErrorResponse}})
 async def text_to_speech(text: str, track_timing: bool = False):
     """Convert text to speech and stream audio"""
     telemetry_context = get_telemetry()
@@ -467,7 +494,11 @@ async def get_scenarios():
     return list(scenarios.values())
 
 
-@app.get("/content/grammar/{grammar_id}", tags=["content"])
+@app.get(
+    "/content/grammar/{grammar_id}",
+    tags=["content"],
+    responses={422: {"model": ErrorResponse}},
+)
 async def get_grammar(grammar_id: str, l1: str | None = None):
     """Get specific grammar item by ID with L1-specific contrast notes"""
     item = get_grammar_item(grammar_id)
@@ -489,7 +520,11 @@ async def get_grammar(grammar_id: str, l1: str | None = None):
     return result
 
 
-@app.get("/content/drills/{grammar_id}", tags=["content"])
+@app.get(
+    "/content/drills/{grammar_id}",
+    tags=["content"],
+    responses={422: {"model": ErrorResponse}},
+)
 async def get_drills_for_grammar(grammar_id: str, l1: str | None = None):
     """Get drills for a specific grammar item with L1-specific contrast"""
     item = get_grammar_item(grammar_id)
@@ -518,7 +553,11 @@ async def get_mini_lessons():
     return list(load_mini_lessons().values())
 
 
-@app.get("/content/mini-lessons/{lesson_id}", tags=["content"])
+@app.get(
+    "/content/mini-lessons/{lesson_id}",
+    tags=["content"],
+    responses={422: {"model": ErrorResponse}},
+)
 async def get_mini_lesson_by_id(lesson_id: str):
     """Get specific mini-lesson by ID"""
     lesson = get_mini_lesson(lesson_id)
@@ -534,14 +573,22 @@ class UserProgress(BaseModel):
     lesson_progress: dict[str, dict]
 
 
-@app.post("/content/mini-lessons/due", tags=["content"])
+@app.post(
+    "/content/mini-lessons/due",
+    tags=["content"],
+    responses={422: {"model": ErrorResponse}},
+)
 async def get_due_lessons(progress: UserProgress):
     """Get mini-lessons due for review based on user's SRS progress"""
     due_lessons = get_due_mini_lessons(progress.lesson_progress)
     return due_lessons
 
 
-@app.get("/content/mini-lessons/for-error/{error_pattern}", tags=["content"])
+@app.get(
+    "/content/mini-lessons/for-error/{error_pattern}",
+    tags=["content"],
+    responses={422: {"model": ErrorResponse}},
+)
 async def get_lessons_for_error(error_pattern: str):
     """Get mini-lessons that match a specific error pattern"""
     lessons = get_mini_lessons_for_error(error_pattern)
@@ -563,7 +610,7 @@ async def get_app_config():
     }
 
 
-@app.post("/api/config/l1", tags=["config"])
+@app.post("/api/config/l1", tags=["config"], responses={422: {"model": ErrorResponse}})
 async def update_l1_language(request: dict):
     """Update L1 language preference (session-based, not persistent)"""
     new_l1 = request.get("l1_language", "").upper()
@@ -577,7 +624,9 @@ async def update_l1_language(request: dict):
     return {"l1_language": new_l1, "status": "updated"}
 
 
-@app.post("/content/analyze", tags=["content"])
+@app.post(
+    "/content/analyze", tags=["content"], responses={422: {"model": ErrorResponse}}
+)
 async def analyze_text(request: dict):
     """Analyze Bulgarian text for grammar errors and generate drills with L1 contrast"""
     text = request.get("text", "")

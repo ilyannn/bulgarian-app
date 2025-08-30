@@ -53,7 +53,19 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
               }
             }
           }
@@ -99,14 +111,14 @@
             }
           },
           "422": {
-            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           }
         }
       }
@@ -176,14 +188,14 @@
             }
           },
           "422": {
-            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
-            }
+            },
+            "description": "Unprocessable Entity"
           }
         }
       }
@@ -233,14 +245,156 @@
             }
           },
           "422": {
-            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/content/mini-lessons": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Mini Lessons",
+        "description": "Get list of available mini-lessons",
+        "operationId": "get_mini_lessons_content_mini_lessons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content/mini-lessons/{lesson_id}": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Mini Lesson By Id",
+        "description": "Get specific mini-lesson by ID",
+        "operationId": "get_mini_lesson_by_id_content_mini_lessons__lesson_id__get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Lesson Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/content/mini-lessons/due": {
+      "post": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Due Lessons",
+        "description": "Get mini-lessons due for review based on user's SRS progress",
+        "operationId": "get_due_lessons_content_mini_lessons_due_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserProgress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/content/mini-lessons/for-error/{error_pattern}": {
+      "get": {
+        "tags": [
+          "content"
+        ],
+        "summary": "Get Lessons For Error",
+        "description": "Get mini-lessons that match a specific error pattern",
+        "operationId": "get_lessons_for_error_content_mini_lessons_for_error__error_pattern__get",
+        "parameters": [
+          {
+            "name": "error_pattern",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Error Pattern"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
           }
         }
       }
@@ -295,11 +449,11 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -337,11 +491,11 @@
             }
           },
           "422": {
-            "description": "Validation Error",
+            "description": "Unprocessable Entity",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -352,51 +506,135 @@
   },
   "components": {
     "schemas": {
-      "HTTPValidationError": {
+      "ErrorResponse": {
         "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
-      "ValidationError": {
-        "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
-          },
-          "msg": {
+          "error": {
             "type": "string",
-            "title": "Message"
+            "title": "Error",
+            "description": "Error type or code"
           },
-          "type": {
+          "message": {
             "type": "string",
-            "title": "Error Type"
+            "title": "Message",
+            "description": "Human-readable error message"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details",
+            "description": "Additional error details"
           }
         },
         "type": "object",
         "required": [
-          "loc",
-          "msg",
-          "type"
+          "error",
+          "message"
         ],
-        "title": "ValidationError"
+        "title": "ErrorResponse",
+        "description": "Standard error response format for API consistency"
+      },
+      "HealthCheckInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Health check status: pass/fail/warn"
+          },
+          "componentType": {
+            "type": "string",
+            "title": "Componenttype",
+            "description": "Type of component being checked"
+          },
+          "observedValue": {
+            "type": "boolean",
+            "title": "Observedvalue",
+            "description": "Observed value for this check"
+          },
+          "output": {
+            "type": "string",
+            "title": "Output",
+            "description": "Human-readable output message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "componentType",
+          "observedValue",
+          "output"
+        ],
+        "title": "HealthCheckInfo",
+        "description": "Individual health check information"
+      },
+      "HealthCheckResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Overall status: pass/fail/warn"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "API version"
+          },
+          "serviceId": {
+            "type": "string",
+            "title": "Serviceid",
+            "description": "Service identifier"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Service description"
+          },
+          "checks": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/HealthCheckInfo"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Checks",
+            "description": "Individual health checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "serviceId",
+          "description",
+          "checks"
+        ],
+        "title": "HealthCheckResponse",
+        "description": "Health Check Response Format following RFC draft"
+      },
+      "UserProgress": {
+        "properties": {
+          "lesson_progress": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Lesson Progress"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lesson_progress"
+        ],
+        "title": "UserProgress",
+        "description": "User progress data for SRS calculation"
       }
     }
   },

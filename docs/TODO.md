@@ -7,6 +7,7 @@ Items remaining to be implemented from the original build plan and additional im
 The Bulgarian Voice Coach is a **fully functional voice-enabled language learning application** with:
 
 ### ✅ Core Features Working
+
 - **Real-time Speech Recognition**: Whisper-based ASR with VAD for Bulgarian speech
 - **Grammar Error Detection**: 40+ Bulgarian grammar rules with contextual corrections
 - **Interactive Learning**: Micro-drills, mini-lessons, and spaced repetition (SRS)
@@ -14,6 +15,7 @@ The Bulgarian Voice Coach is a **fully functional voice-enabled language learnin
 - **Multi-L1 Support**: Tailored feedback for Polish, Russian, Ukrainian, Serbian speakers
 
 ### ✅ Technical Excellence
+
 - **Local-First Architecture**: All progress stored in localStorage, no auth needed
 - **WebSocket Communication**: Real-time audio streaming and processing
 - **Docker Ready**: Production & dev containers with Bun and Wolfi-based images
@@ -22,12 +24,14 @@ The Bulgarian Voice Coach is a **fully functional voice-enabled language learnin
 - **Health Monitoring**: Health checks, logging, error handling
 
 ### 🚀 Ready For
+
 - Local development (`just dev`)
 - Docker deployment (`docker-compose up`)
 - Single-user learning sessions
 - Bulgarian language practice with immediate feedback
 
 ### ⏳ Not Yet Available
+
 - Cloud deployment (needs deployment guide)
 - Multi-user support (by design - local-first)
 - Advanced TTS voices (still using eSpeak)
