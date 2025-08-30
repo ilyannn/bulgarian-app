@@ -1785,9 +1785,11 @@ as they prevent functional bugs from reaching production.
 
 ### Problem Identified
 
-- [x] **Root cause discovered**: Running Biome from a subdirectory with a relative parent config path causes different formatting behavior
+- [x] **Root cause discovered**: Running Biome from a subdirectory with a relative parent config path causes different
+      formatting behavior
 - [x] **Problematic pattern**: `cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json`
-- [x] **Symptom**: Persistent CSS formatting errors that flip-flopped between single-line and multi-line `font-feature-settings`
+- [x] **Symptom**: Persistent CSS formatting errors that flip-flopped between single-line and multi-line
+      `font-feature-settings`
 - [x] **Impact**: `format-check` recipe consistently failed while main `just lint` passed
 
 ### Technical Details
@@ -1795,9 +1797,11 @@ as they prevent functional bugs from reaching production.
 The issue manifested as a discrepancy between:
 
 - **From root**: `bunx @biomejs/biome ci --config-path .github/linters/biome.json client/` (wanted multi-line)
-- **From client dir**: `cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json` (wanted single-line)
+- **From client dir**: `cd client && bunx @biomejs/biome check --config-path ../.github/linters/biome.json` (wanted
+  single-line)
 
-This caused the CSS file `client/styles/l1-languages.css` to constantly fail formatting checks, with the formatter flip-flopping between:
+This caused the CSS file `client/styles/l1-languages.css` to constantly fail formatting checks, with the formatter
+flip-flopping between:
 
 ```css
 /* Multi-line (what ci wanted) */
@@ -1828,7 +1832,8 @@ font-feature-settings:
 3. Avoid `../` in config paths when running from subdirectories
 4. Test formatting commands from both root and subdirectories to catch discrepancies
 
-**Impact**: This fix resolved hours of debugging and multiple failed commit attempts due to inconsistent formatting requirements.
+**Impact**: This fix resolved hours of debugging and multiple failed commit attempts due to inconsistent formatting
+requirements.
 
 ---
 

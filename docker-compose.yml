@@ -1,0 +1,100 @@
+# =============================================================================
+# Production Docker Compose for Bulgarian Voice Coach
+# =============================================================================
+
+services:
+  app:
+    build:
+      context: .
+      target: production
+    container_name: bulgarian-voice-coach
+    ports:
+      - '8000:8000'
+    environment:
+      # Server Configuration
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+
+      # Default LLM Configuration (can be overridden)
+      - CHAT_PROVIDER=dummy
+
+      # ASR Configuration
+      - WHISPER_MODEL_PATH=base
+      - WHISPER_LANGUAGE=bg
+      - WHISPER_BEAM_SIZE=5
+
+      # TTS Configuration
+      - ESPEAK_VOICE=bg
+      - ESPEAK_SPEED=160
+
+      # Audio Processing
+      - SAMPLE_RATE=16000
+      - VAD_AGGRESSIVENESS=2
+
+      # Content System
+      - DEFAULT_L1_LANGUAGE=PL
+      - GRAMMAR_PACK_PATH=content/bg_grammar_pack.json
+      - SCENARIOS_PATH=content/bg_scenarios_with_grammar.json
+
+      # Performance
+      - ENABLE_METRICS=true
+      - LOG_REQUESTS=false
+
+      # Security
+      - ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    volumes:
+      # Model cache (persistent across container restarts)
+      - whisper_models:/app/data/models
+      # Logs
+      - app_logs:/app/data/logs
+      # Environment file (optional - for API keys)
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  # Persistent storage for Whisper models (large download, cache them)
+  whisper_models:
+    driver: local
+  # Application logs
+  app_logs:
+    driver: local
+# =============================================================================
+# Optional: Observability Stack (uncomment to enable)
+# =============================================================================
+
+# Uncomment the services below to add monitoring and tracing
+#
+#   jaeger:
+#     image: jaegertracing/all-in-one:1.57
+#     container_name: jaeger
+#     environment:
+#       - COLLECTOR_OTLP_ENABLED=true
+#     ports:
+#       - "16686:16686"  # Jaeger UI
+#       - "14268:14268"  # Jaeger HTTP collector
+#       - "4317:4317"    # OTLP gRPC receiver
+#       - "4318:4318"    # OTLP HTTP receiver
+#     restart: unless-stopped
+#
+#   prometheus:
+#     image: prom/prometheus:v2.48.0
+#     container_name: prometheus
+#     ports:
+#       - "9090:9090"
+#     volumes:
+#       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+#     restart: unless-stopped
+#
+# # To enable observability, also add these environment variables to the app service:
+# # - OTEL_ENABLED=true
+# # - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4317
+# # - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://prometheus:4317
+

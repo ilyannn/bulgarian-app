@@ -900,3 +900,154 @@ verify-quick:
     bun --version && echo "✅ bun runtime"
     just --version && echo "✅ just command runner"
     echo "🎉 Basic tools are available!"
+
+# ---- Docker (Container Deployment) ----------------------------------------
+# Docker-based deployment and development workflow
+
+# Build production Docker image
+[group('docker')]
+docker-build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🐳 Building production Docker image..."
+    docker build --target production -t bulgarian-voice-coach:latest .
+    echo "✅ Production image built successfully"
+    docker images bulgarian-voice-coach:latest
+
+# Build development Docker image
+[group('docker')]
+docker-build-dev:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🐳 Building development Docker image..."
+    docker build --target development -t bulgarian-voice-coach:dev .
+    echo "✅ Development image built successfully"
+
+# Run production container
+[group('docker')]
+docker-serve:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🚀 Starting production container..."
+    if [ ! -f .env ]; then
+        echo "⚠️  No .env file found. Using defaults."
+        echo "💡 Copy .env.example to .env and configure as needed."
+    fi
+    docker-compose up --build -d
+    echo "✅ Container started successfully"
+    echo "🌐 Access at: http://localhost:8000"
+    echo "📊 Health check: http://localhost:8000/health"
+    echo "📖 API docs: http://localhost:8000/docs"
+
+# Run development container with hot reload
+[group('docker')]
+docker-dev:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🛠️  Starting development container..."
+    if [ ! -f .env ]; then
+        echo "⚠️  No .env file found. Using defaults."
+        echo "💡 Copy .env.example to .env and configure as needed."
+    fi
+    docker-compose -f docker-compose.dev.yml up --build
+    # Note: This runs in foreground to show logs
+
+# Stop Docker containers
+[group('docker')]
+docker-stop:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🛑 Stopping Docker containers..."
+    docker-compose down || true
+    docker-compose -f docker-compose.dev.yml down || true
+    echo "✅ Containers stopped"
+
+# Show Docker container status and logs
+[group('docker')]
+docker-status:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "📊 Docker container status:"
+    echo ""
+    echo "=== Production containers ==="
+    docker-compose ps 2>/dev/null || echo "No production containers running"
+    echo ""
+    echo "=== Development containers ==="
+    docker-compose -f docker-compose.dev.yml ps 2>/dev/null || echo "No development containers running"
+    echo ""
+    echo "=== Images ==="
+    docker images | grep bulgarian-voice-coach || echo "No bulgarian-voice-coach images found"
+
+# Show Docker container logs (production)
+[group('docker')]
+docker-logs:
+    docker-compose logs -f
+
+# Show Docker container logs (development)
+[group('docker')]
+docker-logs-dev:
+    docker-compose -f docker-compose.dev.yml logs -f
+
+# Clean Docker resources (containers, images, volumes)
+[group('docker')]
+docker-clean:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🧹 Cleaning Docker resources..."
+
+    # Stop containers
+    docker-compose down 2>/dev/null || true
+    docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+
+    # Remove containers
+    docker ps -a | grep bulgarian-voice-coach | awk '{print $1}' | xargs -r docker rm
+
+    # Remove images
+    docker images | grep bulgarian-voice-coach | awk '{print $3}' | xargs -r docker rmi
+
+    # Optionally remove volumes (commented out for safety)
+    # docker volume ls | grep bulgarian | awk '{print $2}' | xargs -r docker volume rm
+
+    echo "✅ Docker cleanup complete"
+    echo "💡 To also remove cached models/volumes, run: docker volume prune"
+
+# Docker system information and requirements
+[group('docker')]
+docker-info:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🐳 Docker system information:"
+    echo ""
+
+    if ! command -v docker >/dev/null 2>&1; then
+        echo "❌ Docker is not installed"
+        echo "📦 Install from: https://docs.docker.com/get-docker/"
+        exit 1
+    fi
+
+    echo "✅ Docker version:"
+    docker --version
+    echo ""
+
+    if ! command -v docker-compose >/dev/null 2>&1; then
+        echo "❌ Docker Compose is not installed"
+        echo "📦 Install from: https://docs.docker.com/compose/install/"
+        exit 1
+    fi
+
+    echo "✅ Docker Compose version:"
+    docker-compose --version
+    echo ""
+
+    echo "📊 System resources:"
+    docker system df
+    echo ""
+
+    echo "🎯 Requirements for Bulgarian Voice Coach:"
+    echo "  • RAM: 2-4GB for production, 4-8GB for development"
+    echo "  • Disk: 2-5GB (including Whisper models)"
+    echo "  • CPU: 2+ cores recommended for real-time processing"
+
+# Quick Docker deployment (production)
+[group('docker')]
+deploy: docker-build docker-serve

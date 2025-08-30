@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0",
+  "language": "Bulgarian",
+  "audience": "Slavic L1 learners",
+  "description": "Mini-lessons for targeted error correction and remediation",
+  "lessons": [
+    {
+      "id": "infinitive_correction",
+      "title_bg": "Корекция: Няма инфинитив",
+      "title_en": "Correction: No Infinitive",
+      "error_patterns": [
+        "bg.no_infinitive.*",
+        "infinitive_like"
+      ],
+      "triggers": {
+        "min_occurrences": 2,
+        "time_window_hours": 24,
+        "confidence_threshold": 0.7
+      },
+      "duration_minutes": 2,
+      "level": ["A2", "B1"],
+      "content": {
+        "micro_explanation_bg": "В български няма инфинитив като в други славянски езици. Вместо това използваме конструкцията 'да + сегашно време'.",
+        "micro_explanation_en": "Bulgarian doesn't have an infinitive like other Slavic languages. Instead, we use the construction 'да + present tense'.",
+        "contrast_notes": {
+          "PL": "Po polsku mówimy 'chcę kupić', ale po bułgarsku 'искам да купя' (chcę + да + kupię).",
+          "RU": "По-русски говорим 'хочу купить', а по-болгарски 'искам да купя' (хочу + да + куплю).",
+          "UK": "По-українськи кажемо 'хочу купити', а болгарською 'искам да купя' (хочу + да + куплю).",
+          "SR": "Na srpskom kažemo 'želim da kupim', a na bugarskom 'искам да купя' (želim + da + kupim)."
+        },
+        "key_examples": [
+          {
+            "wrong": "Искам купувам хляб.",
+            "right": "Искам да купя хляб.",
+            "translation_en": "I want to buy bread.",
+            "audio_bg": null
+          },
+          {
+            "wrong": "Трябва правя домашно.",
+            "right": "Трябва да правя домашно.",
+            "translation_en": "I have to do homework.",
+            "audio_bg": null
+          },
+          {
+            "wrong": "Може ли говоря с Мария?",
+            "right": "Може ли да говоря с Мария?",
+            "translation_en": "May I speak with Maria?",
+            "audio_bg": null
+          }
+        ],
+        "quick_drill": [
+          {
+            "prompt": "Искам _____ кафе.",
+            "options": ["пия", "да пия", "пиене"],
+            "correct": 1,
+            "explanation": "'Искам' + 'да' + сегашно време"
+          },
+          {
+            "prompt": "Трябва _____ на работа.",
+            "options": ["отивам", "да отида", "отиване"],
+            "correct": 1,
+            "explanation": "'Трябва' + 'да' + сегашно време"
+          }
+        ],
+        "memory_tip": "Запомни: 'да' = твоят приятел за действия! Винаги слагай 'да' преди глагола."
+      },
+      "srs_config": {
+        "initial_interval_days": 1,
+        "success_multiplier": 2.0,
+        "failure_reset": true
+      }
+    },
+    {
+      "id": "definite_article_correction",
+      "title_bg": "Корекция: Определителен член",
+      "title_en": "Correction: Definite Article",
+      "error_patterns": [
+        "bg.definite_article.*",
+        "article_missing",
+        "article_wrong_position"
+      ],
+      "triggers": {
+        "min_occurrences": 2,
+        "time_window_hours": 24,
+        "confidence_threshold": 0.6
+      },
+      "duration_minutes": 3,
+      "level": ["A2", "B1", "B2"],
+      "content": {
+        "micro_explanation_bg": "В български определителният член (-ът, -та, -то) се слага накрая на думата, не отпред както в други езици.",
+        "micro_explanation_en": "In Bulgarian, the definite article (-ът, -та, -то) is attached to the end of the word, not at the beginning like in other languages.",
+        "contrast_notes": {
+          "PL": "Po polsku: 'ten dom', ale po bułgarsku: 'домът' (dom-ът).",
+          "RU": "В русском нет артиклей, но по-болгарски: 'домът' (дом + ът).",
+          "UK": "В українській немає артиклів, але болгарською: 'домът' (дім + ът).",
+          "SR": "Na srpskom nema članova, ali na bugarskom: 'домът' (kuća + ът)."
+        },
+        "key_examples": [
+          {
+            "wrong": "Видях една къща.",
+            "right": "Видях къщата.",
+            "context": "when referring to a specific house",
+            "translation_en": "I saw the house.",
+            "audio_bg": null
+          },
+          {
+            "wrong": "Дай ми тази книга.",
+            "right": "Дай ми книгата.",
+            "context": "when the book is already known",
+            "translation_en": "Give me the book.",
+            "audio_bg": null
+          },
+          {
+            "wrong": "Отивам в този магазин.",
+            "right": "Отивам в магазина.",
+            "context": "when referring to the specific store",
+            "translation_en": "I'm going to the store.",
+            "audio_bg": null
+          }
+        ],
+        "quick_drill": [
+          {
+            "prompt": "Къде е _____ ? (книга)",
+            "options": ["книга", "книгата", "една книга"],
+            "correct": 1,
+            "explanation": "Използваме определителен член за конкретна книга"
+          },
+          {
+            "prompt": "_____ е много красива. (къща)",
+            "options": ["Къща", "Къщата", "Една къща"],
+            "correct": 1,
+            "explanation": "Говорим за конкретна къща"
+          }
+        ],
+        "memory_tip": "Запомни: Артикълът в български е 'залепен' в края! домът, къщата, детето."
+      },
+      "srs_config": {
+        "initial_interval_days": 1,
+        "success_multiplier": 1.8,
+        "failure_reset": true
+      }
+    },
+    {
+      "id": "verb_aspects_correction",
+      "title_bg": "Корекция: Глаголни видове",
+      "title_en": "Correction: Verb Aspects",
+      "error_patterns": [
+        "bg.verb_aspects.*",
+        "aspect_confusion",
+        "perfective_imperfective_error"
+      ],
+      "triggers": {
+        "min_occurrences": 3,
+        "time_window_hours": 48,
+        "confidence_threshold": 0.5
+      },
+      "duration_minutes": 4,
+      "level": ["B1", "B2"],
+      "content": {
+        "micro_explanation_bg": "В български има два вида глаголи: свършен (перфективен) и несвършен (имперфективен). Свършеният вид показва завършено действие.",
+        "micro_explanation_en": "Bulgarian has two verb aspects: perfective (completed action) and imperfective (ongoing/repeated action).",
+        "contrast_notes": {
+          "PL": "Podobnie jak w polskim: robić/zrobić, ale w bułgarskim: правя/направя.",
+          "RU": "Как в русском: делать/сделать, так в болгарском: правя/направя.",
+          "UK": "Як в українській: робити/зробити, так в болгарському: правя/направя.",
+          "SR": "Kao u srpskom: raditi/uraditi, tako u bugarskom: правя/направя."
+        },
+        "key_examples": [
+          {
+            "wrong": "Вчера направих домашното 2 часа.",
+            "right": "Вчера правих домашното 2 часа.",
+            "context": "duration, process",
+            "translation_en": "Yesterday I was doing homework for 2 hours.",
+            "audio_bg": null
+          },
+          {
+            "wrong": "Правих домашното и излязох.",
+            "right": "Направих домашното и излязох.",
+            "context": "completed action, sequence",
+            "translation_en": "I finished my homework and went out.",
+            "audio_bg": null
+          }
+        ],
+        "quick_drill": [
+          {
+            "prompt": "Цял ден _____ в градината. (work)",
+            "options": ["работих", "поработих"],
+            "correct": 0,
+            "explanation": "Процес през цялото време - несвършен вид"
+          },
+          {
+            "prompt": "_____ задачата и си тръгнах. (finish)",
+            "options": ["завършвах", "завърших"],
+            "correct": 1,
+            "explanation": "Завършено действие - свършен вид"
+          }
+        ],
+        "memory_tip": "Свършен вид = готово действие ✓. Несвършен вид = процес, продължаване ⏳"
+      },
+      "srs_config": {
+        "initial_interval_days": 2,
+        "success_multiplier": 1.5,
+        "failure_reset": true
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2025-08-30",
+    "total_lessons": 3,
+    "supported_l1": ["PL", "RU", "UK", "SR"],
+    "audio_format": "wav",
+    "avg_duration_minutes": 3
+  }
+}

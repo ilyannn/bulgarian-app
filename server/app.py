@@ -17,8 +17,12 @@ from telemetry import get_telemetry, init_telemetry
 from tts import TTSProcessor
 
 from content import (
+    get_due_mini_lessons,
     get_grammar_item,
+    get_mini_lesson,
+    get_mini_lessons_for_error,
     load_grammar_pack,
+    load_mini_lessons,
     load_scenarios,
 )
 
@@ -506,6 +510,42 @@ async def get_drills_for_grammar(grammar_id: str, l1: str | None = None):
         "explanation": item.get("micro_explanation_bg", ""),
         "contrast_note": contrast_note,
     }
+
+
+@app.get("/content/mini-lessons", tags=["content"])
+async def get_mini_lessons():
+    """Get list of available mini-lessons"""
+    return list(load_mini_lessons().values())
+
+
+@app.get("/content/mini-lessons/{lesson_id}", tags=["content"])
+async def get_mini_lesson_by_id(lesson_id: str):
+    """Get specific mini-lesson by ID"""
+    lesson = get_mini_lesson(lesson_id)
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Mini-lesson not found")
+
+    return lesson
+
+
+class UserProgress(BaseModel):
+    """User progress data for SRS calculation"""
+
+    lesson_progress: dict[str, dict]
+
+
+@app.post("/content/mini-lessons/due", tags=["content"])
+async def get_due_lessons(progress: UserProgress):
+    """Get mini-lessons due for review based on user's SRS progress"""
+    due_lessons = get_due_mini_lessons(progress.lesson_progress)
+    return due_lessons
+
+
+@app.get("/content/mini-lessons/for-error/{error_pattern}", tags=["content"])
+async def get_lessons_for_error(error_pattern: str):
+    """Get mini-lessons that match a specific error pattern"""
+    lessons = get_mini_lessons_for_error(error_pattern)
+    return lessons
 
 
 @app.get("/api/config", tags=["config"])

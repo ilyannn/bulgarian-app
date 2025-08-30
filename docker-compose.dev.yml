@@ -1,0 +1,123 @@
+# =============================================================================
+# Development Docker Compose for Bulgarian Voice Coach
+# =============================================================================
+
+services:
+  app-dev:
+    build:
+      context: .
+      target: development
+    container_name: bulgarian-voice-coach-dev
+    ports:
+      - '8000:8000' # FastAPI backend
+      - '5173:5173' # Vite frontend (hot reload)
+    environment:
+      # Development Configuration
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - RELOAD=true
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+
+      # Development-friendly settings
+      - CHAT_PROVIDER=dummy
+      - WHISPER_MODEL_PATH=tiny # Faster loading for development
+      - WHISPER_LANGUAGE=bg
+      - WHISPER_BEAM_SIZE=1 # Faster inference
+      - WHISPER_TEMPERATURE=0.0
+
+      # TTS Configuration
+      - ESPEAK_VOICE=bg
+      - ESPEAK_SPEED=160
+
+      # Audio Processing (relaxed for development)
+      - SAMPLE_RATE=16000
+      - VAD_AGGRESSIVENESS=1 # Less aggressive for development
+      - VAD_THRESHOLD=0.3 # Lower threshold
+
+      # Content System
+      - DEFAULT_L1_LANGUAGE=PL
+      - GRAMMAR_PACK_PATH=content/bg_grammar_pack.json
+      - SCENARIOS_PATH=content/bg_scenarios_with_grammar.json
+
+      # Development Features
+      - ENABLE_METRICS=true
+      - LOG_REQUESTS=true # Enable request logging
+      - LOG_ASR_DETAILS=true # Enable ASR debugging
+
+      # CORS (allow frontend dev server)
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+
+      # Optional: Enable telemetry for development testing
+      - OTEL_ENABLED=false
+      - OTEL_CONSOLE_EXPORT=true
+      - OTEL_SERVICE_NAME=bulgarian-voice-coach-dev
+      - ENVIRONMENT=development
+    volumes:
+      # Mount source code for hot reload
+      - ./server:/app/server
+      - ./client:/app/client
+      # Cache models to avoid re-downloading
+      - whisper_models_dev:/app/data/models
+      # Development logs
+      - ./data/logs:/app/data/logs
+      # Environment file
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s # Faster start for development
+    # Enable for debugging
+    stdin_open: true
+    tty: true
+
+# =============================================================================
+# Optional: Development Tools
+# =============================================================================
+
+# Uncomment for database GUI during development
+# adminer:
+#   image: adminer:4.8.1
+#   container_name: adminer-dev
+#   ports:
+#     - "8080:8080"
+#   restart: unless-stopped
+
+# Uncomment for monitoring during development
+# jaeger-dev:
+#   image: jaegertracing/all-in-one:1.57
+#   container_name: jaeger-dev
+#   environment:
+#     - COLLECTOR_OTLP_ENABLED=true
+#   ports:
+#     - "16686:16686"  # Jaeger UI
+#     - "4317:4317"    # OTLP receiver
+#   restart: unless-stopped
+
+volumes:
+  whisper_models_dev:
+    driver: local
+# =============================================================================
+# Development Notes
+# =============================================================================
+#
+# To use this development setup:
+#
+# 1. Copy .env.example to .env and configure your settings
+# 2. Run: docker-compose -f docker-compose.dev.yml up --build
+# 3. Frontend: http://localhost:5173 (with hot reload)
+# 4. Backend API: http://localhost:8000/docs
+# 5. Backend health: http://localhost:8000/health
+#
+# Hot reload is enabled for both:
+# - Frontend: Vite development server with HMR
+# - Backend: uvicorn --reload watches Python files
+#
+# For debugging:
+# - Add breakpoints in your IDE
+# - Use docker-compose logs to see output
+# - Access container shell: docker exec -it bulgarian-voice-coach-dev bash
+
