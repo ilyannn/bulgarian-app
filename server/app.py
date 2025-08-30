@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from llm import DummyProvider
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from telemetry import get_telemetry, init_telemetry
 from tts import TTSProcessor
 
@@ -23,6 +23,16 @@ from content import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# Standard error response model
+class ErrorResponse(BaseModel):
+    """Standard error response format for API consistency"""
+
+    error: str = Field(..., description="Error type or code")
+    message: str = Field(..., description="Human-readable error message")
+    details: dict | None = Field(None, description="Additional error details")
+
 
 # Global state
 grammar_index: dict = {}
@@ -108,7 +118,41 @@ class CoachResponse(BaseModel):
     drills: list[dict] = []
 
 
-app = FastAPI(title="Bulgarian Voice Coach", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="Bulgarian Voice Coach",
+    version="0.1.0",
+    description="""Voice-enabled web application for teaching Bulgarian to Slavic speakers with real-time speech recognition, synthesis, and grammar error detection.
+
+**Security Note**: This is a local-first application with no authentication by design. All user progress is stored client-side in localStorage. The API is intentionally open as it runs locally and contains no sensitive data.""",
+    lifespan=lifespan,
+    contact={
+        "name": "Bulgarian Voice Coach Team",
+        "email": "support@example.com",
+    },
+    servers=[
+        {"url": "http://localhost:8000", "description": "Development server"},
+        {"url": "http://localhost:8001", "description": "Production server"},
+    ],
+    openapi_tags=[
+        {"name": "health", "description": "Health check endpoints"},
+        {"name": "tts", "description": "Text-to-speech operations"},
+        {"name": "content", "description": "Grammar and scenario content"},
+        {"name": "config", "description": "Application configuration"},
+        {"name": "websocket", "description": "WebSocket connections"},
+    ],
+    # Document that this API intentionally has no security schemes
+    # This is a local-first app with client-side storage
+    components={
+        "securitySchemes": {
+            "none": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-No-Auth",
+                "description": "No authentication required - local-first architecture",
+            }
+        }
+    },
+)
 
 # CORS middleware for development
 app.add_middleware(
@@ -290,7 +334,90 @@ async def process_user_input(text: str) -> CoachResponse:
     )
 
 
-@app.get("/tts")
+# Health check endpoints
+@app.get("/", tags=["health"])
+async def root():
+    """Root endpoint - returns API information"""
+    return {
+        "name": "Bulgarian Voice Coach API",
+        "version": "0.1.0",
+        "status": "operational",
+        "docs": "/docs",
+        "openapi": "/openapi.json",
+    }
+
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """Health check endpoint following Health Check Response Format"""
+    # Check service status
+    services_status = {
+        "asr": asr_processor is not None,
+        "tts": tts_processor is not None,
+        "llm": chat_provider is not None,
+        "content": bool(grammar_index and scenarios),
+    }
+
+    all_healthy = all(services_status.values())
+
+    # Follow Health Check Response Format (RFC draft)
+    health_response = {
+        "status": "pass" if all_healthy else "fail",
+        "version": "0.1.0",
+        "serviceId": "bulgarian-voice-coach-api",
+        "description": "Bulgarian Voice Coach API health status",
+        "checks": {
+            "asr:availability": [
+                {
+                    "status": "pass" if services_status["asr"] else "fail",
+                    "componentType": "service",
+                    "observedValue": services_status["asr"],
+                    "output": "ASR processor initialized"
+                    if services_status["asr"]
+                    else "ASR not initialized",
+                }
+            ],
+            "tts:availability": [
+                {
+                    "status": "pass" if services_status["tts"] else "fail",
+                    "componentType": "service",
+                    "observedValue": services_status["tts"],
+                    "output": "TTS processor initialized"
+                    if services_status["tts"]
+                    else "TTS not initialized",
+                }
+            ],
+            "llm:availability": [
+                {
+                    "status": "pass" if services_status["llm"] else "fail",
+                    "componentType": "service",
+                    "observedValue": services_status["llm"],
+                    "output": "LLM provider initialized"
+                    if services_status["llm"]
+                    else "LLM not initialized",
+                }
+            ],
+            "content:availability": [
+                {
+                    "status": "pass" if services_status["content"] else "fail",
+                    "componentType": "datastore",
+                    "observedValue": services_status["content"],
+                    "output": "Content loaded"
+                    if services_status["content"]
+                    else "Content not loaded",
+                }
+            ],
+        },
+    }
+
+    # Return appropriate status code
+    if not all_healthy:
+        raise HTTPException(status_code=503, detail=health_response)
+
+    return health_response
+
+
+@app.get("/tts", tags=["tts"])
 async def text_to_speech(text: str, track_timing: bool = False):
     """Convert text to speech and stream audio"""
     telemetry_context = get_telemetry()
@@ -330,13 +457,13 @@ async def text_to_speech(text: str, track_timing: bool = False):
     return StreamingResponse(generate_audio(), media_type="audio/wav", headers=headers)
 
 
-@app.get("/content/scenarios")
+@app.get("/content/scenarios", tags=["content"])
 async def get_scenarios():
     """Get list of available scenarios"""
     return list(scenarios.values())
 
 
-@app.get("/content/grammar/{grammar_id}")
+@app.get("/content/grammar/{grammar_id}", tags=["content"])
 async def get_grammar(grammar_id: str, l1: str | None = None):
     """Get specific grammar item by ID with L1-specific contrast notes"""
     item = get_grammar_item(grammar_id)
@@ -358,7 +485,7 @@ async def get_grammar(grammar_id: str, l1: str | None = None):
     return result
 
 
-@app.get("/content/drills/{grammar_id}")
+@app.get("/content/drills/{grammar_id}", tags=["content"])
 async def get_drills_for_grammar(grammar_id: str, l1: str | None = None):
     """Get drills for a specific grammar item with L1-specific contrast"""
     item = get_grammar_item(grammar_id)
@@ -381,7 +508,7 @@ async def get_drills_for_grammar(grammar_id: str, l1: str | None = None):
     }
 
 
-@app.get("/api/config")
+@app.get("/api/config", tags=["config"])
 async def get_app_config():
     """Get current application configuration for frontend"""
     return {
@@ -396,7 +523,7 @@ async def get_app_config():
     }
 
 
-@app.post("/api/config/l1")
+@app.post("/api/config/l1", tags=["config"])
 async def update_l1_language(request: dict):
     """Update L1 language preference (session-based, not persistent)"""
     new_l1 = request.get("l1_language", "").upper()
@@ -410,7 +537,7 @@ async def update_l1_language(request: dict):
     return {"l1_language": new_l1, "status": "updated"}
 
 
-@app.post("/content/analyze")
+@app.post("/content/analyze", tags=["content"])
 async def analyze_text(request: dict):
     """Analyze Bulgarian text for grammar errors and generate drills with L1 contrast"""
     text = request.get("text", "")

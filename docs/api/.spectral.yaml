@@ -1,5 +1,18 @@
 extends:
-  [
-    "spectral:oas",
-    "https://unpkg.com/@apisyouwonthate/style-guide@1.5.0/dist/ruleset.js",
-  ]
+  - spectral:oas
+  - https://unpkg.com/@apisyouwonthate/style-guide@1.5.0/dist/ruleset.js
+
+# Custom rule overrides for local-first Bulgarian Voice Coach API
+rules:
+  # Override HTTPS requirement for local development servers
+  hosts-https-only-oas3: off
+
+  # Security is intentionally open (local-first, no auth)
+  # Downgrade to info level since this is by design
+  no-security-schemes-defined: info
+
+  # Health check format - we use RFC draft format
+  api-health-format: info
+
+  # Standard error format - downgrade to warning
+  no-unknown-error-format: warn

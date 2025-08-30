@@ -2,11 +2,69 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Bulgarian Voice Coach",
+    "description": "Voice-enabled web application for teaching Bulgarian to Slavic speakers with real-time speech recognition, synthesis, and grammar error detection.\n\n**Security Note**: This is a local-first application with no authentication by design. All user progress is stored client-side in localStorage. The API is intentionally open as it runs locally and contains no sensitive data.",
+    "contact": {
+      "name": "Bulgarian Voice Coach Team",
+      "email": "support@example.com"
+    },
     "version": "0.1.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Development server"
+    },
+    {
+      "url": "http://localhost:8001",
+      "description": "Production server"
+    }
+  ],
   "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Root",
+        "description": "Root endpoint - returns API information",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint following Health Check Response Format",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/tts": {
       "get": {
+        "tags": [
+          "tts"
+        ],
         "summary": "Text To Speech",
         "description": "Convert text to speech and stream audio",
         "operationId": "text_to_speech_tts_get",
@@ -55,6 +113,9 @@
     },
     "/content/scenarios": {
       "get": {
+        "tags": [
+          "content"
+        ],
         "summary": "Get Scenarios",
         "description": "Get list of available scenarios",
         "operationId": "get_scenarios_content_scenarios_get",
@@ -72,6 +133,9 @@
     },
     "/content/grammar/{grammar_id}": {
       "get": {
+        "tags": [
+          "content"
+        ],
         "summary": "Get Grammar",
         "description": "Get specific grammar item by ID with L1-specific contrast notes",
         "operationId": "get_grammar_content_grammar__grammar_id__get",
@@ -126,6 +190,9 @@
     },
     "/content/drills/{grammar_id}": {
       "get": {
+        "tags": [
+          "content"
+        ],
         "summary": "Get Drills For Grammar",
         "description": "Get drills for a specific grammar item with L1-specific contrast",
         "operationId": "get_drills_for_grammar_content_drills__grammar_id__get",
@@ -180,6 +247,9 @@
     },
     "/api/config": {
       "get": {
+        "tags": [
+          "config"
+        ],
         "summary": "Get App Config",
         "description": "Get current application configuration for frontend",
         "operationId": "get_app_config_api_config_get",
@@ -197,6 +267,9 @@
     },
     "/api/config/l1": {
       "post": {
+        "tags": [
+          "config"
+        ],
         "summary": "Update L1 Language",
         "description": "Update L1 language preference (session-based, not persistent)",
         "operationId": "update_l1_language_api_config_l1_post",
@@ -236,6 +309,9 @@
     },
     "/content/analyze": {
       "post": {
+        "tags": [
+          "content"
+        ],
         "summary": "Analyze Text",
         "description": "Analyze Bulgarian text for grammar errors and generate drills with L1 contrast",
         "operationId": "analyze_text_content_analyze_post",
@@ -323,5 +399,27 @@
         "title": "ValidationError"
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "tts",
+      "description": "Text-to-speech operations"
+    },
+    {
+      "name": "content",
+      "description": "Grammar and scenario content"
+    },
+    {
+      "name": "config",
+      "description": "Application configuration"
+    },
+    {
+      "name": "websocket",
+      "description": "WebSocket connections"
+    }
+  ]
 }
