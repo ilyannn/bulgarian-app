@@ -260,7 +260,7 @@ export class ProgressiveAudioPlayer {
    */
   async play() {
     const audio = this.audioElement || this.fallbackAudio;
-    if (audio && audio.src) {
+    if (audio?.src) {
       try {
         await audio.play();
         this.isPaused = false;
@@ -398,7 +398,7 @@ export class ProgressiveAudioPlayer {
     }
 
     // Clean up audio element
-    if (this.audioElement && this.audioElement.src) {
+    if (this.audioElement?.src) {
       if (this.audioElement.src.startsWith('blob:')) {
         URL.revokeObjectURL(this.audioElement.src);
       }

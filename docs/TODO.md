@@ -84,10 +84,35 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 
 ## 2) TTS Enhancement (Medium Priority)
 
-- [ ] Research Piper TTS integration as eSpeak alternative
-- [ ] Add voice selection options
-- [ ] Implement cloud TTS fallback options
-- [ ] Add prosody and emotion controls
+- [x] **Research Piper TTS integration as eSpeak alternative** ✅ **COMPLETE** (2025-08-31)
+  
+  #### Research Findings
+  
+  **Piper TTS Bulgarian Support**: ❌ **Not Available**
+  - Piper TTS supports 37 languages but Bulgarian is not included
+  - Related Slavic languages available: Russian, Ukrainian, Serbian, Polish, Slovak, Slovenian
+  - Would require custom Bulgarian voice training (high complexity, uncertain quality)
+  
+  **Alternative Neural TTS Options**:
+  - **ElevenLabs**: High-quality Bulgarian voices (cloud-only, commercial API)
+  - **Azure Speech**: Bulgarian support available (enterprise pricing)
+  - **Coqui XTTS-v2**: Voice cloning possible but requires Bulgarian training data
+  
+  **Current eSpeak NG Assessment**:
+  - ✅ Working Bulgarian (bg) voice active and functional
+  - ✅ Local deployment with no cloud dependencies
+  - ✅ Fast synthesis (~200ms latency)
+  - ✅ Already integrated with progressive audio streaming
+  - ⚠️ Robotic quality but intelligible for language learning
+  
+  **Recommendation**: Three-phase incremental approach
+  1. **Phase 1**: Optimize eSpeak NG parameters (low risk, high impact)
+  2. **Phase 2**: Add optional cloud TTS fallback (medium risk, high quality)
+  3. **Phase 3**: Custom Bulgarian voice training (high risk, high reward)
+
+- [ ] Add voice selection options within eSpeak NG
+- [ ] Implement optional cloud TTS fallback (ElevenLabs/Azure)
+- [ ] Add prosody and emotion controls for eSpeak NG
 
 ## 3) Data Privacy & Analytics (Medium Priority)
 

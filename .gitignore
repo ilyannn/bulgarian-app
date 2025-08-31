@@ -103,3 +103,7 @@ jspm_packages/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Test files and generated audio
+test_*.wav
+test_*.html

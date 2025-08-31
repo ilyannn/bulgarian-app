@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progressive Audio Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    
+    #log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      padding: 10px;
+      margin: 10px 0;
+      height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>Progressive Audio Streaming Test</h1>
+  
+  <div>
+    <button id="testButton">Test Progressive Audio</button>
+    <button id="testFallbackButton">Test Fallback Audio</button>
+    <button id="clearButton">Clear Log</button>
+  </div>
+  
+  <div id="status" class="status info">Ready to test</div>
+  
+  <div id="log"></div>
+  
+  <script type="module">
+    // Import the ProgressiveAudioPlayer
+    import { ProgressiveAudioPlayer } from './client/services/ProgressiveAudioPlayer.js';
+    
+    const testButton = document.getElementById('testButton');
+    const testFallbackButton = document.getElementById('testFallbackButton');
+    const clearButton = document.getElementById('clearButton');
+    const status = document.getElementById('status');
+    const log = document.getElementById('log');
+    
+    let player = null;
+    
+    function addLog(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+      logEntry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+      log.appendChild(logEntry);
+      log.scrollTop = log.scrollHeight;
+    }
+    
+    function updateStatus(message, type = 'info') {
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+    
+    function testProgressiveAudio() {
+      addLog('🧪 Starting Progressive Audio Test', 'info');
+      updateStatus('Testing Progressive Audio...', 'info');
+      
+      // Clean up previous player
+      if (player) {
+        player.cleanup();
+      }
+      
+      player = new ProgressiveAudioPlayer();
+      
+      // Set up event callbacks
+      player.onPlaying(() => {
+        addLog('🎵 Audio started playing', 'success');
+        updateStatus('Audio Playing', 'success');
+      });
+      
+      player.onPaused(() => {
+        addLog('⏸️ Audio paused', 'info');
+        updateStatus('Audio Paused', 'info');
+      });
+      
+      player.onEnded(() => {
+        addLog('🏁 Audio playback completed', 'success');
+        updateStatus('Audio Completed', 'success');
+      });
+      
+      player.onError((error) => {
+        addLog(`❌ Audio error: ${error.message || error}`, 'error');
+        updateStatus('Audio Error', 'error');
+      });
+      
+      // Check MediaSource support
+      addLog(`📋 MediaSource supported: ${player.isSupported}`, player.isSupported ? 'success' : 'error');
+      if (player.isSupported) {
+        addLog(`📋 Supported MIME type: ${player.supportedMimeType}`, 'success');
+      }
+      
+      // Test with Bulgarian text
+      const testText = 'Здравей! Как си днес?';
+      const ttsUrl = `/tts?text=${encodeURIComponent(testText)}`;
+      addLog(`🔗 TTS URL: ${ttsUrl}`, 'info');
+      
+      // Start progressive streaming
+      testButton.disabled = true;
+      testFallbackButton.disabled = true;
+      
+      player.loadAndStream(ttsUrl)
+        .then(() => {
+          addLog('✅ Progressive audio streaming completed successfully', 'success');
+        })
+        .catch((error) => {
+          addLog(`❌ Progressive audio streaming failed: ${error.message}`, 'error');
+          updateStatus('Progressive Audio Failed', 'error');
+        })
+        .finally(() => {
+          testButton.disabled = false;
+          testFallbackButton.disabled = false;
+        });
+    }
+    
+    function testFallbackAudio() {
+      addLog('🧪 Starting Fallback Audio Test', 'info');
+      updateStatus('Testing Fallback Audio...', 'info');
+      
+      // Create fallback audio element
+      const audio = new Audio();
+      
+      audio.addEventListener('loadstart', () => {
+        addLog('📡 Fallback audio loading started', 'info');
+      });
+      
+      audio.addEventListener('canplaythrough', () => {
+        addLog('✅ Fallback audio can play through', 'success');
+        audio.play()
+          .then(() => {
+            addLog('🎵 Fallback audio playing', 'success');
+            updateStatus('Fallback Audio Playing', 'success');
+          })
+          .catch((error) => {
+            addLog(`❌ Fallback audio play failed: ${error.message}`, 'error');
+            updateStatus('Fallback Audio Failed', 'error');
+          });
+      });
+      
+      audio.addEventListener('ended', () => {
+        addLog('🏁 Fallback audio completed', 'success');
+        updateStatus('Fallback Audio Completed', 'success');
+      });
+      
+      audio.addEventListener('error', (error) => {
+        addLog(`❌ Fallback audio error: ${error.message || error}`, 'error');
+        updateStatus('Fallback Audio Error', 'error');
+      });
+      
+      // Test with Bulgarian text
+      const testText = 'Здравей! Как си днес?';
+      const ttsUrl = `/tts?text=${encodeURIComponent(testText)}`;
+      addLog(`🔗 Fallback TTS URL: ${ttsUrl}`, 'info');
+      
+      testButton.disabled = true;
+      testFallbackButton.disabled = true;
+      
+      // Load using traditional method
+      fetch(ttsUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          addLog(`📦 Blob URL created: ${blobUrl.substring(0, 50)}...`, 'info');
+          audio.src = blobUrl;
+        })
+        .catch(error => {
+          addLog(`❌ Fallback loading failed: ${error.message}`, 'error');
+          updateStatus('Fallback Loading Failed', 'error');
+        })
+        .finally(() => {
+          testButton.disabled = false;
+          testFallbackButton.disabled = false;
+        });
+    }
+    
+    function clearLog() {
+      log.innerHTML = '';
+      updateStatus('Log cleared', 'info');
+    }
+    
+    // Event listeners
+    testButton.addEventListener('click', testProgressiveAudio);
+    testFallbackButton.addEventListener('click', testFallbackAudio);
+    clearButton.addEventListener('click', clearLog);
+    
+    // Initial log
+    addLog('🚀 Progressive Audio Test Page Loaded', 'success');
+    addLog('📋 Ready to test progressive audio streaming vs fallback', 'info');
+  </script>
+</body>
+</html>
