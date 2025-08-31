@@ -5,6 +5,7 @@
 import { l1LanguageService } from './services/L1LanguageService.js';
 import LocalProgressService from './services/LocalProgressService.js';
 import PerformanceMonitor from './services/PerformanceMonitor.js';
+import { ProgressiveAudioPlayer } from './services/ProgressiveAudioPlayer.js';
 import { TranscriptDisplay } from './services/TranscriptDisplay.js';
 
 class BulgarianVoiceCoach {
@@ -45,8 +46,8 @@ class BulgarianVoiceCoach {
     this.audioText = document.getElementById('audio-text');
     this.latencyText = document.getElementById('latency-text');
 
-    // Audio playback
-    this.audioPlayer = new Audio();
+    // Audio playback - using progressive streaming
+    this.audioPlayer = new ProgressiveAudioPlayer();
     this.lastResponseText = '';
     this.currentAudioUrl = null;
     this.isPlaying = false;
@@ -778,10 +779,8 @@ class BulgarianVoiceCoach {
 
     // Clean up any current audio
     this.stopAudio();
-    if (this.currentAudioUrl) {
-      URL.revokeObjectURL(this.currentAudioUrl);
-      this.currentAudioUrl = null;
-    }
+    // Progressive player handles its own cleanup
+    this.audioPlayer.cleanup();
   }
 
   scrollToBottom() {
@@ -1031,14 +1030,14 @@ class BulgarianVoiceCoach {
   }
 
   cleanupBlobUrls() {
-    // Clean up any blob URLs that might be lingering
+    // Clean up progressive audio player resources
+    if (this.audioPlayer) {
+      this.audioPlayer.cleanup();
+    }
+    // Clean up any legacy blob URLs
     if (this.currentAudioUrl) {
       URL.revokeObjectURL(this.currentAudioUrl);
       this.currentAudioUrl = null;
-    }
-    if (this.audioPlayer?.src?.startsWith('blob:')) {
-      URL.revokeObjectURL(this.audioPlayer.src);
-      this.audioPlayer.src = '';
     }
   }
 
@@ -1268,22 +1267,19 @@ class BulgarianVoiceCoach {
     }
 
     try {
-      const response = await window.fetch(`/tts?text=${encodeURIComponent(this.lastResponseText)}`);
-      if (!response.ok) {
-        this.showError('Could not load audio: TTS request failed');
-        return false;
-      }
+      // Use progressive streaming with the new audio player
+      const ttsUrl = `/tts?text=${encodeURIComponent(this.lastResponseText)}`;
 
-      const audioBlob = await response.blob();
-      if (this.currentAudioUrl) {
-        window.URL.revokeObjectURL(this.currentAudioUrl);
-      }
-      this.currentAudioUrl = window.URL.createObjectURL(audioBlob);
+      // Set up event callbacks before loading
+      this.audioPlayer.onPlaying(() => this.onAudioPlaying());
+      this.audioPlayer.onPaused(() => this.onAudioPaused());
+      this.audioPlayer.onEnded(() => this.onAudioEnded());
+      this.audioPlayer.onError((error) => {
+        this.showError(`Audio playback error: ${error.message || 'Unknown error'}`);
+      });
 
-      if (this.audioPlayer) {
-        this.audioPlayer.src = this.currentAudioUrl;
-      }
-
+      // Start progressive streaming
+      await this.audioPlayer.loadAndStream(ttsUrl);
       return true;
     } catch (error) {
       this.showError(`Could not load audio: ${error.message}`);
@@ -1317,32 +1313,24 @@ class BulgarianVoiceCoach {
           this.onAudioPlaying();
         }
       } catch (error) {
-        this.showError(`Playback failed: ${error.message}`);
+        this.showError(`Resume failed: ${error.message}`);
       }
     }
   }
 
   async replayAudio() {
     try {
-      if (!this.currentAudioUrl) {
-        await this.loadAudio();
-      }
-
-      if (this.audioPlayer) {
-        this.audioPlayer.currentTime = 0;
-        await this.audioPlayer.play();
-        this.onAudioPlaying();
-      }
+      // Replay using the progressive player
+      await this.audioPlayer.replay();
+      this.onAudioPlaying();
     } catch (error) {
       this.showError(`Replay failed: ${error.message}`);
     }
   }
 
   stopAudio() {
-    if (this.audioPlayer) {
-      this.audioPlayer.pause();
-      this.audioPlayer.currentTime = 0;
-    }
+    // Stop using the progressive player
+    this.audioPlayer.stop();
     this.isPlaying = false;
     this.isPaused = false;
     if (this.playPauseBtn) {
