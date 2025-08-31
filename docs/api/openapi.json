@@ -46,22 +46,32 @@
           "health"
         ],
         "summary": "Health Check",
-        "description": "Health check endpoint following Health Check Response Format",
+        "description": "Health check endpoint following RFC Health Check Response Format\n\nReturns health status in application/health+json format according to\nthe Health Check Response Format for HTTP APIs RFC draft.",
         "operationId": "health_check_health_get",
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Service is healthy",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthCheckResponse"
                 }
+              },
+              "application/health+json": {
+                "example": {
+                  "status": "pass"
+                }
               }
             }
           },
           "503": {
-            "description": "Service Unavailable",
+            "description": "Service is unhealthy",
             "content": {
+              "application/health+json": {
+                "example": {
+                  "status": "fail"
+                }
+              },
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HealthCheckResponse"
@@ -78,7 +88,7 @@
           "tts"
         ],
         "summary": "Text To Speech",
-        "description": "Convert text to speech and stream audio",
+        "description": "Convert text to speech and stream audio with optional voice profile",
         "operationId": "text_to_speech_tts_get",
         "parameters": [
           {
@@ -98,6 +108,22 @@
               "type": "boolean",
               "default": false,
               "title": "Track Timing"
+            }
+          },
+          {
+            "name": "profile",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile"
             }
           }
         ],
@@ -119,6 +145,26 @@
               }
             },
             "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/tts/profiles": {
+      "get": {
+        "tags": [
+          "tts"
+        ],
+        "summary": "Get Tts Profiles",
+        "description": "Get available TTS voice profiles",
+        "operationId": "get_tts_profiles_tts_profiles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
           }
         }
       }
@@ -540,38 +586,83 @@
         "title": "ErrorResponse",
         "description": "Standard error response format for API consistency"
       },
-      "HealthCheckInfo": {
+      "HealthCheckItem": {
         "properties": {
           "status": {
             "type": "string",
             "title": "Status",
-            "description": "Health check status: pass/fail/warn"
+            "description": "Check status: pass/fail/warn"
           },
           "componentType": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Componenttype",
             "description": "Type of component being checked"
           },
           "observedValue": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Observedvalue",
             "description": "Observed value for this check"
           },
+          "observedUnit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observedunit",
+            "description": "Unit of observed value"
+          },
           "output": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Output",
             "description": "Human-readable output message"
+          },
+          "time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time",
+            "description": "RFC 3339 timestamp"
           }
         },
         "type": "object",
         "required": [
-          "status",
-          "componentType",
-          "observedValue",
-          "output"
+          "status"
         ],
-        "title": "HealthCheckInfo",
-        "description": "Individual health check information"
+        "title": "HealthCheckItem",
+        "description": "Individual health check item (RFC compliant)"
       },
       "HealthCheckResponse": {
         "properties": {
@@ -581,39 +672,114 @@
             "description": "Overall status: pass/fail/warn"
           },
           "version": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Version",
-            "description": "API version"
+            "description": "Public version of the service"
+          },
+          "releaseId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Releaseid",
+            "description": "Internal release identifier"
           },
           "serviceId": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Serviceid",
-            "description": "Service identifier"
+            "description": "Unique service identifier"
           },
           "description": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Description",
-            "description": "Service description"
+            "description": "Human-friendly description"
           },
           "checks": {
-            "additionalProperties": {
-              "items": {
-                "$ref": "#/components/schemas/HealthCheckInfo"
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/HealthCheckItem"
+                },
+                "type": "object"
               },
-              "type": "array"
-            },
-            "type": "object",
+              {
+                "type": "null"
+              }
+            ],
             "title": "Checks",
             "description": "Individual health checks"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output",
+            "description": "Raw error output for warn/fail states"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Array of notes relevant to health"
+          },
+          "links": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links",
+            "description": "Links with more health information"
           }
         },
         "type": "object",
         "required": [
-          "status",
-          "version",
-          "serviceId",
-          "description",
-          "checks"
+          "status"
         ],
         "title": "HealthCheckResponse",
         "description": "Health Check Response Format following RFC draft"

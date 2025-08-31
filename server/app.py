@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import UTC
 from functools import lru_cache
 
 import uvicorn
@@ -38,25 +39,41 @@ class ErrorResponse(BaseModel):
     details: dict | None = Field(None, description="Additional error details")
 
 
-# Health check response models
-class HealthCheckInfo(BaseModel):
-    """Individual health check information"""
+# Health check response models (RFC Health Check Response Format)
+class HealthCheckItem(BaseModel):
+    """Individual health check item (RFC compliant)"""
 
-    status: str = Field(..., description="Health check status: pass/fail/warn")
-    componentType: str = Field(..., description="Type of component being checked")
-    observedValue: bool = Field(..., description="Observed value for this check")
-    output: str = Field(..., description="Human-readable output message")
+    status: str = Field(..., description="Check status: pass/fail/warn")
+    componentType: str | None = Field(
+        None, description="Type of component being checked"
+    )
+    observedValue: bool | str | None = Field(
+        None, description="Observed value for this check"
+    )
+    observedUnit: str | None = Field(None, description="Unit of observed value")
+    output: str | None = Field(None, description="Human-readable output message")
+    time: str | None = Field(None, description="RFC 3339 timestamp")
 
 
 class HealthCheckResponse(BaseModel):
     """Health Check Response Format following RFC draft"""
 
     status: str = Field(..., description="Overall status: pass/fail/warn")
-    version: str = Field(..., description="API version")
-    serviceId: str = Field(..., description="Service identifier")
-    description: str = Field(..., description="Service description")
-    checks: dict[str, list[HealthCheckInfo]] = Field(
-        ..., description="Individual health checks"
+    version: str | None = Field(None, description="Public version of the service")
+    releaseId: str | None = Field(None, description="Internal release identifier")
+    serviceId: str | None = Field(None, description="Unique service identifier")
+    description: str | None = Field(None, description="Human-friendly description")
+    checks: dict[str, HealthCheckItem] | None = Field(
+        None, description="Individual health checks"
+    )
+    output: str | None = Field(
+        None, description="Raw error output for warn/fail states"
+    )
+    notes: list[str] | None = Field(
+        None, description="Array of notes relevant to health"
+    )
+    links: dict[str, str] | None = Field(
+        None, description="Links with more health information"
     )
 
 
@@ -377,10 +394,27 @@ async def root():
     "/health",
     tags=["health"],
     response_model=HealthCheckResponse,
-    responses={503: {"model": HealthCheckResponse}},
+    responses={
+        200: {
+            "model": HealthCheckResponse,
+            "content": {"application/health+json": {"example": {"status": "pass"}}},
+            "description": "Service is healthy",
+        },
+        503: {
+            "model": HealthCheckResponse,
+            "content": {"application/health+json": {"example": {"status": "fail"}}},
+            "description": "Service is unhealthy",
+        },
+    },
 )
 async def health_check():
-    """Health check endpoint following Health Check Response Format"""
+    """Health check endpoint following RFC Health Check Response Format
+
+    Returns health status in application/health+json format according to
+    the Health Check Response Format for HTTP APIs RFC draft.
+    """
+    from datetime import datetime
+
     # Check service status
     services_status = {
         "asr": asr_processor is not None,
@@ -390,62 +424,74 @@ async def health_check():
     }
 
     all_healthy = all(services_status.values())
+    current_time = datetime.now(UTC).isoformat()
 
-    # Follow Health Check Response Format (RFC draft)
+    # Build RFC-compliant health checks
+    checks = {
+        "asr:availability": HealthCheckItem(
+            status="pass" if services_status["asr"] else "fail",
+            componentType="service",
+            observedValue=services_status["asr"],
+            output="ASR processor initialized"
+            if services_status["asr"]
+            else "ASR not initialized",
+            time=current_time,
+        ),
+        "tts:availability": HealthCheckItem(
+            status="pass" if services_status["tts"] else "fail",
+            componentType="service",
+            observedValue=services_status["tts"],
+            output="TTS processor initialized"
+            if services_status["tts"]
+            else "TTS not initialized",
+            time=current_time,
+        ),
+        "llm:availability": HealthCheckItem(
+            status="pass" if services_status["llm"] else "fail",
+            componentType="service",
+            observedValue=services_status["llm"],
+            output="LLM provider initialized"
+            if services_status["llm"]
+            else "LLM not initialized",
+            time=current_time,
+        ),
+        "content:availability": HealthCheckItem(
+            status="pass" if services_status["content"] else "fail",
+            componentType="datastore",
+            observedValue=services_status["content"],
+            output="Content loaded"
+            if services_status["content"]
+            else "Content not loaded",
+            time=current_time,
+        ),
+    }
+
+    # Build overall health response
     health_response = HealthCheckResponse(
         status="pass" if all_healthy else "fail",
         version="0.1.0",
         serviceId="bulgarian-voice-coach-api",
-        description="Bulgarian Voice Coach API health status",
-        checks={
-            "asr:availability": [
-                HealthCheckInfo(
-                    status="pass" if services_status["asr"] else "fail",
-                    componentType="service",
-                    observedValue=services_status["asr"],
-                    output="ASR processor initialized"
-                    if services_status["asr"]
-                    else "ASR not initialized",
-                )
-            ],
-            "tts:availability": [
-                HealthCheckInfo(
-                    status="pass" if services_status["tts"] else "fail",
-                    componentType="service",
-                    observedValue=services_status["tts"],
-                    output="TTS processor initialized"
-                    if services_status["tts"]
-                    else "TTS not initialized",
-                )
-            ],
-            "llm:availability": [
-                HealthCheckInfo(
-                    status="pass" if services_status["llm"] else "fail",
-                    componentType="service",
-                    observedValue=services_status["llm"],
-                    output="LLM provider initialized"
-                    if services_status["llm"]
-                    else "LLM not initialized",
-                )
-            ],
-            "content:availability": [
-                HealthCheckInfo(
-                    status="pass" if services_status["content"] else "fail",
-                    componentType="datastore",
-                    observedValue=services_status["content"],
-                    output="Content loaded"
-                    if services_status["content"]
-                    else "Content not loaded",
-                )
-            ],
-        },
+        description="Bulgarian Voice Coach - AI Language Learning API",
+        checks=checks,
+        links={"self": "/health", "about": "/", "docs": "/docs"},
     )
 
-    # Return appropriate status code
+    # Return appropriate status code according to RFC
     if not all_healthy:
-        raise HTTPException(status_code=503, detail=health_response.model_dump())
+        raise HTTPException(
+            status_code=503,
+            detail=health_response.model_dump(),
+            headers={"Content-Type": "application/health+json"},
+        )
 
-    return health_response
+    # Return successful response with proper media type
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        content=health_response.model_dump(exclude_none=True),
+        status_code=200,
+        media_type="application/health+json",
+    )
 
 
 @app.get("/tts", tags=["tts"], responses={422: {"model": ErrorResponse}})
