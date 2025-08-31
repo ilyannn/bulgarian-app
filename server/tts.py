@@ -3,24 +3,108 @@ import logging
 import struct
 import subprocess
 from collections.abc import Generator
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 
-class TTSProcessor:
-    """Text-to-Speech processor using eSpeak-NG for Bulgarian"""
+@dataclass
+class VoiceProfile:
+    """Voice profile configuration for eSpeak NG"""
 
-    def __init__(self, voice: str = "bg", speed: int = 160, pitch: int = 50):
+    name: str
+    speed: int  # Words per minute (80-450)
+    pitch: int  # Pitch adjustment (0-99)
+    pitch_range: int  # Pitch range (0-99)
+    amplitude: int  # Volume/amplitude (0-200)
+    word_gap: int  # Gap between words in 10ms units
+    description: str
+
+    def to_espeak_args(self) -> list[str]:
+        """Convert profile to eSpeak command arguments"""
+        return [
+            "-s",
+            str(self.speed),
+            "-p",
+            str(self.pitch),
+            "-P",
+            str(self.pitch_range),
+            "-a",
+            str(self.amplitude),
+            "-g",
+            str(self.word_gap),
+        ]
+
+
+class TTSProcessor:
+    """Enhanced Text-to-Speech processor using eSpeak-NG for Bulgarian"""
+
+    # Predefined voice profiles optimized for different use cases
+    VOICE_PROFILES: dict[str, VoiceProfile] = {
+        "default": VoiceProfile(
+            name="default",
+            speed=160,
+            pitch=50,
+            pitch_range=50,
+            amplitude=100,
+            word_gap=10,
+            description="Standard Bulgarian voice",
+        ),
+        "natural": VoiceProfile(
+            name="natural",
+            speed=150,
+            pitch=55,
+            pitch_range=60,
+            amplitude=110,
+            word_gap=8,
+            description="More natural-sounding Bulgarian voice",
+        ),
+        "slow": VoiceProfile(
+            name="slow",
+            speed=120,
+            pitch=45,
+            pitch_range=55,
+            amplitude=120,
+            word_gap=12,
+            description="Slower pace for learning",
+        ),
+        "expressive": VoiceProfile(
+            name="expressive",
+            speed=140,
+            pitch=60,
+            pitch_range=70,
+            amplitude=105,
+            word_gap=6,
+            description="More expressive and dynamic voice",
+        ),
+        "clear": VoiceProfile(
+            name="clear",
+            speed=130,
+            pitch=52,
+            pitch_range=45,
+            amplitude=115,
+            word_gap=15,
+            description="Clear pronunciation with pauses",
+        ),
+    }
+
+    def __init__(self, voice: str = "bg", profile: str = "natural"):
         self.sample_rate = 22050  # eSpeak default
         self.channels = 1  # mono
         self.sample_width = 2  # 16-bit
         self.voice = voice
-        self.speed = speed
-        self.pitch = pitch
+
+        # Set voice profile
+        if profile in self.VOICE_PROFILES:
+            self.profile = self.VOICE_PROFILES[profile]
+        else:
+            logger.warning(f"Unknown profile '{profile}', using 'natural'")
+            self.profile = self.VOICE_PROFILES["natural"]
 
         # Test if eSpeak-NG is available
         logger.info(
-            f"Initializing TTS with voice: {voice}, speed: {speed}, pitch: {pitch}"
+            f"Initializing TTS with voice: {voice}, profile: {self.profile.name} "
+            f"({self.profile.description})"
         )
         try:
             result = subprocess.run(
@@ -139,19 +223,12 @@ class TTSProcessor:
     def _synthesize_chunk(self, text: str, language: str) -> bytes | None:
         """Synthesize a text chunk using eSpeak-NG"""
         try:
-            # eSpeak-NG command
+            # eSpeak-NG command with voice profile parameters
             cmd = [
                 "espeak-ng",
                 "-v",
                 self.voice if language == "bg" else language,  # Voice/language
-                "-s",
-                str(self.speed),  # Speed (words per minute)
-                "-a",
-                "100",  # Amplitude (volume)
-                "-p",
-                str(self.pitch),  # Pitch
-                "-g",
-                "10",  # Gap between words (10ms)
+                *self.profile.to_espeak_args(),  # Use profile parameters
                 "--stdout",  # Output to stdout
                 text,
             ]
@@ -235,12 +312,7 @@ class TTSProcessor:
                 "espeak-ng",
                 "-v",
                 language,
-                "-s",
-                "160",
-                "-a",
-                "100",
-                "-p",
-                "50",
+                *self.profile.to_espeak_args(),  # Use profile parameters
                 "-w",
                 output_path,  # Write to file
                 text,
@@ -252,3 +324,43 @@ class TTSProcessor:
         except Exception as e:
             print(f"File synthesis error: {e}")
             return False
+
+    def set_profile(self, profile_name: str) -> bool:
+        """
+        Change the current voice profile
+
+        Args:
+            profile_name: Name of the profile to use
+
+        Returns:
+            bool: True if profile was set successfully
+        """
+        if profile_name in self.VOICE_PROFILES:
+            self.profile = self.VOICE_PROFILES[profile_name]
+            logger.info(
+                f"Changed to profile: {self.profile.name} ({self.profile.description})"
+            )
+            return True
+        else:
+            logger.warning(f"Unknown profile '{profile_name}', keeping current profile")
+            return False
+
+    def get_available_profiles(self) -> dict[str, str]:
+        """
+        Get available voice profiles with descriptions
+
+        Returns:
+            Dict[str, str]: Profile names mapped to descriptions
+        """
+        return {
+            name: profile.description for name, profile in self.VOICE_PROFILES.items()
+        }
+
+    def get_current_profile(self) -> str:
+        """
+        Get the current profile name
+
+        Returns:
+            str: Current profile name
+        """
+        return self.profile.name

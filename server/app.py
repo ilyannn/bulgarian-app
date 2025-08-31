@@ -449,12 +449,18 @@ async def health_check():
 
 
 @app.get("/tts", tags=["tts"], responses={422: {"model": ErrorResponse}})
-async def text_to_speech(text: str, track_timing: bool = False):
-    """Convert text to speech and stream audio"""
+async def text_to_speech(
+    text: str, track_timing: bool = False, profile: str | None = None
+):
+    """Convert text to speech and stream audio with optional voice profile"""
     telemetry_context = get_telemetry()
 
     if not tts_processor:
         raise HTTPException(status_code=500, detail="TTS not initialized")
+
+    # Set voice profile if requested
+    if profile and not tts_processor.set_profile(profile):
+        raise HTTPException(status_code=400, detail=f"Invalid voice profile: {profile}")
 
     if telemetry_context:
         telemetry_context.count_request("GET", "/tts", 200)
@@ -486,6 +492,18 @@ async def text_to_speech(text: str, track_timing: bool = False):
         headers["X-TTS-Duration"] = str(tts_duration)
 
     return StreamingResponse(generate_audio(), media_type="audio/wav", headers=headers)
+
+
+@app.get("/tts/profiles", tags=["tts"])
+async def get_tts_profiles():
+    """Get available TTS voice profiles"""
+    if not tts_processor:
+        raise HTTPException(status_code=500, detail="TTS not initialized")
+
+    return {
+        "current_profile": tts_processor.get_current_profile(),
+        "available_profiles": tts_processor.get_available_profiles(),
+    }
 
 
 @app.get("/content/scenarios", tags=["content"])
