@@ -25,16 +25,16 @@ class TestTTSProcessor:
 
         # Check default attributes exist
         assert hasattr(processor, "voice")
-        assert hasattr(processor, "speed")
-        assert hasattr(processor, "pitch")
+        assert hasattr(processor, "profile")
+        assert processor.profile.name == "natural"  # Default profile
 
     def test_tts_processor_custom_settings(self):
-        """Test TTSProcessor with custom settings."""
-        processor = TTSProcessor(voice="bg", speed=150, pitch=50)
+        """Test TTSProcessor with custom profile."""
+        processor = TTSProcessor(voice="bg", profile="slow")
 
         assert processor.voice == "bg"
-        assert processor.speed == 150
-        assert processor.pitch == 50
+        assert processor.profile.name == "slow"
+        assert processor.profile.speed == 120  # Slow profile speed
 
 
 class TestSynthesize:
@@ -176,7 +176,7 @@ class TestSynthesize:
 
     @patch("subprocess.run")
     def test_synthesize_speed_parameter(self, mock_subprocess):
-        """Test synthesis with custom speed."""
+        """Test synthesis with custom profile."""
         mock_subprocess.side_effect = [
             Mock(
                 returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
@@ -184,15 +184,17 @@ class TestSynthesize:
             Mock(returncode=0, stdout=b"speed_audio_data"),  # synthesis
         ]
 
-        processor = TTSProcessor(speed=120)
+        processor = TTSProcessor(profile="slow")
         result = processor.synthesize("Тест")
 
         assert result.startswith(b"RIFF")  # WAV header
         assert b"speed_audio_data" in result
 
-        # Check that speed parameter was used (second call)
+        # Check that slow profile speed was used (second call)
         call_args = mock_subprocess.call_args_list[1][0][0]
-        assert any("-s" in arg or "120" in str(arg) for arg in call_args)
+        assert any(
+            "-s" in arg or "120" in str(arg) for arg in call_args
+        )  # Slow profile has speed 120
 
 
 class TestSynthesizeStreaming:
@@ -408,13 +410,13 @@ class TestErrorHandling:
 
     @patch("subprocess.run")
     def test_invalid_speed_parameter(self, mock_run):
-        """Test handling invalid speed parameter."""
+        """Test handling invalid profile parameter."""
         # Mock version check
         mock_run.return_value = Mock(
             returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
         )
-        processor = TTSProcessor(speed=-100)  # Invalid speed
-        assert processor.speed == -100  # Should store value, handle in synthesis
+        processor = TTSProcessor(profile="invalid_profile")  # Invalid profile
+        assert processor.profile.name == "natural"  # Should use default profile
 
     @patch("subprocess.run")
     def test_network_unavailable(self, mock_subprocess):

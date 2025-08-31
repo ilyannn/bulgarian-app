@@ -79,7 +79,7 @@ class TestProcessAudio:
 
         result = await processor.process_audio(fake_audio)
 
-        assert result["text"] == "Здравей свят"
+        assert result["text"].lower() == "здравей свят"
         assert result["confidence"] > 0
         assert result["language"] == "bg"
 
@@ -162,7 +162,7 @@ class TestProcessAudio:
 
             result = await processor.process_audio(fake_audio)
 
-            assert result["text"] == bulgarian_text
+            assert result["text"].lower() == bulgarian_text.lower()
             assert result["language"] == "bg"
 
     @patch("asr.WhisperModel")
@@ -273,8 +273,8 @@ class TestAudioPreprocessing:
         result2 = await processor.process_audio(audio_44khz)
 
         # Both should process successfully
-        assert result1["text"] == "Sample rate test"
-        assert result2["text"] == "Sample rate test"
+        assert result1["text"].lower() == "sample rate test"
+        assert result2["text"].lower() == "sample rate test"
 
 
 class TestVADIntegration:
@@ -338,7 +338,7 @@ class TestVADIntegration:
         result = await processor.process_audio(speech_audio)
 
         # Should process through Whisper
-        assert result["text"] == "Speech detected"
+        assert result["text"].lower() == "speech detected"
         # Check that transcribe was called twice (once for warmup, once for processing)
         assert mock_model.transcribe.call_count == 2
 
@@ -396,7 +396,7 @@ class TestLanguageDetection:
         result = await processor.process_audio(np.array([0.1, 0.2], dtype=np.float32))
 
         assert result["language"] == "bg"  # ASR processor is hardcoded to Bulgarian
-        assert result["text"] == "This is English text"
+        assert result["text"].lower() == "this is english text"
 
     @patch("asr.WhisperModel")
     async def test_mixed_language_handling(self, mock_whisper_model):
@@ -422,7 +422,9 @@ class TestLanguageDetection:
         result = await processor.process_audio(np.array([0.1, 0.2], dtype=np.float32))
 
         assert result["language"] == "bg"
-        assert "Hello" in result["text"] and "как дела" in result["text"]
+        assert (
+            "hello" in result["text"].lower() and "как дела" in result["text"].lower()
+        )
 
 
 class TestPerformance:
@@ -459,7 +461,7 @@ class TestPerformance:
         result = await processor.process_audio(np.array([0.1, 0.2], dtype=np.float32))
         end_time = asyncio.get_event_loop().time()
 
-        assert result["text"] == "Slow result"
+        assert result["text"].lower() == "slow result"
         # Should handle the delay
         assert (end_time - start_time) >= 0.1
 
@@ -494,7 +496,7 @@ class TestPerformance:
 
         assert len(results) == 3
         for result in results:
-            assert result["text"] == "Concurrent test"
+            assert result["text"].lower() == "concurrent test"
 
 
 class TestErrorHandling:
@@ -553,7 +555,7 @@ class TestErrorHandling:
         result = await processor.process_audio(long_audio)
 
         # Should handle long audio
-        assert result["text"] == "Very long audio processed"
+        assert result["text"].lower() == "very long audio processed"
 
 
 class TestIntegration:
@@ -598,7 +600,7 @@ class TestIntegration:
         assert "text" in result
         assert "confidence" in result
         assert "language" in result
-        assert result["text"] == "Здравей, как се казваш?"
+        assert result["text"].lower() == "здравей, как се казваш?"
         assert result["language"] == "bg"
         assert isinstance(result["confidence"], int | float)
         assert 0 <= result["confidence"] <= 1

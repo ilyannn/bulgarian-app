@@ -735,7 +735,7 @@ docs-format:
 
 # Generate OpenAPI documentation
 [group('docs')]
-api-docs:
+api-docs: py-sync
     #!/usr/bin/env python
     """Generate OpenAPI spec from FastAPI app and save to docs/api-reference.json"""
     import json
