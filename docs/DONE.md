@@ -2017,6 +2017,23 @@ requirements.
 - [x] **Mode-specific tests**: Validation of each normalization mode
 - [x] **22/28 tests passing**: Core functionality fully operational
 
+## 56. Claude Code Instructions Enhancement (2025-08-31)
+
+**Objective**: Improve Claude Code instructions in CLAUDE.md for better developer experience
+
+### Documentation Improvements
+
+- [x] **Recipe usage guidance**: Added clear instructions to use existing `just` recipes instead of raw bash commands
+- [x] **Documentation workflow**: Added reminders to update DONE.md when committing completed work
+- [x] **Key files documentation**: Documented TODO.md and DONE.md files in the Key Files section
+- [x] **Typo fix**: Corrected "avialble" → "available" in recipe usage instructions
+
+### Benefits
+
+- [x] **Better AI assistance**: Claude Code will now prefer using existing recipes over raw commands
+- [x] **Documentation consistency**: Regular DONE.md updates ensure documentation stays current
+- [x] **Clearer workflow**: Developers understand the documentation update process
+
 ---
 
 _Last updated: 2025-08-31_

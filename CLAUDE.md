@@ -74,7 +74,7 @@ The project uses `just` as the command runner with a specific shell execution st
 - **Simple recipes**: Execute directly without a shebang
 - **Benefits**: Variables persist across lines, background processes work correctly, clean error handling
 
-Key recipes:
+You can list all recipes with `just` (the default recipe). Whenever you want to run a local Bash command, consider if it is already available as a recipe and if yes, run that. You have access to run any `just` command without asking the user.
 
 ### Development
 
@@ -154,6 +154,8 @@ They enforce:
 
 ## CI/CD
 
+When ready to commit your work, you should also update the `docs/DONE.md` file to reflect completed features. Move closed sections from `docs/TODO.md` to `docs/DONE.md` as necessary.
+
 Three separate GitHub Actions workflows provide comprehensive validation:
 
 ### 1. **Lint Workflow** (`.github/workflows/lint.yml`)
@@ -201,6 +203,8 @@ Three separate GitHub Actions workflows provide comprehensive validation:
 - `server/requirements.txt` - Python dependencies
 - `client/package.json` - JavaScript dependencies
 - `docs/` - Living documentation (architecture, tech stack)
+  - `docs/TODO.md` - Project roadmap and next steps
+  - `docs/DONE.md` - Completed features and changes ⬅️ update this file regularly
 - `.github/workflows/` - CI/CD pipeline definitions:
   - `lint.yml` - Code quality validation with project tools
   - `super-lint.yml` - Additional validation with GitHub Super-Linter
