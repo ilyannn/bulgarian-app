@@ -1946,7 +1946,27 @@ requirements.
   - Eliminated manual Bun installation steps
   - Reduced Dockerfile complexity and maintenance burden
 
-## 55) Bulgarian Text Normalization Implementation (2025-08-31) ✅
+## 55) CI/Local Linting Parity Fix (2025-08-31) ✅
+
+### Fixed Super-Lint CI Failures
+
+- [x] **Expanded linting scope**: Extended `just lint` to include scripts/ directory
+  - Updated py-lint and py-format recipes in Justfile
+  - Ensures local linting matches CI Super-Lint coverage
+  - Prevents CI failures from undetected script issues
+
+- [x] **Fixed Python script linting**: Resolved all issues in development scripts
+  - Fixed import sorting and deprecated typing usage in benchmark_performance.py
+  - Removed unused variables and imports (98 auto-fixes, 3 manual fixes)
+  - Updated scripts to use modern Python type hints (list[dict] instead of List[Dict])
+  - Cleaned up whitespace and formatting issues
+
+- [x] **CI/Local parity achieved**: Local development now catches same issues as CI
+  - Super-Lint no longer fails on scripts/ directory
+  - Developers get immediate feedback before pushing
+  - Reduces CI debugging time and failed builds
+
+## 56) Bulgarian Text Normalization Implementation (2025-08-31) ✅
 
 ### Comprehensive Normalization Module
 

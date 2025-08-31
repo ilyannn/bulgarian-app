@@ -55,7 +55,7 @@ py-sync:
 [group('lint')]
 [group('python')]
 py-lint:
-    uvx ruff check --config .github/linters/.ruff.toml server
+    uvx ruff check --config .github/linters/.ruff.toml server scripts
 
 # Format Python code with ruff (includes import sorting)
 [group('format')]
@@ -63,9 +63,9 @@ py-lint:
 py-format:
     #!/usr/bin/env bash
     set -euo pipefail
-    uvx ruff format --config .github/linters/.ruff.toml server
+    uvx ruff format --config .github/linters/.ruff.toml server scripts
     # Keep imports sorted (Ruff's `I` rules)
-    uvx ruff check --config .github/linters/.ruff.toml --select I --fix server
+    uvx ruff check --config .github/linters/.ruff.toml --select I --fix server scripts
 
 # Type checking with ty from Astral (experimental - fast Python type checker)
 [group('python')]
