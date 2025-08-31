@@ -36,7 +36,7 @@ jobs:
         run: uv sync
 
       - name: Install just
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v3
 
       - name: Generate OpenAPI spec and check if up-to-date
         run: |
@@ -62,7 +62,7 @@ jobs:
           fi
 
       - name: Run Spectral API Linting
-        uses: stoplightio/spectral-action@v0.8.11
+        uses: stoplightio/spectral-action@v0.8.13
         with:
           file_glob: "docs/api/openapi.json"
           spectral_ruleset: "docs/api/.spectral.yaml"
