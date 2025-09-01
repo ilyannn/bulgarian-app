@@ -119,6 +119,7 @@ just dev         # Start development servers
 - **Commits**: Must pass pre-commit hooks (format, lint, typecheck)
 - **Documentation**: Code changes require docs/ updates (bypass with SKIP_DOCS_CHECK=1)
 - **CI Parity**: Always test `just lint` in a clean environment to match CI behavior
+- **Biome Formatting**: Use explicit config path to avoid local/CI discrepancies: `bunx @biomejs/biome format --config-path .github/linters/biome.json --write <file>`
 
 ### Git Hooks
 
