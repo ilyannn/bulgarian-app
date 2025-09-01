@@ -2123,11 +2123,13 @@ requirements.
 
 ## 57. Progressive Audio Streaming Implementation (2025-08-31)
 
-**Objective**: Implement MediaSource API-based progressive audio streaming to reduce perceived latency and improve user experience
+**Objective**: Implement MediaSource API-based progressive audio streaming to reduce perceived latency and improve user
+experience
 
 ### Progressive Audio Player Service
 
-- [x] **ProgressiveAudioPlayer class**: Created comprehensive service (`client/services/ProgressiveAudioPlayer.js`) with:
+- [x] **ProgressiveAudioPlayer class**: Created comprehensive service (`client/services/ProgressiveAudioPlayer.js`)
+      with:
   - MediaSource API integration for real-time audio streaming
   - Automatic fallback to traditional Audio element for unsupported browsers
   - Progressive buffer management with queue system for smooth playback
@@ -2161,7 +2163,7 @@ requirements.
 ### Browser Support Matrix
 
 - [x] **Chrome/Edge**: Full MediaSource API support with WAV streaming
-- [x] **Firefox**: MediaSource API support with proper SourceBuffer management  
+- [x] **Firefox**: MediaSource API support with proper SourceBuffer management
 - [x] **Safari**: Graceful fallback to traditional audio loading (MediaSource limitations)
 - [x] **All browsers**: Universal compatibility through fallback audio element
 
@@ -2187,7 +2189,9 @@ requirements.
 
 ### Overview
 
-Enhanced the Text-to-Speech (TTS) system with configurable voice profiles to improve Bulgarian speech quality for language learning. This optimization provides multiple voice presets tailored for different learning scenarios while maintaining the local-first architecture and low latency.
+Enhanced the Text-to-Speech (TTS) system with configurable voice profiles to improve Bulgarian speech quality for
+language learning. This optimization provides multiple voice presets tailored for different learning scenarios while
+maintaining the local-first architecture and low latency.
 
 ### Voice Profile System
 
@@ -2310,34 +2314,40 @@ _Last updated: 2025-08-31_
 #### What We Completed
 
 **Interactive Voice Profile Selection**:
+
 - Added voice profile selector dropdown in the UI controls panel
 - Integrated with existing 5 voice profiles (natural, standard, slow, expressive, clear)
 - Implemented localStorage persistence for user's voice preference
 - Created beautiful, accessible UI with purple theme matching app design
 
 **Frontend Implementation**:
+
 - Voice selector with styled dropdown and descriptive tooltips
 - Real-time profile switching with success notifications
 - Automatic profile loading from localStorage on app startup
 - Dynamic profile descriptions fetched from API
 
 **Backend Support**:
+
 - Leveraged existing `/tts/profiles` endpoint for profile listing
 - TTS requests now respect selected voice profile parameter
 - Profile switching maintains state across audio generation
 
 **Testing Coverage**:
+
 - Added comprehensive tests for voice profile functionality
 - Tests for profile switching, parameter validation, and API endpoints
 - All 4 new tests passing successfully
 
 **User Experience Improvements**:
+
 - 🎯 Users can now choose their preferred voice style
 - 🔊 Immediate audio feedback with selected voice
 - 💾 Preferences persist across sessions
 - 🎨 Seamless integration with existing UI components
 
 **Development Process Improvements**:
+
 - 🔧 Discovered and documented Biome formatting best practice for CI/local parity
 - 📝 Added explicit config path usage to CLAUDE.md to prevent future formatting discrepancies
 - ✨ Applied consistent code formatting (tabs→spaces, double→single quotes) across client code

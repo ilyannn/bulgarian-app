@@ -16,14 +16,12 @@ This document contains the core data structures used throughout the Bulgarian Vo
     "UK": "Ukrainian uses infinitive: хочу замовити",
     "SR": "Serbian uses da + present: hoću da naručim"
   },
-  "examples": [
-    { "wrong": "Искам поръчвам кафе.", "right": "Искам да поръчам кафе." }
-  ],
+  "examples": [{ "wrong": "Искам поръчвам кафе.", "right": "Искам да поръчам кафе." }],
   "drills": [
-    { 
-      "type": "transform", 
-      "prompt_bg": "Искам ___ (поръчвам) кафе.", 
-      "answer_bg": "да поръчам" 
+    {
+      "type": "transform",
+      "prompt_bg": "Искам ___ (поръчвам) кафе.",
+      "answer_bg": "да поръчам"
     }
   ],
   "srs": { "interval_days": [1, 3, 7, 21] },
@@ -122,15 +120,29 @@ Based on benchmarking (see `docs/benchmarks/asr_performance_benchmark.json`):
 
 /* Bulgarian language spans with proper glyph forms */
 :lang(bg) {
-  font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, 
-               Helvetica, Arial, sans-serif;
+  font-family:
+    "Ysabeau",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   font-feature-settings: "locl" 1; /* enable local language forms */
 }
 
 /* Explicit class for Bulgarian content */
 .bg-text {
-  font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, 
-               Helvetica, Arial, sans-serif;
+  font-family:
+    "Ysabeau",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   font-feature-settings: "locl" 1;
 }
 ```
