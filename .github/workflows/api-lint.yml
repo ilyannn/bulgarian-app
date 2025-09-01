@@ -4,15 +4,17 @@ on:
   push:
     branches: [main]
     paths:
-      - "server/**/*.py"
-      - "docs/api/**"
-      - ".github/workflows/api-lint.yml"
+      - 'server/**/*.py'
+      - 'docs/api/**'
+      - 'client/src/sdk/**'
+      - '.github/workflows/api-lint.yml'
   pull_request:
     branches: [main]
     paths:
-      - "server/**/*.py"
-      - "docs/api/**"
-      - ".github/workflows/api-lint.yml"
+      - 'server/**/*.py'
+      - 'docs/api/**'
+      - 'client/src/sdk/**'
+      - '.github/workflows/api-lint.yml'
 
 jobs:
   api-lint:
@@ -32,24 +34,40 @@ jobs:
           activate-environment: true
           enable-cache: true
 
-      - name: Generate OpenAPI spec and check if up-to-date
+      - name: Generate OpenAPI spec and SDK, check if up-to-date
         run: |
-          echo "🔍 Generating OpenAPI specification..."
+          echo "🔍 Generating OpenAPI specification and TypeScript SDK..."
 
-          # Generate the OpenAPI spec using just
-          just api-docs
+          # Generate the OpenAPI spec and TypeScript SDK using just
+          just api-sdk
 
-          # Check if git is clean for the OpenAPI file
-          if [ -z "$(git status --porcelain docs/api/openapi.json)" ]; then
-            echo "✅ OpenAPI specification is up-to-date"
+          # Check if git is clean for both OpenAPI spec and SDK files
+          OPENAPI_CHANGES=$(git status --porcelain docs/api/openapi.json)
+          SDK_CHANGES=$(git status --porcelain client/src/sdk/)
+
+          if [ -z "$OPENAPI_CHANGES" ] && [ -z "$SDK_CHANGES" ]; then
+            echo "✅ OpenAPI specification and TypeScript SDK are up-to-date"
           else
-            echo "❌ OpenAPI specification is out of date!"
+            echo "❌ OpenAPI specification or TypeScript SDK is out of date!"
             echo ""
-            echo "The committed docs/api/openapi.json does not match the generated specification."
-            echo "Please run 'just api-docs' locally and commit the updated file."
-            echo ""
-            echo "Differences detected:"
-            git diff docs/api/openapi.json || true
+
+            if [ -n "$OPENAPI_CHANGES" ]; then
+              echo "OpenAPI specification changes detected:"
+              echo "Please run 'just api-sdk' locally and commit the updated files."
+              echo ""
+              echo "OpenAPI differences:"
+              git diff docs/api/openapi.json || true
+              echo ""
+            fi
+
+            if [ -n "$SDK_CHANGES" ]; then
+              echo "TypeScript SDK changes detected:"
+              echo "Please run 'just api-sdk' locally and commit the updated files."
+              echo ""
+              echo "SDK files changed:"
+              git status --porcelain client/src/sdk/
+              echo ""
+            fi
 
             # Exit with error to fail the CI
             exit 1
@@ -58,8 +76,8 @@ jobs:
       - name: Run Spectral API Linting
         uses: stoplightio/spectral-action@v0.8.13
         with:
-          file_glob: "docs/api/openapi.json"
-          spectral_ruleset: "docs/api/.spectral.yaml"
+          file_glob: 'docs/api/openapi.json'
+          spectral_ruleset: 'docs/api/.spectral.yaml'
 
       - name: Upload OpenAPI specification
         if: always()
