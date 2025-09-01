@@ -781,7 +781,11 @@ api-sdk: api-docs
     # Generate TypeScript client using openapi-typescript-codegen (no Java required)
     bunx openapi-typescript-codegen --input docs/api/openapi.json --output client/src/sdk --client axios --exportCore true --exportServices true --exportModels true --exportSchemas false
 
-    echo "✅ TypeScript SDK generated in client/src/sdk/"
+    # Format the generated SDK files with Biome
+    echo "🎨 Formatting generated SDK files..."
+    bunx @biomejs/biome format --config-path .github/linters/biome.json --write client/src/sdk/
+
+    echo "✅ TypeScript SDK generated and formatted in client/src/sdk/"
 
 # Lint OpenAPI spec using Spectral (APIStyleGuide.com ruleset)
 [group('docs')]
