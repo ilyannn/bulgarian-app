@@ -208,7 +208,25 @@ prettier-check:
 [group('lint')]
 [group('web')]
 web-lint:
-    bunx @biomejs/biome ci --config-path .github/linters/biome.json client/
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Lint specific client files and directories, excluding generated SDK
+    bunx @biomejs/biome ci --config-path .github/linters/biome.json \
+        client/components/ \
+        client/services/ \
+        client/tests/ \
+        client/vitest.config.js \
+        client/playwright.config.js \
+        client/vite.config.js \
+        client/tsconfig.json \
+        client/main.js \
+        client/audio-worklet.js \
+        client/dark-mode.js \
+        client/enhanced-corrections.js \
+        client/grammar-chips.js \
+        client/inline-drills.js \
+        client/interactive-drills.js \
+        client/package.json
 
 # Format JavaScript/TypeScript code with Biome using centralized config
 [group('format')]
@@ -749,6 +767,21 @@ api-docs: py-sync
         f.write(json.dumps(app.openapi(), indent=2))
 
     print(f"✅ API documentation saved to {FILENAME}")
+
+# Generate TypeScript SDK from OpenAPI specification
+[group('api')]
+api-sdk: api-docs
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🚀 Generating TypeScript SDK from OpenAPI specification..."
+
+    # Create SDK output directory
+    mkdir -p client/src/sdk
+
+    # Generate TypeScript client using openapi-typescript-codegen (no Java required)
+    bunx openapi-typescript-codegen --input docs/api/openapi.json --output client/src/sdk --client axios --exportCore true --exportServices true --exportModels true --exportSchemas false
+
+    echo "✅ TypeScript SDK generated in client/src/sdk/"
 
 # Lint OpenAPI spec using Spectral (APIStyleGuide.com ruleset)
 [group('docs')]
