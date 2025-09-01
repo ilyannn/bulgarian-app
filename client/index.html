@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bulgarian Voice Coach</title>
     <style>
+      /* CSS @imports must come first */
+      /* Russian typography - PT Sans (Google Fonts) */
+      @import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=cyrillic,cyrillic-ext');
+      
+      /* Ukrainian typography - e-Ukraine (CDN) */
+      @import url('https://cdn.jsdelivr.net/npm/@ukrainian-fonts/e-ukraine@1.0.0/index.css');
+      
+      /* Serbian typography - Noto Sans Serbian (Google Fonts) */
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext');
+      
+      /* Polish UI - Lato (Google Fonts) */
+      @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=latin-ext');
+
       /* Bulgarian font face (self-hosted). */
       @font-face {
         font-family: "Ysabeau";
@@ -23,18 +36,6 @@
         font-display: swap;
         unicode-range: U+0400-04FF, U+0500-052F; /* Cyrillic + Extended */
       }
-
-      /* Russian typography - PT Sans (Google Fonts) */
-      @import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=cyrillic,cyrillic-ext');
-      
-      /* Ukrainian typography - e-Ukraine (CDN) */
-      @import url('https://cdn.jsdelivr.net/npm/@ukrainian-fonts/e-ukraine@1.0.0/index.css');
-      
-      /* Serbian typography - Noto Sans Serbian (Google Fonts) */
-      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext');
-      
-      /* Polish UI - Lato (Google Fonts) */
-      @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap&subset=latin-ext');
 
       /* Mark Bulgarian language spans */
       :lang(bg) {
