@@ -37,6 +37,7 @@ ENV PYTHONUNBUFFERED=1 \
 USER root
 
 # Install system dependencies
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
     espeak-ng \
     alsa-lib \
@@ -99,6 +100,7 @@ ENV PYTHONUNBUFFERED=1 \
     UV_SYSTEM_PYTHON=1
 
 # Install Python and system dependencies
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 \
     python3.11-venv \
