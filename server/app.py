@@ -161,6 +161,118 @@ class CoachResponse(BaseModel):
     drills: list[dict] = []
 
 
+# Request/Response models for API endpoints
+class UpdateL1Request(BaseModel):
+    """Request to update L1 language preference"""
+
+    l1_language: str = Field(
+        ..., description="L1 language code (PL, RU, UK, SR)", pattern="^(PL|RU|UK|SR)$"
+    )
+
+
+class UpdateL1Response(BaseModel):
+    """Response after updating L1 language preference"""
+
+    l1_language: str = Field(..., description="Validated L1 language code")
+    status: str = Field(..., description="Update status")
+
+
+class AnalyzeTextRequest(BaseModel):
+    """Request to analyze Bulgarian text for grammar errors"""
+
+    text: str = Field(..., description="Bulgarian text to analyze", min_length=1)
+    l1: str | None = Field(
+        None, description="L1 language code for contrasts", pattern="^(PL|RU|UK|SR)$"
+    )
+
+
+class GrammarCorrection(BaseModel):
+    """Individual grammar correction"""
+
+    type: str = Field(..., description="Type of grammar error")
+    before: str = Field(..., description="Original incorrect text")
+    after: str = Field(..., description="Corrected text")
+    note: str = Field(..., description="Explanation of the correction")
+    error_tag: str = Field(..., description="Grammar rule identifier")
+
+
+class DrillSuggestion(BaseModel):
+    """Grammar drill suggestion with L1 contrast"""
+
+    grammar_id: str = Field(..., description="Grammar rule identifier")
+    explanation: str = Field(..., description="Micro-explanation in Bulgarian")
+    contrast_note: str | None = Field(None, description="L1-specific contrast note")
+    drills: list[dict] = Field(
+        ..., description="Practice drills for this grammar point"
+    )
+
+
+class AnalyzeTextResponse(BaseModel):
+    """Response from text analysis with corrections and drill suggestions"""
+
+    text: str = Field(..., description="Original text that was analyzed")
+    corrections: list[GrammarCorrection] = Field(
+        ..., description="Grammar corrections found"
+    )
+    drill_suggestions: list[DrillSuggestion] = Field(
+        ..., description="Suggested practice drills"
+    )
+    l1_language: str = Field(..., description="L1 language used for contrasts")
+
+
+class AppConfigResponse(BaseModel):
+    """Application configuration response"""
+
+    l1_language: str = Field(..., description="Default L1 language")
+    supported_languages: list[str] = Field(
+        ..., description="Supported L1 language codes"
+    )
+    language_names: dict[str, str] = Field(
+        ..., description="Language code to display name mapping"
+    )
+
+
+class UserProgress(BaseModel):
+    """User progress data for SRS calculation"""
+
+    lesson_progress: dict[str, dict] = Field(..., description="Lesson progress mapping")
+
+
+# WebSocket message models
+class ASRPartialResult(BaseModel):
+    """Partial ASR transcription result"""
+
+    type: str = Field(..., description="Message type", example="partial")
+    text: str = Field(..., description="Partial transcription text")
+    confidence: float | None = Field(None, description="Confidence score")
+
+
+class ASRFinalResult(BaseModel):
+    """Final ASR transcription result"""
+
+    type: str = Field(..., description="Message type", example="final")
+    text: str = Field(..., description="Final transcription text")
+    confidence: float | None = Field(None, description="Confidence score")
+    duration_ms: int | None = Field(
+        None, description="Processing duration in milliseconds"
+    )
+
+
+class ASRErrorResult(BaseModel):
+    """ASR processing error"""
+
+    type: str = Field(..., description="Message type", example="error")
+    error: str = Field(..., description="Error message")
+
+
+class TTSProfilesResponse(BaseModel):
+    """Available TTS voice profiles"""
+
+    profiles: dict[str, dict] = Field(
+        ..., description="Voice profiles with their configurations"
+    )
+
+
 app = FastAPI(
     title="Bulgarian Voice Coach",
     version="0.1.0",
@@ -540,16 +652,18 @@ async def text_to_speech(
     return StreamingResponse(generate_audio(), media_type="audio/wav", headers=headers)
 
 
-@app.get("/tts/profiles", tags=["tts"])
+@app.get("/tts/profiles", tags=["tts"], response_model=TTSProfilesResponse)
 async def get_tts_profiles():
     """Get available TTS voice profiles"""
     if not tts_processor:
         raise HTTPException(status_code=500, detail="TTS not initialized")
 
-    return {
-        "current_profile": tts_processor.get_current_profile(),
-        "available_profiles": tts_processor.get_available_profiles(),
-    }
+    return TTSProfilesResponse(
+        profiles={
+            "current_profile": tts_processor.get_current_profile(),
+            "available_profiles": tts_processor.get_available_profiles(),
+        }
+    )
 
 
 @app.get("/content/scenarios", tags=["content"])
@@ -631,12 +745,6 @@ async def get_mini_lesson_by_id(lesson_id: str):
     return lesson
 
 
-class UserProgress(BaseModel):
-    """User progress data for SRS calculation"""
-
-    lesson_progress: dict[str, dict]
-
-
 @app.post(
     "/content/mini-lessons/due",
     tags=["content"],
@@ -659,52 +767,65 @@ async def get_lessons_for_error(error_pattern: str):
     return lessons
 
 
-@app.get("/api/config", tags=["config"])
+@app.get("/api/config", tags=["config"], response_model=AppConfigResponse)
 async def get_app_config():
     """Get current application configuration for frontend"""
-    return {
-        "l1_language": get_config().default_l1_language,
-        "supported_languages": ["PL", "RU", "UK", "SR"],
-        "language_names": {
+    return AppConfigResponse(
+        l1_language=get_config().default_l1_language,
+        supported_languages=["PL", "RU", "UK", "SR"],
+        language_names={
             "PL": "Polski (Polish)",
             "RU": "Русский (Russian)",
             "UK": "Українська (Ukrainian)",
             "SR": "Српски (Serbian)",
         },
-    }
-
-
-@app.post("/api/config/l1", tags=["config"], responses={422: {"model": ErrorResponse}})
-async def update_l1_language(request: dict):
-    """Update L1 language preference (session-based, not persistent)"""
-    new_l1 = request.get("l1_language", "").upper()
-    if new_l1 not in ["PL", "RU", "UK", "SR"]:
-        raise HTTPException(
-            status_code=400, detail="Invalid L1 language. Use PL, RU, UK, or SR"
-        )
-
-    # Note: This is session-based. For persistence, we'd need user auth
-    # For now, return the validated language for frontend to store in localStorage
-    return {"l1_language": new_l1, "status": "updated"}
+    )
 
 
 @app.post(
-    "/content/analyze", tags=["content"], responses={422: {"model": ErrorResponse}}
+    "/api/config/l1",
+    tags=["config"],
+    response_model=UpdateL1Response,
+    responses={422: {"model": ErrorResponse}},
 )
-async def analyze_text(request: dict):
-    """Analyze Bulgarian text for grammar errors and generate drills with L1 contrast"""
-    text = request.get("text", "")
-    l1 = request.get("l1", get_config().default_l1_language)
+async def update_l1_language(request: UpdateL1Request):
+    """Update L1 language preference (session-based, not persistent)"""
+    new_l1 = request.l1_language.upper()
 
-    if not text:
-        raise HTTPException(status_code=400, detail="Text is required")
+    # Note: This is session-based. For persistence, we'd need user auth
+    # For now, return the validated language for frontend to store in localStorage
+    return UpdateL1Response(l1_language=new_l1, status="updated")
+
+
+@app.post(
+    "/content/analyze",
+    tags=["content"],
+    response_model=AnalyzeTextResponse,
+    responses={422: {"model": ErrorResponse}},
+)
+async def analyze_text(request: AnalyzeTextRequest):
+    """Analyze Bulgarian text for grammar errors and generate drills with L1 contrast"""
+    text = request.text
+    l1 = request.l1 or get_config().default_l1_language
 
     # Detect grammar errors
-    corrections = detect_grammar_errors(text)
+    raw_corrections = detect_grammar_errors(text)
+
+    # Convert to structured corrections
+    corrections = [
+        GrammarCorrection(
+            type=correction.get("type", "grammar"),
+            before=correction.get("before", ""),
+            after=correction.get("after", ""),
+            note=correction.get("note", ""),
+            error_tag=correction.get("error_tag", ""),
+        )
+        for correction in raw_corrections
+    ]
 
     # Generate drill suggestions with L1-specific contrast
     drill_suggestions = []
-    for correction in corrections:
+    for correction in raw_corrections:
         error_tag = correction.get("error_tag")
         if error_tag and error_tag in grammar_index:
             grammar_item = grammar_index[error_tag]
@@ -720,20 +841,20 @@ async def analyze_text(request: dict):
                 )
 
             drill_suggestions.append(
-                {
-                    "grammar_id": error_tag,
-                    "explanation": grammar_item.get("micro_explanation_bg", ""),
-                    "contrast_note": contrast_note,
-                    "drills": grammar_item.get("drills", [])[:2],  # Limit to 2 drills
-                }
+                DrillSuggestion(
+                    grammar_id=error_tag,
+                    explanation=grammar_item.get("micro_explanation_bg", ""),
+                    contrast_note=contrast_note,
+                    drills=grammar_item.get("drills", [])[:2],  # Limit to 2 drills
+                )
             )
 
-    return {
-        "text": text,
-        "corrections": corrections,
-        "drill_suggestions": drill_suggestions,
-        "l1_language": l1,
-    }
+    return AnalyzeTextResponse(
+        text=text,
+        corrections=corrections,
+        drill_suggestions=drill_suggestions,
+        l1_language=l1,
+    )
 
 
 # Serve static files in production

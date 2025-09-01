@@ -162,7 +162,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TTSProfilesResponse"
+                }
               }
             }
           }
@@ -458,7 +460,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AppConfigResponse"
+                }
               }
             }
           }
@@ -477,9 +481,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": true,
-                "type": "object",
-                "title": "Request"
+                "$ref": "#/components/schemas/UpdateL1Request"
               }
             }
           },
@@ -490,7 +492,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateL1Response"
+                }
               }
             }
           },
@@ -519,9 +523,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": true,
-                "type": "object",
-                "title": "Request"
+                "$ref": "#/components/schemas/AnalyzeTextRequest"
               }
             }
           },
@@ -532,7 +534,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyzeTextResponse"
+                }
               }
             }
           },
@@ -552,6 +556,150 @@
   },
   "components": {
     "schemas": {
+      "AnalyzeTextRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text",
+            "description": "Bulgarian text to analyze"
+          },
+          "l1": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(PL|RU|UK|SR)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "L1",
+            "description": "L1 language code for contrasts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "AnalyzeTextRequest",
+        "description": "Request to analyze Bulgarian text for grammar errors"
+      },
+      "AnalyzeTextResponse": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Original text that was analyzed"
+          },
+          "corrections": {
+            "items": {
+              "$ref": "#/components/schemas/GrammarCorrection"
+            },
+            "type": "array",
+            "title": "Corrections",
+            "description": "Grammar corrections found"
+          },
+          "drill_suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/DrillSuggestion"
+            },
+            "type": "array",
+            "title": "Drill Suggestions",
+            "description": "Suggested practice drills"
+          },
+          "l1_language": {
+            "type": "string",
+            "title": "L1 Language",
+            "description": "L1 language used for contrasts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "corrections",
+          "drill_suggestions",
+          "l1_language"
+        ],
+        "title": "AnalyzeTextResponse",
+        "description": "Response from text analysis with corrections and drill suggestions"
+      },
+      "AppConfigResponse": {
+        "properties": {
+          "l1_language": {
+            "type": "string",
+            "title": "L1 Language",
+            "description": "Default L1 language"
+          },
+          "supported_languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supported Languages",
+            "description": "Supported L1 language codes"
+          },
+          "language_names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Language Names",
+            "description": "Language code to display name mapping"
+          }
+        },
+        "type": "object",
+        "required": [
+          "l1_language",
+          "supported_languages",
+          "language_names"
+        ],
+        "title": "AppConfigResponse",
+        "description": "Application configuration response"
+      },
+      "DrillSuggestion": {
+        "properties": {
+          "grammar_id": {
+            "type": "string",
+            "title": "Grammar Id",
+            "description": "Grammar rule identifier"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "Micro-explanation in Bulgarian"
+          },
+          "contrast_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contrast Note",
+            "description": "L1-specific contrast note"
+          },
+          "drills": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Drills",
+            "description": "Practice drills for this grammar point"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grammar_id",
+          "explanation",
+          "drills"
+        ],
+        "title": "DrillSuggestion",
+        "description": "Grammar drill suggestion with L1 contrast"
+      },
       "ErrorResponse": {
         "properties": {
           "error": {
@@ -585,6 +733,45 @@
         ],
         "title": "ErrorResponse",
         "description": "Standard error response format for API consistency"
+      },
+      "GrammarCorrection": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Type of grammar error"
+          },
+          "before": {
+            "type": "string",
+            "title": "Before",
+            "description": "Original incorrect text"
+          },
+          "after": {
+            "type": "string",
+            "title": "After",
+            "description": "Corrected text"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Explanation of the correction"
+          },
+          "error_tag": {
+            "type": "string",
+            "title": "Error Tag",
+            "description": "Grammar rule identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "before",
+          "after",
+          "note",
+          "error_tag"
+        ],
+        "title": "GrammarCorrection",
+        "description": "Individual grammar correction"
       },
       "HealthCheckItem": {
         "properties": {
@@ -784,6 +971,62 @@
         "title": "HealthCheckResponse",
         "description": "Health Check Response Format following RFC draft"
       },
+      "TTSProfilesResponse": {
+        "properties": {
+          "profiles": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Profiles",
+            "description": "Voice profiles with their configurations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profiles"
+        ],
+        "title": "TTSProfilesResponse",
+        "description": "Available TTS voice profiles"
+      },
+      "UpdateL1Request": {
+        "properties": {
+          "l1_language": {
+            "type": "string",
+            "pattern": "^(PL|RU|UK|SR)$",
+            "title": "L1 Language",
+            "description": "L1 language code (PL, RU, UK, SR)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "l1_language"
+        ],
+        "title": "UpdateL1Request",
+        "description": "Request to update L1 language preference"
+      },
+      "UpdateL1Response": {
+        "properties": {
+          "l1_language": {
+            "type": "string",
+            "title": "L1 Language",
+            "description": "Validated L1 language code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Update status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "l1_language",
+          "status"
+        ],
+        "title": "UpdateL1Response",
+        "description": "Response after updating L1 language preference"
+      },
       "UserProgress": {
         "properties": {
           "lesson_progress": {
@@ -792,7 +1035,8 @@
               "type": "object"
             },
             "type": "object",
-            "title": "Lesson Progress"
+            "title": "Lesson Progress",
+            "description": "Lesson progress mapping"
           }
         },
         "type": "object",
