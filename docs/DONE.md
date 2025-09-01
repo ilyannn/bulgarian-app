@@ -2305,7 +2305,7 @@ curl "http://localhost:8000/tts?text=Добро%20утро"
 
 _Last updated: 2025-08-31_
 
-## 27) TTS Voice Profile Selection UI (2025-09-01)
+## 59) TTS Voice Profile Selection UI (2025-09-01)
 
 #### What We Completed
 
