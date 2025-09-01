@@ -5,13 +5,22 @@ grammar correction, and text-to-speech feedback.
 
 ## Features
 
+### Core Features
+
 - 🎤 **Real-time Speech Recognition** - Uses faster-whisper with VAD for accurate Bulgarian transcription
-- 🗣️ **Text-to-Speech** - eSpeak-NG for Bulgarian pronunciation (upgradeable to Piper)
-- 📝 **Grammar Correction** - Detects common mistakes made by Slavic speakers
+- 🗣️ **Text-to-Speech with Voice Profiles** - eSpeak-NG with 5 selectable voice profiles
+- 📝 **Grammar Correction** - Detects 40+ common mistakes made by Slavic speakers
 - 🎯 **Spaced Repetition** - SRS system for grammar drills and exercises
 - 🔤 **Bulgarian Typography** - Proper Cyrillic rendering with Ysabeau font
 - 💬 **AI Coaching** - Conversational practice with Claude/OpenAI integration
 - 🎨 **Interactive UI Components** - Grammar chips and drill interfaces for immediate feedback
+
+### Advanced Audio Features
+
+- 🎵 **Progressive Audio Streaming** - MediaSource API integration for low-latency audio playback
+- 🔊 **Voice Profile Selection** - Choose between different TTS voice styles with localStorage persistence
+- 📊 **Optimized ASR Performance** - Benchmarked configurations for best accuracy/latency balance
+- 🎙️ **AudioWorklet Processing** - Low-latency audio capture with fallback support
 
 ## UI Components
 

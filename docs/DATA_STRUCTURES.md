@@ -1,17 +1,8 @@
-# Bulgarian Voice Coach — Build Plan (Justfile edition)
+# Bulgarian Voice Coach - Data Structures Reference
 
-> **⚠️ This document has been reorganized for better project management:**
->
-> - **✅ Completed items** → See [DONE.md](./DONE.md)
-> - **📋 Remaining tasks** → See [TODO.md](./TODO.md)
+This document contains the core data structures used throughout the Bulgarian Voice Coach application.
 
-This document now contains only the core reference materials and data structures.
-
----
-
-## Core Data Structures
-
-### Grammar Item Structure
+## Grammar Item Structure
 
 ```json
 {
@@ -25,14 +16,22 @@ This document now contains only the core reference materials and data structures
     "UK": "Ukrainian uses infinitive: хочу замовити",
     "SR": "Serbian uses da + present: hoću da naručim"
   },
-  "examples": [{ "wrong": "Искам поръчвам кафе.", "right": "Искам да поръчам кафе." }],
-  "drills": [{ "type": "transform", "prompt_bg": "Искам ___ (поръчвам) кафе.", "answer_bg": "да поръчам" }],
+  "examples": [
+    { "wrong": "Искам поръчвам кафе.", "right": "Искам да поръчам кафе." }
+  ],
+  "drills": [
+    { 
+      "type": "transform", 
+      "prompt_bg": "Искам ___ (поръчвам) кафе.", 
+      "answer_bg": "да поръчам" 
+    }
+  ],
   "srs": { "interval_days": [1, 3, 7, 21] },
   "triggers": ["infinitive_like_pattern", "modal_verb_bare_infinitive"]
 }
 ```
 
-### Scenario Binding Structure
+## Scenario Binding Structure
 
 ```json
 {
@@ -52,7 +51,7 @@ This document now contains only the core reference materials and data structures
 }
 ```
 
-### CoachResponse Structure
+## Coach Response Structure
 
 ```json
 {
@@ -77,6 +76,37 @@ This document now contains only the core reference materials and data structures
 }
 ```
 
+## Performance Targets
+
+- **End-to-end latency**: 1.2–2.0 seconds
+  - Audio frames: 20–40ms
+  - VAD tail: 200–400ms (optimal: 300ms based on benchmarks)
+  - ASR processing: 0.5–1.0s
+  - TTS generation: ~0.2s
+
+## ASR Optimal Configuration
+
+Based on benchmarking (see `docs/benchmarks/asr_performance_benchmark.json`):
+
+```json
+{
+  "name": "large_beam",
+  "vad_tail_ms": 300,
+  "beam_size": 10,
+  "temperature": 0.0,
+  "no_speech_threshold": 0.6,
+  "description": "Higher accuracy with larger beam",
+  "latency_ms": 94.26,
+  "accuracy": 0.95
+}
+```
+
+## Content File Locations
+
+- `server/content/bg_grammar_pack.json` — Grammar rules and drills
+- `server/content/bg_scenarios_with_grammar.json` — Conversational scenarios
+- `client/assets/fonts/` — Ysabeau font files for Bulgarian typography
+
 ## Bulgarian Typography CSS
 
 ```css
@@ -92,50 +122,19 @@ This document now contains only the core reference materials and data structures
 
 /* Bulgarian language spans with proper glyph forms */
 :lang(bg) {
-  font-family:
-    "Ysabeau",
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, 
+               Helvetica, Arial, sans-serif;
   font-feature-settings: "locl" 1; /* enable local language forms */
 }
 
 /* Explicit class for Bulgarian content */
 .bg-text {
-  font-family:
-    "Ysabeau",
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: "Ysabeau", system-ui, -apple-system, Segoe UI, Roboto, 
+               Helvetica, Arial, sans-serif;
   font-feature-settings: "locl" 1;
 }
 ```
 
-## Performance Targets
-
-- **End-to-end latency**: 1.2–2.0 seconds
-  - Audio frames: 20–40ms
-  - VAD tail: 200–400ms
-  - ASR processing: 0.5–1.0s
-  - TTS generation: ~0.2s
-
-## Content File Locations
-
-- `server/content/bg_grammar_pack.json` — Grammar rules and drills
-- `server/content/bg_scenarios_with_grammar.json` — Conversational scenarios
-- `client/assets/fonts/` — Ysabeau font files for Bulgarian typography
-
 ---
 
-For implementation status and remaining work, see:
-
-- ✅ **[DONE.md](./DONE.md)** — What's been implemented
-- 📋 **[TODO.md](./TODO.md)** — What needs to be done
+_Last updated: 2025-09-01_
