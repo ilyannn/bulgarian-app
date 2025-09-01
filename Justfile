@@ -858,6 +858,13 @@ docs-guard:
     # Uses staged changes; fails if non-docs changed but no docs/ changes are staged
     non_docs="$(git diff --cached --name-only -- . ':!docs/**' || true)"
     docs_changed="$(git diff --cached --name-only -- 'docs/**' || true)"
+
+    # Skip check if changes are only within docs/ directory
+    if [ -z "${non_docs}" ]; then
+      echo "Only docs/ changes detected, skipping docs-guard check."
+      exit 0
+    fi
+
     if [ -n "${non_docs}" ] && [ -z "${docs_changed}" ] && [ -z "${SKIP_DOCS_CHECK-}" ]; then
       echo "\nERROR: This commit changes code but not docs/. Please update docs/ (or set SKIP_DOCS_CHECK=1 to bypass)."
       exit 1

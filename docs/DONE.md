@@ -2341,6 +2341,7 @@ _Last updated: 2025-08-31_
 - 🔧 Discovered and documented Biome formatting best practice for CI/local parity
 - 📝 Added explicit config path usage to CLAUDE.md to prevent future formatting discrepancies
 - ✨ Applied consistent code formatting (tabs→spaces, double→single quotes) across client code
+- 🛠️ Enhanced docs-guard to skip validation for docs-only commits (prevents unnecessary check failures)
 
 ---
 
