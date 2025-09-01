@@ -505,6 +505,95 @@ class TestPerformance:
         assert mock_subprocess.call_count == 4  # 1 version check + 3 synthesis calls
 
 
+class TestVoiceProfiles:
+    """Tests for voice profile functionality."""
+
+    @patch("subprocess.run")
+    def test_voice_profile_switching(self, mock_subprocess):
+        """Test that voice profiles can be switched."""
+        mock_subprocess.return_value = Mock(
+            returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
+        )
+
+        processor = TTSProcessor(profile="natural")
+        assert processor.profile.name == "natural"
+
+        # Switch to slow profile
+        success = processor.set_profile("slow")
+        assert success
+        assert processor.profile.name == "slow"
+
+        # Try invalid profile
+        success = processor.set_profile("invalid")
+        assert not success
+        assert processor.profile.name == "slow"  # Should remain unchanged
+
+        # Switch to clear profile
+        success = processor.set_profile("clear")
+        assert success
+        assert processor.profile.name == "clear"
+
+    @patch("subprocess.run")
+    def test_get_available_profiles(self, mock_subprocess):
+        """Test getting available profiles."""
+        mock_subprocess.return_value = Mock(
+            returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
+        )
+
+        processor = TTSProcessor()
+        profiles = processor.get_available_profiles()
+
+        assert "natural" in profiles
+        assert "slow" in profiles
+        assert "clear" in profiles
+        assert "expressive" in profiles
+
+        # Check descriptions are present
+        assert all(
+            isinstance(desc, str) and len(desc) > 0 for desc in profiles.values()
+        )
+
+    @patch("subprocess.run")
+    def test_get_current_profile(self, mock_subprocess):
+        """Test getting current profile name."""
+        mock_subprocess.return_value = Mock(
+            returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
+        )
+
+        processor = TTSProcessor(profile="expressive")
+        assert processor.get_current_profile() == "expressive"
+
+        processor.set_profile("slow")
+        assert processor.get_current_profile() == "slow"
+
+    @patch("subprocess.run")
+    def test_profile_parameters(self, mock_subprocess):
+        """Test that different profiles have different parameters."""
+        mock_subprocess.return_value = Mock(
+            returncode=0, stdout="eSpeak NG text-to-speech: 1.50"
+        )
+
+        processor = TTSProcessor()
+
+        # Get parameters for different profiles
+        natural_profile = processor.VOICE_PROFILES["natural"]
+        slow_profile = processor.VOICE_PROFILES["slow"]
+        clear_profile = processor.VOICE_PROFILES["clear"]
+
+        # Slow should have lower speed than natural
+        assert slow_profile.speed < natural_profile.speed
+
+        # Clear should have larger word gaps
+        assert clear_profile.word_gap > natural_profile.word_gap
+
+        # All profiles should have valid parameter ranges
+        for profile in processor.VOICE_PROFILES.values():
+            assert 80 <= profile.speed <= 450
+            assert 0 <= profile.pitch <= 99
+            assert 0 <= profile.amplitude <= 200
+            assert profile.word_gap >= 0
+
+
 class TestIntegration:
     """Integration tests for TTS module."""
 
@@ -516,6 +605,12 @@ class TestIntegration:
         assert callable(processor.synthesize)
         assert hasattr(processor, "synthesize_streaming")
         assert callable(processor.synthesize_streaming)
+        assert hasattr(processor, "set_profile")
+        assert callable(processor.set_profile)
+        assert hasattr(processor, "get_available_profiles")
+        assert callable(processor.get_available_profiles)
+        assert hasattr(processor, "get_current_profile")
+        assert callable(processor.get_current_profile)
 
     @patch("subprocess.run")
     def test_realistic_bulgarian_synthesis(self, mock_subprocess):

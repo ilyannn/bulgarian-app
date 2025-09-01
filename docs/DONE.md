@@ -2304,3 +2304,39 @@ curl "http://localhost:8000/tts?text=Добро%20утро"
 ---
 
 _Last updated: 2025-08-31_
+
+## 27) TTS Voice Profile Selection UI (2025-09-01)
+
+#### What We Completed
+
+**Interactive Voice Profile Selection**:
+- Added voice profile selector dropdown in the UI controls panel
+- Integrated with existing 5 voice profiles (natural, standard, slow, expressive, clear)
+- Implemented localStorage persistence for user's voice preference
+- Created beautiful, accessible UI with purple theme matching app design
+
+**Frontend Implementation**:
+- Voice selector with styled dropdown and descriptive tooltips
+- Real-time profile switching with success notifications
+- Automatic profile loading from localStorage on app startup
+- Dynamic profile descriptions fetched from API
+
+**Backend Support**:
+- Leveraged existing `/tts/profiles` endpoint for profile listing
+- TTS requests now respect selected voice profile parameter
+- Profile switching maintains state across audio generation
+
+**Testing Coverage**:
+- Added comprehensive tests for voice profile functionality
+- Tests for profile switching, parameter validation, and API endpoints
+- All 4 new tests passing successfully
+
+**User Experience Improvements**:
+- 🎯 Users can now choose their preferred voice style
+- 🔊 Immediate audio feedback with selected voice
+- 💾 Preferences persist across sessions
+- 🎨 Seamless integration with existing UI components
+
+---
+
+_Last updated: 2025-09-01_
