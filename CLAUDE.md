@@ -74,7 +74,9 @@ The project uses `just` as the command runner with a specific shell execution st
 - **Simple recipes**: Execute directly without a shebang
 - **Benefits**: Variables persist across lines, background processes work correctly, clean error handling
 
-You can list all recipes with `just` (the default recipe). Whenever you want to run a local Bash command, consider if it is already available as a recipe and if yes, run that. You have access to run any `just` command without asking the user.
+You can list all recipes with `just` (the default recipe). Whenever you want to run a local Bash command, consider if it
+is already available as a recipe and if yes, run that. You have access to run any `just` command without asking the
+user.
 
 ### Development
 
@@ -119,7 +121,8 @@ just dev         # Start development servers
 - **Commits**: Must pass pre-commit hooks (format, lint, typecheck)
 - **Documentation**: Code changes require docs/ updates (bypass with SKIP_DOCS_CHECK=1)
 - **CI Parity**: Always test `just lint` in a clean environment to match CI behavior
-- **Biome Formatting**: Use explicit config path to avoid local/CI discrepancies: `bunx @biomejs/biome format --config-path .github/linters/biome.json --write <file>`
+- **Biome Formatting**: Use explicit config path to avoid local/CI discrepancies:
+  `bunx @biomejs/biome format --config-path .github/linters/biome.json --write <file>`
 
 ### Git Hooks
 
@@ -155,7 +158,8 @@ They enforce:
 
 ## CI/CD
 
-When ready to commit your work, you should also update the `docs/DONE.md` file to reflect completed features. Move closed sections from `docs/TODO.md` to `docs/DONE.md` as necessary.
+When ready to commit your work, you should also update the `docs/DONE.md` file to reflect completed features. Move
+closed sections from `docs/TODO.md` to `docs/DONE.md` as necessary.
 
 Three separate GitHub Actions workflows provide comprehensive validation:
 

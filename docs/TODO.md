@@ -121,10 +121,10 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
   - Standardize error response format
   - Add comprehensive error recovery
   - Implement retry logic for network failures
-- [ ] Add comprehensive API documentation
-  - OpenAPI spec updates
-  - Client SDK generation
-  - Integration examples
+- [x] ~~Add comprehensive API documentation~~ ✅ **COMPLETED (2025-09-01)**
+  - ✅ OpenAPI spec updates with detailed Pydantic models
+  - ✅ Client SDK generation with TypeScript support
+  - ✅ Integration examples and practical guides
 - [ ] Refactor WebSocket connection management
   - Implement reconnection strategies
   - Add connection state management
