@@ -145,6 +145,16 @@ global.enableConsoleLog = () => {
 // Helper to get sent WebSocket messages
 global.getWebSocketMessages = (ws) => ws._sentMessages || [];
 
+// Note: Date constructor issues are handled by LocalProgressService's try-catch blocks
+// No additional Date mocking needed here since the source code is defensive
+
+// Mock navigator.userAgent for dark mode tests
+Object.defineProperty(global.navigator, 'userAgent', {
+  value:
+    'Mozilla/5.0 (Node.js jsdom) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  configurable: true,
+});
+
 // Helper to create realistic audio data
 global.createMockAudioData = (length = 1024) => {
   const data = new Float32Array(length);

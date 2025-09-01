@@ -5,6 +5,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.js'],
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+      },
+    },
     // Exclude E2E tests from Vitest (they should run with Playwright)
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     coverage: {
