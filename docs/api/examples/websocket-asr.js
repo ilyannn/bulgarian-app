@@ -189,7 +189,10 @@ async function main() {
   asr.onPartialResult = (text) => {
     console.log(`📝 Partial: "${text}"`);
     // Update UI with partial results
-    document.getElementById('partial-transcript')?.textContent = text;
+    const partialElement = document.getElementById('partial-transcript');
+    if (partialElement) {
+      partialElement.textContent = text;
+    }
   };
   
   asr.onFinalResult = (text, confidence) => {
@@ -203,12 +206,18 @@ async function main() {
     }
     
     // Clear partial display
-    document.getElementById('partial-transcript')?.textContent = '';
+    const partialElement = document.getElementById('partial-transcript');
+    if (partialElement) {
+      partialElement.textContent = '';
+    }
   };
   
   asr.onError = (error) => {
     console.error('❌ ASR Error:', error);
-    document.getElementById('error-display')?.textContent = error;
+    const errorElement = document.getElementById('error-display');
+    if (errorElement) {
+      errorElement.textContent = error;
+    }
   };
   
   try {
