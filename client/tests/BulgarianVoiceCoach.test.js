@@ -272,11 +272,11 @@ class BulgarianVoiceCoach {
     const coachLine = document.createElement('div');
     coachLine.className = 'transcript-line coach';
 
-    // Create safe HTML structure  
+    // Create safe HTML structure
     const coachLabel = document.createElement('strong');
     coachLabel.textContent = 'Coach:';
     coachLine.appendChild(coachLabel);
-    
+
     const responseSpan = document.createElement('span');
     responseSpan.className = 'bg-text bg-response';
     responseSpan.textContent = payload.reply_bg; // Safe text insertion
@@ -286,7 +286,7 @@ class BulgarianVoiceCoach {
     if (payload.corrections && payload.corrections.length > 0) {
       const correctionsDiv = document.createElement('div');
       correctionsDiv.className = 'corrections';
-      
+
       const correctionsLabel = document.createElement('div');
       correctionsLabel.style.marginTop = '0.5rem';
       correctionsLabel.style.fontWeight = '500';
@@ -299,7 +299,7 @@ class BulgarianVoiceCoach {
         chipSpan.textContent = `${correction.before} → ${correction.after}`; // Safe text
         correctionsDiv.appendChild(chipSpan);
       });
-      
+
       coachLine.appendChild(correctionsDiv);
     }
     if (this.transcriptArea) {

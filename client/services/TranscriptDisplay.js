@@ -7,118 +7,116 @@
  * - Smooth animations and transitions
  */
 export class TranscriptDisplay {
-	constructor() {
-		this.transcriptArea = null;
-		this.currentPartialBubble = null;
-		this.confidenceThresholds = {
-			high: 0.85,
-			medium: 0.7,
-			low: 0.5,
-		};
-		this.lastMessageTimestamp = null;
-		this.shouldGroupMessages = false;
-	}
+  constructor() {
+    this.transcriptArea = null;
+    this.currentPartialBubble = null;
+    this.confidenceThresholds = {
+      high: 0.85,
+      medium: 0.7,
+      low: 0.5,
+    };
+    this.lastMessageTimestamp = null;
+    this.shouldGroupMessages = false;
+  }
 
-	/**
-	 * Safely escape HTML content to prevent XSS attacks
-	 * @param {string} unsafe - Potentially unsafe HTML string
-	 * @returns {string} - HTML-escaped safe string
-	 */
-	escapeHtml(unsafe) {
-		if (typeof unsafe !== "string") return "";
-		return unsafe
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;")
-			.replace(/'/g, "&#039;");
-	}
+  /**
+   * Safely escape HTML content to prevent XSS attacks
+   * @param {string} unsafe - Potentially unsafe HTML string
+   * @returns {string} - HTML-escaped safe string
+   */
+  escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return '';
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
-	/**
-	 * Create a text node or HTML element safely
-	 * @param {string} text - Text content
-	 * @param {string} tagName - HTML tag name (optional)
-	 * @param {string} className - CSS class name (optional)
-	 * @returns {Node} - Safe DOM node
-	 */
-	createSafeElement(text, tagName = "span", className = "") {
-		const element = document.createElement(tagName);
-		if (className) element.className = className;
-		element.textContent = text; // Use textContent instead of innerHTML
-		return element;
-	}
+  /**
+   * Create a text node or HTML element safely
+   * @param {string} text - Text content
+   * @param {string} tagName - HTML tag name (optional)
+   * @param {string} className - CSS class name (optional)
+   * @returns {Node} - Safe DOM node
+   */
+  createSafeElement(text, tagName = 'span', className = '') {
+    const element = document.createElement(tagName);
+    if (className) element.className = className;
+    element.textContent = text; // Use textContent instead of innerHTML
+    return element;
+  }
 
-	/**
-	 * Safely highlight errors in text using DOM manipulation instead of innerHTML
-	 * @param {HTMLElement} container - Container element to populate
-	 * @param {string} text - Original text
-	 * @param {Array} errors - Array of error objects
-	 */
-	highlightErrorsSafe(container, text, errors) {
-		if (!errors || errors.length === 0) {
-			container.textContent = text;
-			return;
-		}
+  /**
+   * Safely highlight errors in text using DOM manipulation instead of innerHTML
+   * @param {HTMLElement} container - Container element to populate
+   * @param {string} text - Original text
+   * @param {Array} errors - Array of error objects
+   */
+  highlightErrorsSafe(container, text, errors) {
+    if (!errors || errors.length === 0) {
+      container.textContent = text;
+      return;
+    }
 
-		// Sort errors by position to avoid overlapping
-		const sortedErrors = [...errors].sort(
-			(a, b) => (a.position || 0) - (b.position || 0),
-		);
+    // Sort errors by position to avoid overlapping
+    const sortedErrors = [...errors].sort((a, b) => (a.position || 0) - (b.position || 0));
 
-		let currentIndex = 0;
+    let currentIndex = 0;
 
-		for (const error of sortedErrors) {
-			if (!error.before || typeof error.before !== "string") continue;
+    for (const error of sortedErrors) {
+      if (!error.before || typeof error.before !== 'string') continue;
 
-			// Find the error text in the remaining text
-			const errorIndex = text.indexOf(error.before, currentIndex);
-			if (errorIndex === -1) continue;
+      // Find the error text in the remaining text
+      const errorIndex = text.indexOf(error.before, currentIndex);
+      if (errorIndex === -1) continue;
 
-			// Add text before the error
-			if (errorIndex > currentIndex) {
-				const beforeText = text.substring(currentIndex, errorIndex);
-				container.appendChild(document.createTextNode(beforeText));
-			}
+      // Add text before the error
+      if (errorIndex > currentIndex) {
+        const beforeText = text.substring(currentIndex, errorIndex);
+        container.appendChild(document.createTextNode(beforeText));
+      }
 
-			// Create error highlight span with safe attributes
-			const errorSpan = document.createElement("span");
-			errorSpan.className = `error-highlight ${this.getErrorClass(error.error_type)}`;
-			errorSpan.textContent = error.before; // Safe text insertion
+      // Create error highlight span with safe attributes
+      const errorSpan = document.createElement('span');
+      errorSpan.className = `error-highlight ${this.getErrorClass(error.error_type)}`;
+      errorSpan.textContent = error.before; // Safe text insertion
 
-			// Safe tooltip using dataset (no XSS risk)
-			errorSpan.dataset.tooltip = `${this.escapeHtml(error.error_type)}: ${this.escapeHtml(error.before)} → ${this.escapeHtml(error.after)}`;
+      // Safe tooltip using dataset (no XSS risk)
+      errorSpan.dataset.tooltip = `${this.escapeHtml(error.error_type)}: ${this.escapeHtml(error.before)} → ${this.escapeHtml(error.after)}`;
 
-			container.appendChild(errorSpan);
+      container.appendChild(errorSpan);
 
-			currentIndex = errorIndex + error.before.length;
-		}
+      currentIndex = errorIndex + error.before.length;
+    }
 
-		// Add remaining text after the last error
-		if (currentIndex < text.length) {
-			const remainingText = text.substring(currentIndex);
-			container.appendChild(document.createTextNode(remainingText));
-		}
-	}
+    // Add remaining text after the last error
+    if (currentIndex < text.length) {
+      const remainingText = text.substring(currentIndex);
+      container.appendChild(document.createTextNode(remainingText));
+    }
+  }
 
-	/**
-	 * Initialize the transcript display service
-	 * @param {HTMLElement} transcriptArea - The container element for transcripts
-	 */
-	init(transcriptArea) {
-		this.transcriptArea = transcriptArea;
-		this.setupStyles();
-		this.clearTranscripts();
-	}
+  /**
+   * Initialize the transcript display service
+   * @param {HTMLElement} transcriptArea - The container element for transcripts
+   */
+  init(transcriptArea) {
+    this.transcriptArea = transcriptArea;
+    this.setupStyles();
+    this.clearTranscripts();
+  }
 
-	/**
-	 * Setup enhanced styles for transcript display
-	 */
-	setupStyles() {
-		if (document.getElementById("transcript-display-styles")) return;
+  /**
+   * Setup enhanced styles for transcript display
+   */
+  setupStyles() {
+    if (document.getElementById('transcript-display-styles')) return;
 
-		const style = document.createElement("style");
-		style.id = "transcript-display-styles";
-		style.textContent = `
+    const style = document.createElement('style');
+    style.id = 'transcript-display-styles';
+    style.textContent = `
       /* Chat-like transcript bubbles */
       .transcript-bubble {
         display: flex;
@@ -332,386 +330,370 @@ export class TranscriptDisplay {
         font-style: italic;
       }
     `;
-		document.head.appendChild(style);
-	}
+    document.head.appendChild(style);
+  }
 
-	/**
-	 * Clear all transcripts
-	 */
-	clearTranscripts() {
-		if (this.transcriptArea) {
-			this.transcriptArea.innerHTML = `
+  /**
+   * Clear all transcripts
+   */
+  clearTranscripts() {
+    if (this.transcriptArea) {
+      this.transcriptArea.innerHTML = `
         <div class="transcript-empty">
           Start speaking to see your conversation here...
         </div>
       `;
-		}
-		this.currentPartialBubble = null;
-		this.lastMessageTimestamp = null;
-	}
+    }
+    this.currentPartialBubble = null;
+    this.lastMessageTimestamp = null;
+  }
 
-	/**
-	 * Update partial transcript with typing indicator
-	 * @param {string} text - Partial transcript text
-	 * @param {number} confidence - Confidence score (0-1)
-	 */
-	updatePartialTranscript(text, confidence = 0.7) {
-		// Remove empty state if exists
-		const emptyState = this.transcriptArea.querySelector(".transcript-empty");
-		if (emptyState) {
-			emptyState.remove();
-		}
+  /**
+   * Update partial transcript with typing indicator
+   * @param {string} text - Partial transcript text
+   * @param {number} confidence - Confidence score (0-1)
+   */
+  updatePartialTranscript(text, confidence = 0.7) {
+    // Remove empty state if exists
+    const emptyState = this.transcriptArea.querySelector('.transcript-empty');
+    if (emptyState) {
+      emptyState.remove();
+    }
 
-		// Create or update partial bubble
-		if (!this.currentPartialBubble) {
-			this.currentPartialBubble = document.createElement("div");
-			this.currentPartialBubble.className = "transcript-bubble user partial";
+    // Create or update partial bubble
+    if (!this.currentPartialBubble) {
+      this.currentPartialBubble = document.createElement('div');
+      this.currentPartialBubble.className = 'transcript-bubble user partial';
 
-			const bubbleContent = document.createElement("div");
-			bubbleContent.className = "bubble-content";
+      const bubbleContent = document.createElement('div');
+      bubbleContent.className = 'bubble-content';
 
-			this.currentPartialBubble.appendChild(bubbleContent);
-			this.transcriptArea.appendChild(this.currentPartialBubble);
-		}
+      this.currentPartialBubble.appendChild(bubbleContent);
+      this.transcriptArea.appendChild(this.currentPartialBubble);
+    }
 
-		const bubbleContent =
-			this.currentPartialBubble.querySelector(".bubble-content");
+    const bubbleContent = this.currentPartialBubble.querySelector('.bubble-content');
 
-		// Clear existing content and create safe text element
-		bubbleContent.innerHTML = ""; // Clear previous content
-		const textSpan = this.createSafeElement(text, "span", "bg-text");
-		bubbleContent.appendChild(textSpan);
+    // Clear existing content and create safe text element
+    bubbleContent.innerHTML = ''; // Clear previous content
+    const textSpan = this.createSafeElement(text, 'span', 'bg-text');
+    bubbleContent.appendChild(textSpan);
 
-		// Add typing indicator if text is being formed
-		if (text.length > 0) {
-			const typingIndicator = document.createElement("span");
-			typingIndicator.className = "typing-indicator";
+    // Add typing indicator if text is being formed
+    if (text.length > 0) {
+      const typingIndicator = document.createElement('span');
+      typingIndicator.className = 'typing-indicator';
 
-			// Create three typing dots
-			for (let i = 0; i < 3; i++) {
-				const dot = document.createElement("span");
-				dot.className = "typing-dot";
-				typingIndicator.appendChild(dot);
-			}
+      // Create three typing dots
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'typing-dot';
+        typingIndicator.appendChild(dot);
+      }
 
-			bubbleContent.appendChild(typingIndicator);
-		}
+      bubbleContent.appendChild(typingIndicator);
+    }
 
-		// Add confidence indicator if available
-		if (confidence !== undefined) {
-			this.addConfidenceIndicator(this.currentPartialBubble, confidence, true);
-		}
+    // Add confidence indicator if available
+    if (confidence !== undefined) {
+      this.addConfidenceIndicator(this.currentPartialBubble, confidence, true);
+    }
 
-		this.scrollToBottom();
-	}
+    this.scrollToBottom();
+  }
 
-	/**
-	 * Add finalized transcript as a bubble
-	 * @param {string} text - Final transcript text
-	 * @param {number} confidence - Confidence score (0-1)
-	 * @param {Array} errors - Detected errors for highlighting
-	 */
-	addFinalTranscript(text, confidence = 0.85, errors = []) {
-		// Remove empty state if exists
-		const emptyState = this.transcriptArea.querySelector(".transcript-empty");
-		if (emptyState) {
-			emptyState.remove();
-		}
+  /**
+   * Add finalized transcript as a bubble
+   * @param {string} text - Final transcript text
+   * @param {number} confidence - Confidence score (0-1)
+   * @param {Array} errors - Detected errors for highlighting
+   */
+  addFinalTranscript(text, confidence = 0.85, errors = []) {
+    // Remove empty state if exists
+    const emptyState = this.transcriptArea.querySelector('.transcript-empty');
+    if (emptyState) {
+      emptyState.remove();
+    }
 
-		// Remove partial bubble
-		if (this.currentPartialBubble) {
-			this.currentPartialBubble.remove();
-			this.currentPartialBubble = null;
-		}
+    // Remove partial bubble
+    if (this.currentPartialBubble) {
+      this.currentPartialBubble.remove();
+      this.currentPartialBubble = null;
+    }
 
-		// Create final bubble
-		const bubble = document.createElement("div");
-		bubble.className = "transcript-bubble user";
+    // Create final bubble
+    const bubble = document.createElement('div');
+    bubble.className = 'transcript-bubble user';
 
-		// Check if should group with previous message
-		if (this.shouldGroupWithPrevious("user")) {
-			bubble.classList.add("grouped");
-			this.updatePreviousGrouping("user");
-		}
+    // Check if should group with previous message
+    if (this.shouldGroupWithPrevious('user')) {
+      bubble.classList.add('grouped');
+      this.updatePreviousGrouping('user');
+    }
 
-		const bubbleContent = document.createElement("div");
-		bubbleContent.className = "bubble-content";
+    const bubbleContent = document.createElement('div');
+    bubbleContent.className = 'bubble-content';
 
-		// Create text span safely
-		const textSpan = document.createElement("span");
-		textSpan.className = "bg-text";
+    // Create text span safely
+    const textSpan = document.createElement('span');
+    textSpan.className = 'bg-text';
 
-		// Highlight errors if any, using safe DOM manipulation
-		if (errors.length > 0) {
-			this.highlightErrorsSafe(textSpan, text, errors);
-		} else {
-			textSpan.textContent = text; // Safe text insertion
-		}
+    // Highlight errors if any, using safe DOM manipulation
+    if (errors.length > 0) {
+      this.highlightErrorsSafe(textSpan, text, errors);
+    } else {
+      textSpan.textContent = text; // Safe text insertion
+    }
 
-		bubbleContent.appendChild(textSpan);
+    bubbleContent.appendChild(textSpan);
 
-		// Add metadata
-		const metadata = document.createElement("div");
-		metadata.className = "bubble-metadata";
-		metadata.innerHTML = `
+    // Add metadata
+    const metadata = document.createElement('div');
+    metadata.className = 'bubble-metadata';
+    metadata.innerHTML = `
       <span class="timestamp">${this.getTimestamp()}</span>
     `;
-		bubbleContent.appendChild(metadata);
+    bubbleContent.appendChild(metadata);
 
-		bubble.appendChild(bubbleContent);
+    bubble.appendChild(bubbleContent);
 
-		// Add confidence indicator
-		this.addConfidenceIndicator(bubble, confidence);
+    // Add confidence indicator
+    this.addConfidenceIndicator(bubble, confidence);
 
-		this.transcriptArea.appendChild(bubble);
-		this.updateLastMessageTimestamp("user");
-		this.scrollToBottom();
-	}
+    this.transcriptArea.appendChild(bubble);
+    this.updateLastMessageTimestamp('user');
+    this.scrollToBottom();
+  }
 
-	/**
-	 * Add coach response as a bubble
-	 * @param {Object} payload - Coach response payload
-	 */
-	addCoachResponse(payload) {
-		// Remove empty state if exists
-		const emptyState = this.transcriptArea.querySelector(".transcript-empty");
-		if (emptyState) {
-			emptyState.remove();
-		}
+  /**
+   * Add coach response as a bubble
+   * @param {Object} payload - Coach response payload
+   */
+  addCoachResponse(payload) {
+    // Remove empty state if exists
+    const emptyState = this.transcriptArea.querySelector('.transcript-empty');
+    if (emptyState) {
+      emptyState.remove();
+    }
 
-		const bubble = document.createElement("div");
-		bubble.className = "transcript-bubble coach";
+    const bubble = document.createElement('div');
+    bubble.className = 'transcript-bubble coach';
 
-		// Check if should group with previous message
-		if (this.shouldGroupWithPrevious("coach")) {
-			bubble.classList.add("grouped");
-			this.updatePreviousGrouping("coach");
-		}
+    // Check if should group with previous message
+    if (this.shouldGroupWithPrevious('coach')) {
+      bubble.classList.add('grouped');
+      this.updatePreviousGrouping('coach');
+    }
 
-		const bubbleContent = document.createElement("div");
-		bubbleContent.className = "bubble-content";
+    const bubbleContent = document.createElement('div');
+    bubbleContent.className = 'bubble-content';
 
-		// Create safe response text element
-		const responseSpan = this.createSafeElement(
-			payload.reply_bg,
-			"span",
-			"bg-text bg-response",
-		);
-		bubbleContent.appendChild(responseSpan);
+    // Create safe response text element
+    const responseSpan = this.createSafeElement(payload.reply_bg, 'span', 'bg-text bg-response');
+    bubbleContent.appendChild(responseSpan);
 
-		// Add metadata
-		const metadata = document.createElement("div");
-		metadata.className = "bubble-metadata";
-		metadata.innerHTML = `
+    // Add metadata
+    const metadata = document.createElement('div');
+    metadata.className = 'bubble-metadata';
+    metadata.innerHTML = `
       <span class="timestamp">${this.getTimestamp()}</span>
     `;
-		bubbleContent.appendChild(metadata);
+    bubbleContent.appendChild(metadata);
 
-		bubble.appendChild(bubbleContent);
-		this.transcriptArea.appendChild(bubble);
+    bubble.appendChild(bubbleContent);
+    this.transcriptArea.appendChild(bubble);
 
-		// Add grammar chips if corrections exist
-		if (
-			payload.corrections &&
-			payload.corrections.length > 0 &&
-			window.grammarChipsUI
-		) {
-			window.grammarChipsUI.createChips(payload.corrections, bubble);
-		}
+    // Add grammar chips if corrections exist
+    if (payload.corrections && payload.corrections.length > 0 && window.grammarChipsUI) {
+      window.grammarChipsUI.createChips(payload.corrections, bubble);
+    }
 
-		this.updateLastMessageTimestamp("coach");
-		this.scrollToBottom();
-	}
+    this.updateLastMessageTimestamp('coach');
+    this.scrollToBottom();
+  }
 
-	/**
-	 * Add confidence indicator to a bubble
-	 * @param {HTMLElement} bubble - The bubble element
-	 * @param {number} confidence - Confidence score (0-1)
-	 * @param {boolean} isPartial - Whether this is a partial transcript
-	 */
-	addConfidenceIndicator(bubble, confidence, isPartial = false) {
-		// Remove existing indicator if any
-		const existing = bubble.querySelector(".confidence-indicator");
-		if (existing) {
-			existing.remove();
-		}
+  /**
+   * Add confidence indicator to a bubble
+   * @param {HTMLElement} bubble - The bubble element
+   * @param {number} confidence - Confidence score (0-1)
+   * @param {boolean} isPartial - Whether this is a partial transcript
+   */
+  addConfidenceIndicator(bubble, confidence, isPartial = false) {
+    // Remove existing indicator if any
+    const existing = bubble.querySelector('.confidence-indicator');
+    if (existing) {
+      existing.remove();
+    }
 
-		const level = this.getConfidenceLevel(confidence);
-		const dots = this.getConfidenceDots(confidence);
+    const level = this.getConfidenceLevel(confidence);
+    const dots = this.getConfidenceDots(confidence);
 
-		const indicator = document.createElement("div");
-		indicator.className = `confidence-indicator confidence-${level}`;
+    const indicator = document.createElement('div');
+    indicator.className = `confidence-indicator confidence-${level}`;
 
-		const label = isPartial ? "listening" : "confidence";
+    const label = isPartial ? 'listening' : 'confidence';
 
-		indicator.innerHTML = `
+    indicator.innerHTML = `
       <span class="confidence-bar">
         ${dots
-					.map(
-						(filled) =>
-							`<span class="confidence-dot ${filled ? "filled" : ""}"></span>`,
-					)
-					.join("")}
+          .map((filled) => `<span class="confidence-dot ${filled ? 'filled' : ''}"></span>`)
+          .join('')}
       </span>
       <span>${label}: ${Math.round(confidence * 100)}%</span>
     `;
 
-		bubble.appendChild(indicator);
-	}
+    bubble.appendChild(indicator);
+  }
 
-	/**
-	 * Get confidence level based on score
-	 * @param {number} confidence - Confidence score (0-1)
-	 * @returns {string} Level: 'high', 'medium', or 'low'
-	 */
-	getConfidenceLevel(confidence) {
-		if (confidence >= this.confidenceThresholds.high) return "high";
-		if (confidence >= this.confidenceThresholds.medium) return "medium";
-		return "low";
-	}
+  /**
+   * Get confidence level based on score
+   * @param {number} confidence - Confidence score (0-1)
+   * @returns {string} Level: 'high', 'medium', or 'low'
+   */
+  getConfidenceLevel(confidence) {
+    if (confidence >= this.confidenceThresholds.high) return 'high';
+    if (confidence >= this.confidenceThresholds.medium) return 'medium';
+    return 'low';
+  }
 
-	/**
-	 * Get confidence dots visualization
-	 * @param {number} confidence - Confidence score (0-1)
-	 * @returns {Array<boolean>} Array of 5 booleans for dot filling
-	 */
-	getConfidenceDots(confidence) {
-		const numDots = 5;
-		const filledDots = Math.round(confidence * numDots);
-		return Array(numDots)
-			.fill(false)
-			.map((_, i) => i < filledDots);
-	}
+  /**
+   * Get confidence dots visualization
+   * @param {number} confidence - Confidence score (0-1)
+   * @returns {Array<boolean>} Array of 5 booleans for dot filling
+   */
+  getConfidenceDots(confidence) {
+    const numDots = 5;
+    const filledDots = Math.round(confidence * numDots);
+    return Array(numDots)
+      .fill(false)
+      .map((_, i) => i < filledDots);
+  }
 
-	/**
-	 * Check if message should be grouped with previous
-	 * @param {string} type - 'user' or 'coach'
-	 * @returns {boolean}
-	 */
-	shouldGroupWithPrevious(type) {
-		const lastBubble = this.transcriptArea.querySelector(
-			".transcript-bubble:last-child",
-		);
-		if (!lastBubble) return false;
+  /**
+   * Check if message should be grouped with previous
+   * @param {string} type - 'user' or 'coach'
+   * @returns {boolean}
+   */
+  shouldGroupWithPrevious(type) {
+    const lastBubble = this.transcriptArea.querySelector('.transcript-bubble:last-child');
+    if (!lastBubble) return false;
 
-		const issameSender =
-			(type === "user" && lastBubble.classList.contains("user")) ||
-			(type === "coach" && lastBubble.classList.contains("coach"));
+    const issameSender =
+      (type === 'user' && lastBubble.classList.contains('user')) ||
+      (type === 'coach' && lastBubble.classList.contains('coach'));
 
-		// Group if same sender and within 30 seconds
-		const timeDiff = Date.now() - (this.lastMessageTimestamp || 0);
-		return issameSender && timeDiff < 30000;
-	}
+    // Group if same sender and within 30 seconds
+    const timeDiff = Date.now() - (this.lastMessageTimestamp || 0);
+    return issameSender && timeDiff < 30000;
+  }
 
-	/**
-	 * Update previous message grouping class
-	 * @param {string} type - 'user' or 'coach'
-	 */
-	updatePreviousGrouping(type) {
-		const bubbles = this.transcriptArea.querySelectorAll(
-			`.transcript-bubble.${type}`,
-		);
-		if (bubbles.length < 2) return;
+  /**
+   * Update previous message grouping class
+   * @param {string} type - 'user' or 'coach'
+   */
+  updatePreviousGrouping(type) {
+    const bubbles = this.transcriptArea.querySelectorAll(`.transcript-bubble.${type}`);
+    if (bubbles.length < 2) return;
 
-		const prevBubble = bubbles[bubbles.length - 1];
-		if (!prevBubble.classList.contains("grouped")) {
-			prevBubble.classList.add("grouped", "first");
-		} else if (prevBubble.classList.contains("last")) {
-			prevBubble.classList.remove("last");
-			prevBubble.classList.add("middle");
-		}
-	}
+    const prevBubble = bubbles[bubbles.length - 1];
+    if (!prevBubble.classList.contains('grouped')) {
+      prevBubble.classList.add('grouped', 'first');
+    } else if (prevBubble.classList.contains('last')) {
+      prevBubble.classList.remove('last');
+      prevBubble.classList.add('middle');
+    }
+  }
 
-	/**
-	 * Update last message timestamp
-	 * @param {string} _type - 'user' or 'coach' (unused but kept for future use)
-	 */
-	updateLastMessageTimestamp(_type) {
-		this.lastMessageTimestamp = Date.now();
-	}
+  /**
+   * Update last message timestamp
+   * @param {string} _type - 'user' or 'coach' (unused but kept for future use)
+   */
+  updateLastMessageTimestamp(_type) {
+    this.lastMessageTimestamp = Date.now();
+  }
 
-	/**
-	 * Get formatted timestamp
-	 * @returns {string}
-	 */
-	getTimestamp() {
-		const now = new Date();
-		return now.toLocaleTimeString("en-US", {
-			hour: "numeric",
-			minute: "2-digit",
-		});
-	}
+  /**
+   * Get formatted timestamp
+   * @returns {string}
+   */
+  getTimestamp() {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
 
-	/**
-	 * Highlight errors in text
-	 * @param {string} text - Text to highlight
-	 * @param {Array} errors - Array of error objects
-	 * @returns {string} HTML with highlighted errors
-	 */
-	/**
-	 * @deprecated This method has XSS vulnerabilities. Use highlightErrorsSafe instead.
-	 *
-	 * Legacy method kept for backwards compatibility but made safe.
-	 * Returns plain text to avoid XSS attacks.
-	 */
-	highlightErrors(text, _errors) {
-		console.warn(
-			"highlightErrors is deprecated due to XSS vulnerabilities. Use highlightErrorsSafe instead.",
-		);
+  /**
+   * Highlight errors in text
+   * @param {string} text - Text to highlight
+   * @param {Array} errors - Array of error objects
+   * @returns {string} HTML with highlighted errors
+   */
+  /**
+   * @deprecated This method has XSS vulnerabilities. Use highlightErrorsSafe instead.
+   *
+   * Legacy method kept for backwards compatibility but made safe.
+   * Returns plain text to avoid XSS attacks.
+   */
+  highlightErrors(text, _errors) {
+    console.warn(
+      'highlightErrors is deprecated due to XSS vulnerabilities. Use highlightErrorsSafe instead.'
+    );
 
-		// Return plain text to prevent XSS
-		if (!text || typeof text !== "string") return "";
-		return this.escapeHtml(text);
-	}
+    // Return plain text to prevent XSS
+    if (!text || typeof text !== 'string') return '';
+    return this.escapeHtml(text);
+  }
 
-	/**
-	 * Get error class based on type
-	 * @param {string} errorType - Type of error
-	 * @returns {string} CSS class name
-	 */
-	getErrorClass(errorType) {
-		const errorClasses = {
-			grammar: "error-grammar",
-			agreement: "error-agreement",
-			article: "error-article",
-			case: "error-case",
-			tense: "error-tense",
-			spelling: "error-spelling",
-			vocabulary: "error-vocabulary",
-		};
-		return errorClasses[errorType] || "error-general";
-	}
+  /**
+   * Get error class based on type
+   * @param {string} errorType - Type of error
+   * @returns {string} CSS class name
+   */
+  getErrorClass(errorType) {
+    const errorClasses = {
+      grammar: 'error-grammar',
+      agreement: 'error-agreement',
+      article: 'error-article',
+      case: 'error-case',
+      tense: 'error-tense',
+      spelling: 'error-spelling',
+      vocabulary: 'error-vocabulary',
+    };
+    return errorClasses[errorType] || 'error-general';
+  }
 
-	/**
-	 * Scroll to bottom of transcript area
-	 */
-	scrollToBottom() {
-		if (this.transcriptArea) {
-			this.transcriptArea.scrollTop = this.transcriptArea.scrollHeight;
-		}
-	}
+  /**
+   * Scroll to bottom of transcript area
+   */
+  scrollToBottom() {
+    if (this.transcriptArea) {
+      this.transcriptArea.scrollTop = this.transcriptArea.scrollHeight;
+    }
+  }
 
-	/**
-	 * Show scroll to bottom button if needed
-	 */
-	checkScrollButton() {
-		const button = this.transcriptArea.querySelector(".scroll-to-bottom");
-		if (!button) {
-			const scrollBtn = document.createElement("button");
-			scrollBtn.className = "scroll-to-bottom";
-			scrollBtn.innerHTML = "↓";
-			scrollBtn.onclick = () => this.scrollToBottom();
-			this.transcriptArea.appendChild(scrollBtn);
-		}
+  /**
+   * Show scroll to bottom button if needed
+   */
+  checkScrollButton() {
+    const button = this.transcriptArea.querySelector('.scroll-to-bottom');
+    if (!button) {
+      const scrollBtn = document.createElement('button');
+      scrollBtn.className = 'scroll-to-bottom';
+      scrollBtn.innerHTML = '↓';
+      scrollBtn.onclick = () => this.scrollToBottom();
+      this.transcriptArea.appendChild(scrollBtn);
+    }
 
-		const isNearBottom =
-			this.transcriptArea.scrollHeight -
-				this.transcriptArea.scrollTop -
-				this.transcriptArea.clientHeight <
-			100;
+    const isNearBottom =
+      this.transcriptArea.scrollHeight -
+        this.transcriptArea.scrollTop -
+        this.transcriptArea.clientHeight <
+      100;
 
-		button.classList.toggle("visible", !isNearBottom);
-	}
+    button.classList.toggle('visible', !isNearBottom);
+  }
 }
 
 // Export for use in main.js

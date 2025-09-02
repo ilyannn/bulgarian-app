@@ -2,10 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TTSProfilesResponse } from '../models/TTSProfilesResponse';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+import type { TTSProfilesResponse } from '../models/TTSProfilesResponse';
 export class TtsService {
   /**
    * Text To Speech

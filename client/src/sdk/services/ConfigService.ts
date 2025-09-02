@@ -2,12 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AppConfigResponse } from '../models/AppConfigResponse';
-import type { UpdateL1Request } from '../models/UpdateL1Request';
-import type { UpdateL1Response } from '../models/UpdateL1Response';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+import type { AppConfigResponse } from '../models/AppConfigResponse';
+import type { UpdateL1Request } from '../models/UpdateL1Request';
+import type { UpdateL1Response } from '../models/UpdateL1Response';
 export class ConfigService {
   /**
    * Get App Config

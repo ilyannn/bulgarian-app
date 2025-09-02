@@ -91,6 +91,16 @@ user.
 - `just test` - Run test suite
 - `just build` - Build packages
 
+### API & SDK Generation
+
+- `just api-sdk` - Generate TypeScript client SDK from OpenAPI specification
+- `just sdk-lint` - Lint generated SDK files with relaxed rules
+- `just sdk-format` - Format generated SDK files
+
+The SDK generation uses a dual-configuration linting strategy:
+- **Handwritten code**: Strict Biome rules via `.github/linters/biome.json`
+- **Generated SDK**: Relaxed Biome rules via `.github/linters/biome.sdk.json`
+
 ### Security & Git Hooks
 
 - `just pre-commit` - Gate for commits (lint + typecheck + format-check + docs-guard)

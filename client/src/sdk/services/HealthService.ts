@@ -2,10 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { HealthCheckResponse } from '../models/HealthCheckResponse';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+import type { HealthCheckResponse } from '../models/HealthCheckResponse';
 export class HealthService {
   /**
    * Root

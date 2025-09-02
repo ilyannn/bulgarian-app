@@ -2385,6 +2385,31 @@ _September 1, 2025_
 - 🔄 Automated SDK regeneration prevents API drift
 - ✅ CI/CD ensures documentation stays current with code changes
 
+## 60) SDK-Specific Linting Configuration (2025-09-02) ✅
+
+### Dual-Configuration Linting Strategy
+
+**Problem**: Generated TypeScript SDK files were failing Biome linting with 2 errors and 45 warnings due to strict rules designed for handwritten code.
+
+**Solution**: Implemented separate linting configurations for different code types:
+
+- [x] **Created `.github/linters/biome.sdk.json`**: Relaxed Biome configuration specifically for generated SDK files
+- [x] **Disabled problematic rules**: `noExplicitAny`, `noPrototypeBuiltins`, `noThenProperty`, etc. for generated code
+- [x] **Updated `api-sdk` recipe**: Integrated SDK-specific linting into generation workflow
+- [x] **Added convenience commands**: `just sdk-lint` and `just sdk-format` for SDK maintenance
+
+**Key Rules Relaxed for Generated Code**:
+- `noExplicitAny`: Off (generated code often uses `any` types appropriately)
+- `noPrototypeBuiltins`: Off (allows `hasOwnProperty` checks in generated code)
+- `noThenProperty`: Off (permits `.then` property access in promise chains)
+- `noStaticOnlyClass`: Off (allows utility classes with only static methods)
+
+**Benefits**:
+- ✅ **Clean SDK generation**: Generated files pass linting without modification
+- ✅ **Maintained quality standards**: Handwritten code still uses strict rules
+- ✅ **Automated workflow**: Linting integrated into SDK generation process
+- ✅ **Clear separation**: Different standards for different code origins
+
 ---
 
-_Last updated: 2025-09-01_
+_Last updated: 2025-09-02_

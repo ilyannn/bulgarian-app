@@ -2,12 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AnalyzeTextRequest } from '../models/AnalyzeTextRequest';
-import type { AnalyzeTextResponse } from '../models/AnalyzeTextResponse';
-import type { UserProgress } from '../models/UserProgress';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+import type { AnalyzeTextRequest } from '../models/AnalyzeTextRequest';
+import type { AnalyzeTextResponse } from '../models/AnalyzeTextResponse';
+import type { UserProgress } from '../models/UserProgress';
 export class ContentService {
   /**
    * Get Scenarios
