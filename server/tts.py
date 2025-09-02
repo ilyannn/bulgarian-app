@@ -1,11 +1,76 @@
 import io
 import logging
+import shutil
 import struct
 import subprocess
 from collections.abc import Generator
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_tts_text(text: str) -> str:
+    """
+    Validate text for TTS synthesis to prevent DoS and ensure reasonable limits.
+
+    Args:
+        text: Input text to validate
+
+    Returns:
+        Validated text
+
+    Raises:
+        ValueError: If text is invalid
+    """
+    if not isinstance(text, str) or not text:
+        raise ValueError("Text cannot be empty")
+
+    # Limit length to prevent resource exhaustion (memory for WAV output)
+    if len(text) > 5000:  # More generous limit since we're using stdin now
+        raise ValueError("Text too long (max 5000 characters)")
+
+    return text.strip()
+
+
+def _validate_espeak_profile_args(profile_args: list[str]) -> list[str]:
+    """
+    Validate eSpeak-NG profile arguments against an allow-list to prevent argument injection.
+
+    Args:
+        profile_args: List of profile arguments from VoiceProfile.to_espeak_args()
+
+    Returns:
+        Validated profile arguments
+
+    Raises:
+        ValueError: If any disallowed arguments are found
+    """
+    # Strict allow-list of safe eSpeak-NG parameters
+    # These only affect synthesis quality, not file system or security
+    allowed_flags = {
+        "-p",
+        "--pitch",  # pitch adjustment
+        "-P",  # pitch range (used by VoiceProfile)
+        "-s",
+        "--speed",  # speed adjustment
+        "-a",
+        "--amplitude",  # volume adjustment
+        "-g",
+        "--gap",  # word gap
+        "-k",
+        "--capitals",  # capitals emphasis
+        "-l",
+        "--line-length",  # line length for formatting
+    }
+
+    for arg in profile_args:
+        if arg.startswith("-"):
+            # Handle both "-p" and "-p=50" formats
+            flag = arg.split("=", 1)[0]
+            if flag not in allowed_flags:
+                raise ValueError(f"Disallowed eSpeak-NG argument: {flag}")
+
+    return profile_args
 
 
 @dataclass
@@ -221,31 +286,63 @@ class TTSProcessor:
         return header.getvalue()
 
     def _synthesize_chunk(self, text: str, language: str) -> bytes | None:
-        """Synthesize a text chunk using eSpeak-NG"""
+        """
+        Synthesize a text chunk using eSpeak-NG with secure argument handling.
+
+        Uses --stdin to prevent argument injection vulnerabilities and validates
+        all profile arguments against an allow-list.
+        """
         try:
-            # eSpeak-NG command with voice profile parameters
-            cmd = [
-                "espeak-ng",
-                "-v",
-                self.voice if language == "bg" else language,  # Voice/language
-                *self.profile.to_espeak_args(),  # Use profile parameters
-                "--stdout",  # Output to stdout
-                text,
-            ]
+            # Validate text input
+            validated_text = _validate_tts_text(text)
 
-            # Run eSpeak-NG
-            result = subprocess.run(cmd, capture_output=True, timeout=10)
+            # Validate and get profile arguments
+            profile_args = _validate_espeak_profile_args(self.profile.to_espeak_args())
 
-            if result.returncode == 0 and result.stdout:
-                return result.stdout
-            else:
-                print(
-                    f"eSpeak-NG error: {result.stderr.decode() if result.stderr else 'Unknown error'}"
-                )
+            # Resolve espeak-ng path safely to prevent PATH hijacking
+            espeak_bin = shutil.which("espeak-ng")
+            if not espeak_bin:
+                logger.error("espeak-ng not found in PATH")
                 return None
 
+            # Validate voice/language (basic sanitization)
+            voice = self.voice if language == "bg" else language
+            if not isinstance(voice, str) or len(voice) > 20:
+                logger.error(f"Invalid voice parameter: {voice}")
+                return None
+
+            # Build secure command using --stdin to prevent argument injection
+            cmd = [
+                espeak_bin,
+                "-v",
+                voice,  # voice/language
+                "--stdin",  # read text from stdin (prevents option injection)
+                "--stdout",  # write WAV to stdout
+                *profile_args,  # validated profile arguments
+                "--",  # end of options (belt-and-suspenders)
+            ]
+
+            # Send text via stdin; this prevents text from being interpreted as arguments
+            result = subprocess.run(
+                cmd,
+                input=validated_text.encode("utf-8"),
+                capture_output=True,
+                timeout=10,
+                check=True,  # Raise CalledProcessError on non-zero exit
+            )
+
+            return result.stdout if result.stdout else None
+
+        except subprocess.CalledProcessError as e:
+            logger.error(
+                f"eSpeak-NG process failed: {e.stderr.decode() if e.stderr else 'Unknown error'}"
+            )
+            return None
         except subprocess.TimeoutExpired:
-            print("eSpeak-NG timeout")
+            logger.error("eSpeak-NG timeout")
+            return None
+        except ValueError as e:
+            logger.error(f"Input validation failed: {e}")
             return None
         except Exception as e:
             print(f"eSpeak-NG synthesis error: {e}")
@@ -297,7 +394,9 @@ class TTSProcessor:
         self, text: str, output_path: str, language: str = "bg"
     ) -> bool:
         """
-        Synthesize text to a WAV file
+        Synthesize text to a WAV file with secure argument handling.
+
+        Uses --stdin to prevent argument injection vulnerabilities.
 
         Args:
             text: Text to synthesize
@@ -308,21 +407,64 @@ class TTSProcessor:
             bool: Success status
         """
         try:
+            # Validate text input
+            validated_text = _validate_tts_text(text)
+
+            # Validate and get profile arguments
+            profile_args = _validate_espeak_profile_args(self.profile.to_espeak_args())
+
+            # Resolve espeak-ng path safely
+            espeak_bin = shutil.which("espeak-ng")
+            if not espeak_bin:
+                logger.error("espeak-ng not found in PATH")
+                return False
+
+            # Basic validation of output path to prevent path traversal
+            if not isinstance(output_path, str) or ".." in output_path:
+                logger.error(f"Invalid output path: {output_path}")
+                return False
+
+            # Validate language parameter
+            if not isinstance(language, str) or len(language) > 20:
+                logger.error(f"Invalid language parameter: {language}")
+                return False
+
+            # Build secure command using --stdin
             cmd = [
-                "espeak-ng",
+                espeak_bin,
                 "-v",
-                language,
-                *self.profile.to_espeak_args(),  # Use profile parameters
+                language,  # language/voice
+                "--stdin",  # read text from stdin (prevents option injection)
                 "-w",
-                output_path,  # Write to file
-                text,
+                output_path,  # write to file
+                *profile_args,  # validated profile arguments
+                "--",  # end of options
             ]
 
-            result = subprocess.run(cmd, capture_output=True, timeout=30)
-            return result.returncode == 0
+            # Send text via stdin
+            subprocess.run(
+                cmd,
+                input=validated_text.encode("utf-8"),
+                capture_output=True,
+                timeout=30,
+                check=True,
+            )
 
+            return True
+
+        except subprocess.CalledProcessError as e:
+            logger.error(
+                f"eSpeak-NG file synthesis failed: {e.stderr.decode() if e.stderr else 'Unknown error'}"
+            )
+            return False
+        except subprocess.TimeoutExpired:
+            logger.error("eSpeak-NG file synthesis timeout")
+            return False
+        except ValueError as e:
+            logger.error(f"File synthesis validation failed: {e}")
+            return False
         except Exception as e:
-            print(f"File synthesis error: {e}")
+            logger.error(f"File synthesis error: {e}")
             return False
 
     def set_profile(self, profile_name: str) -> bool:

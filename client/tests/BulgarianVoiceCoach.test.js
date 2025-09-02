@@ -245,7 +245,10 @@ class BulgarianVoiceCoach {
       }
     }
 
-    partialLine.innerHTML = `<strong>You (partial):</strong> <span class="bg-text">${text}</span>`;
+    // Create safe HTML structure
+    partialLine.innerHTML = '<strong>You (partial):</strong> <span class="bg-text"></span>';
+    const textSpan = partialLine.querySelector('.bg-text');
+    textSpan.textContent = text; // Safe text insertion
   }
 
   addFinalTranscript(text) {
@@ -256,7 +259,10 @@ class BulgarianVoiceCoach {
 
     const finalLine = document.createElement('div');
     finalLine.className = 'transcript-line final';
-    finalLine.innerHTML = `<strong>You:</strong> <span class="bg-text">${text}</span>`;
+    // Create safe HTML structure
+    finalLine.innerHTML = '<strong>You:</strong> <span class="bg-text"></span>';
+    const textSpan = finalLine.querySelector('.bg-text');
+    textSpan.textContent = text; // Safe text insertion
     if (this.transcriptArea) {
       this.transcriptArea.appendChild(finalLine);
     }
@@ -266,19 +272,36 @@ class BulgarianVoiceCoach {
     const coachLine = document.createElement('div');
     coachLine.className = 'transcript-line coach';
 
-    let html = `<strong>Coach:</strong> <span class="bg-text bg-response">${payload.reply_bg}</span>`;
+    // Create safe HTML structure  
+    const coachLabel = document.createElement('strong');
+    coachLabel.textContent = 'Coach:';
+    coachLine.appendChild(coachLabel);
+    
+    const responseSpan = document.createElement('span');
+    responseSpan.className = 'bg-text bg-response';
+    responseSpan.textContent = payload.reply_bg; // Safe text insertion
+    coachLine.appendChild(responseSpan);
 
+    // Add corrections safely if they exist
     if (payload.corrections && payload.corrections.length > 0) {
-      html += '<div class="corrections">';
-      html += '<div style="margin-top: 0.5rem; font-weight: 500;">Corrections:</div>';
+      const correctionsDiv = document.createElement('div');
+      correctionsDiv.className = 'corrections';
+      
+      const correctionsLabel = document.createElement('div');
+      correctionsLabel.style.marginTop = '0.5rem';
+      correctionsLabel.style.fontWeight = '500';
+      correctionsLabel.textContent = 'Corrections:';
+      correctionsDiv.appendChild(correctionsLabel);
 
       payload.corrections.forEach((correction, _index) => {
-        html += `<span class="correction-chip">${correction.before} → ${correction.after}</span>`;
+        const chipSpan = document.createElement('span');
+        chipSpan.className = 'correction-chip';
+        chipSpan.textContent = `${correction.before} → ${correction.after}`; // Safe text
+        correctionsDiv.appendChild(chipSpan);
       });
-      html += '</div>';
+      
+      coachLine.appendChild(correctionsDiv);
     }
-
-    coachLine.innerHTML = html;
     if (this.transcriptArea) {
       this.transcriptArea.appendChild(coachLine);
     }
