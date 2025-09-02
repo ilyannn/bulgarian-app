@@ -2389,7 +2389,8 @@ _September 1, 2025_
 
 ### Dual-Configuration Linting Strategy
 
-**Problem**: Generated TypeScript SDK files were failing Biome linting with 2 errors and 45 warnings due to strict rules designed for handwritten code.
+**Problem**: Generated TypeScript SDK files were failing Biome linting with 2 errors and 45 warnings due to strict rules
+designed for handwritten code.
 
 **Solution**: Implemented separate linting configurations for different code types:
 
@@ -2399,12 +2400,14 @@ _September 1, 2025_
 - [x] **Added convenience commands**: `just sdk-lint` and `just sdk-format` for SDK maintenance
 
 **Key Rules Relaxed for Generated Code**:
+
 - `noExplicitAny`: Off (generated code often uses `any` types appropriately)
 - `noPrototypeBuiltins`: Off (allows `hasOwnProperty` checks in generated code)
 - `noThenProperty`: Off (permits `.then` property access in promise chains)
 - `noStaticOnlyClass`: Off (allows utility classes with only static methods)
 
 **Benefits**:
+
 - ✅ **Clean SDK generation**: Generated files pass linting without modification
 - ✅ **Maintained quality standards**: Handwritten code still uses strict rules
 - ✅ **Automated workflow**: Linting integrated into SDK generation process

@@ -98,6 +98,7 @@ user.
 - `just sdk-format` - Format generated SDK files
 
 The SDK generation uses a dual-configuration linting strategy:
+
 - **Handwritten code**: Strict Biome rules via `.github/linters/biome.json`
 - **Generated SDK**: Relaxed Biome rules via `.github/linters/biome.sdk.json`
 
