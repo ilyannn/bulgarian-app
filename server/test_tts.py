@@ -61,8 +61,14 @@ class TestSynthesize:
 
         # Check that espeak-ng was called with correct parameters
         call_args = mock_subprocess.call_args_list[1][0][0]  # Second call (synthesis)
-        assert call_args[0] == "espeak-ng"
-        assert "Здравей свят" in call_args
+        assert call_args[0].endswith(
+            "espeak-ng"
+        )  # Handle both "espeak-ng" and "/usr/bin/espeak-ng"
+
+        # Verify text was passed via stdin (not as command argument)
+        call_kwargs = mock_subprocess.call_args_list[1][1]
+        input_text = call_kwargs.get("input", b"").decode("utf-8")
+        assert "Здравей свят" in input_text
 
     @patch("subprocess.run")
     def test_synthesize_empty_text(self, mock_subprocess):
@@ -150,9 +156,10 @@ class TestSynthesize:
         assert result.startswith(b"RIFF")  # WAV header
         assert b"bulgarian_audio_data" in result
 
-        # Verify Bulgarian text was passed correctly (second call)
-        call_args = mock_subprocess.call_args_list[1][0][0]
-        assert bulgarian_text in call_args
+        # Verify Bulgarian text was passed correctly via stdin (second call)
+        call_kwargs = mock_subprocess.call_args_list[1][1]
+        input_text = call_kwargs.get("input", b"").decode("utf-8")
+        assert bulgarian_text in input_text
 
     @patch("subprocess.run")
     def test_synthesize_voice_parameter(self, mock_subprocess):
@@ -311,14 +318,19 @@ class TestEspeakIntegration:
             0
         ]  # Get second call (synthesis)
 
-        # Should use espeak-ng
-        assert call_args[0] == "espeak-ng"
+        # Should use espeak-ng (handle both bare command and full path)
+        assert call_args[0].endswith("espeak-ng")
 
         # Should output WAV format
         assert "--stdout" in call_args
 
-        # Should have text as last argument
-        assert "Тест" == call_args[-1]
+        # Should end with -- for security (text passed via stdin)
+        assert call_args[-1] == "--"
+
+        # Verify text was passed via stdin
+        call_kwargs = mock_subprocess.call_args_list[1][1]
+        input_text = call_kwargs.get("input", b"").decode("utf-8")
+        assert "Тест" in input_text
 
     @patch("subprocess.run")
     def test_espeak_bulgarian_language(self, mock_subprocess):

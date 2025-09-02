@@ -2419,7 +2419,8 @@ designed for handwritten code.
 
 **Problem**: API Lint workflow failing with `bunx: command not found` error when attempting to generate TypeScript SDK.
 
-**Root Cause**: The `api-sdk` recipe uses Bun for TypeScript SDK generation via `openapi-typescript-codegen`, but the GitHub Actions workflow lacked Bun setup.
+**Root Cause**: The `api-sdk` recipe uses Bun for TypeScript SDK generation via `openapi-typescript-codegen`, but the
+GitHub Actions workflow lacked Bun setup.
 
 **Solution**: Enhanced API Lint workflow configuration:
 
@@ -2428,6 +2429,7 @@ designed for handwritten code.
 - [x] **Maintained compatibility**: Used official Bun setup action for reliable CI integration
 
 **Technical Implementation**:
+
 ```yaml
 - name: Setup Bun
   uses: oven-sh/setup-bun@v2
@@ -2436,6 +2438,7 @@ designed for handwritten code.
 ```
 
 **Impact**:
+
 - ✅ **Resolved CI failures**: API Lint workflow now passes SDK generation step
 - ✅ **Enabled automation**: TypeScript SDK validation works in CI/CD pipeline
 - ✅ **Maintained quality**: API specification and SDK consistency checks operational
@@ -2443,3 +2446,45 @@ designed for handwritten code.
 ---
 
 _Last updated: 2025-09-02_
+
+## 62) TTS Test CI Environment Compatibility Fix (2025-09-02) ✅
+
+### Path Resolution and Security Pattern Verification
+
+**Problem**: Three TTS tests failing in CI environments due to path resolution differences and incorrect text verification.
+
+**Root Cause**:
+
+- Tests expected bare command names like `"espeak-ng"` but CI environments return full paths like `"/usr/bin/espeak-ng"` from `shutil.which()`
+- Tests incorrectly checked command arguments for text instead of stdin input
+
+**Solution**: Enhanced test compatibility while maintaining security verification:
+
+- [x] **Flexible path assertions**: Used `.endswith("espeak-ng")` to handle both bare names and full paths
+- [x] **Corrected text verification**: Check `input` parameter (stdin) instead of command arguments
+- [x] **Security pattern maintenance**: Verified `--` terminator and stdin usage for argument injection prevention
+
+**Technical Implementation**:
+
+```python
+# Flexible path handling for cross-platform compatibility
+call_args = mock_subprocess.call_args_list[1][0][0]
+assert call_args[0].endswith("espeak-ng")  # Works with both "espeak-ng" and "/usr/bin/espeak-ng"
+
+# Correct text verification via stdin (security pattern)
+call_kwargs = mock_subprocess.call_args_list[1][1]
+input_text = call_kwargs.get("input", b"").decode("utf-8")
+assert "Здравей свят" in input_text
+```
+
+**Security Benefits**:
+
+- Text passed via stdin prevents argument injection vulnerabilities
+- `--` terminator ensures end-of-options parsing
+- Full path resolution maintains system security boundaries
+
+**Files Modified**:
+
+- `server/test_tts.py` - Updated three test methods for CI compatibility
+
+**Impact**: All TTS tests now pass consistently across development and CI environments while maintaining security best practices.
