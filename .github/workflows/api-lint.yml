@@ -38,6 +38,11 @@ jobs:
           activate-environment: true
           enable-cache: true
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Generate OpenAPI spec and SDK, check if up-to-date
         run: |
           echo "🔍 Generating OpenAPI specification and TypeScript SDK..."

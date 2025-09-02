@@ -2413,6 +2413,33 @@ designed for handwritten code.
 - ✅ **Automated workflow**: Linting integrated into SDK generation process
 - ✅ **Clear separation**: Different standards for different code origins
 
+## 61) CI/CD API Lint Workflow Fix (2025-09-02) ✅
+
+### Missing Bun Runtime in GitHub Actions
+
+**Problem**: API Lint workflow failing with `bunx: command not found` error when attempting to generate TypeScript SDK.
+
+**Root Cause**: The `api-sdk` recipe uses Bun for TypeScript SDK generation via `openapi-typescript-codegen`, but the GitHub Actions workflow lacked Bun setup.
+
+**Solution**: Enhanced API Lint workflow configuration:
+
+- [x] **Added Bun setup step**: Integrated `oven-sh/setup-bun@v2` action with latest version
+- [x] **Proper dependency ordering**: Placed Bun setup after uv installation, before SDK generation
+- [x] **Maintained compatibility**: Used official Bun setup action for reliable CI integration
+
+**Technical Implementation**:
+```yaml
+- name: Setup Bun
+  uses: oven-sh/setup-bun@v2
+  with:
+    bun-version: latest
+```
+
+**Impact**:
+- ✅ **Resolved CI failures**: API Lint workflow now passes SDK generation step
+- ✅ **Enabled automation**: TypeScript SDK validation works in CI/CD pipeline
+- ✅ **Maintained quality**: API specification and SDK consistency checks operational
+
 ---
 
 _Last updated: 2025-09-02_
