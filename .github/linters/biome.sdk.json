@@ -8,7 +8,8 @@
         "noExplicitAny": "off",
         "noPrototypeBuiltins": "off",
         "noThenProperty": "off",
-        "useIterableCallbackReturn": "off"
+        "useIterableCallbackReturn": "off",
+        "noTsIgnore": "off"
       },
       "complexity": {
         "noStaticOnlyClass": "off"
