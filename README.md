@@ -14,6 +14,7 @@ grammar correction, and text-to-speech feedback.
 - 🔤 **Bulgarian Typography** - Proper Cyrillic rendering with Ysabeau font
 - 💬 **AI Coaching** - Conversational practice with Claude/OpenAI integration
 - 🎨 **Interactive UI Components** - Grammar chips and drill interfaces for immediate feedback
+- 🎼 **Pronunciation Scoring** - Phoneme-level analysis with visual feedback and personalized practice
 
 ### Advanced Audio Features
 
@@ -87,16 +88,74 @@ const drill = {
 window.inlineDrillInterface.createInlineDrill(drill, container);
 ```
 
+### Pronunciation Scoring System
+
+Advanced phoneme-level pronunciation analysis using WhisperX integration for detailed feedback and targeted practice.
+
+**Features:**
+
+- 🎯 **Phoneme-level Analysis** - Breaks down speech into individual sounds for precise feedback
+- 📊 **GOP Scoring Algorithm** - Goodness of Pronunciation scoring for objective assessment
+- 🌈 **Visual Feedback** - Color-coded waveform visualization showing pronunciation accuracy
+- 📝 **Personalized Practice** - Generates practice words based on problematic phonemes
+- 🎓 **L1-aware Feedback** - Tailored guidance for Polish, Russian, Ukrainian, and Serbian speakers
+- 🔄 **Real-time Visualization** - Interactive canvas display with phoneme highlighting
+
+![Pronunciation Visual Feedback](screenshots/pronunciation-visual-feedback.png) _Real-time visualization showing
+phoneme-level pronunciation scores_
+
+![Phoneme Detail Popup](screenshots/phoneme-detail-popup.png) _Detailed feedback popup with practice suggestions for
+difficult sounds_
+
+**Technical Implementation:**
+
+- **Hybrid ASR Architecture** - faster-whisper for real-time + WhisperX for detailed analysis
+- **29 Bulgarian Phonemes** - Complete IPA mapping with difficulty ratings
+- **Weighted Scoring** - Accounts for phoneme difficulty in overall assessment
+- **Canvas Visualization** - Hardware-accelerated rendering with requestAnimationFrame
+
+**Example Usage:**
+
+```javascript
+// Enable pronunciation mode
+const pronunciationToggle = document.getElementById('pronunciation-mode-toggle');
+pronunciationToggle.checked = true;
+
+// Analyze pronunciation
+const response = await fetch('/pronunciation/analyze', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    audio_base64: audioData,
+    reference_text: 'шапка',
+    sample_rate: 16000
+  })
+});
+
+const analysis = await response.json();
+// Returns phoneme scores, timing, and practice suggestions
+```
+
 ### Live Application Interface
 
-The complete voice coaching workflow integrating speech recognition, grammar detection, and interactive learning
-components.
+The complete voice coaching workflow integrating speech recognition, grammar detection, pronunciation scoring, and
+interactive learning components.
 
-![Main Interface](screenshots/main-interface.png) _Main voice coaching interface with microphone controls and transcript
-display_
+![Main Interface](screenshots/main-interface.png) _Main voice coaching interface with pronunciation scoring toggle and
+microphone controls_
+
+![Pronunciation Mode Active](screenshots/pronunciation-mode-active.png) _Interface with pronunciation scoring mode
+activated_
 
 ![Voice Coaching Workflow](screenshots/voice-coaching-workflow.png) _Complete workflow from speech input to grammar
 correction and practice_
+
+![Dark Mode Interface](screenshots/dark-mode-pronunciation.png) _Pronunciation scoring interface in dark mode_
+
+### API Documentation
+
+![Pronunciation API Endpoints](screenshots/pronunciation-api-endpoints.png) _FastAPI documentation showing pronunciation
+analysis endpoints_
 
 ### Component Architecture
 
