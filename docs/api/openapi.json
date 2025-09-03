@@ -552,6 +552,177 @@
           }
         }
       }
+    },
+    "/pronunciation/analyze": {
+      "post": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Analyze Pronunciation",
+        "description": "Analyze pronunciation quality of audio against reference text.\n\nThis endpoint provides phoneme-level pronunciation assessment using WhisperX\nfor word-level timestamps and phoneme alignment. Returns detailed scoring\nwith visual feedback data for the frontend.",
+        "operationId": "analyze_pronunciation_pronunciation_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PronunciationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PronunciationAnalysis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pronunciation/practice-words/{phoneme}": {
+      "get": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Get Practice Words",
+        "description": "Get practice words for a specific Bulgarian phoneme.\n\nReturns a list of Bulgarian words that contain the target phoneme,\nsuitable for pronunciation practice at the specified difficulty level.",
+        "operationId": "get_practice_words_pronunciation_practice_words__phoneme__get",
+        "parameters": [
+          {
+            "name": "phoneme",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phoneme"
+            }
+          },
+          {
+            "name": "difficulty_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Difficulty Level"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeWordsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pronunciation/practice-words": {
+      "post": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Get Practice Words Post",
+        "description": "Get practice words for a specific Bulgarian phoneme (POST version).\n\nAlternative endpoint that accepts a JSON request body for more complex\npractice word selection logic.",
+        "operationId": "get_practice_words_post_pronunciation_practice_words_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PracticeWordsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PracticeWordsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pronunciation/status": {
+      "get": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Get Pronunciation Status",
+        "description": "Get pronunciation scoring system status.\n\nReturns information about whether pronunciation scoring is enabled\nand what features are available.",
+        "operationId": "get_pronunciation_status_pronunciation_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Pronunciation Status Pronunciation Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -773,6 +944,19 @@
         "title": "GrammarCorrection",
         "description": "Individual grammar correction"
       },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthCheckItem": {
         "properties": {
           "status": {
@@ -971,6 +1155,205 @@
         "title": "HealthCheckResponse",
         "description": "Health Check Response Format following RFC draft"
       },
+      "PhonemeScore": {
+        "properties": {
+          "phoneme": {
+            "type": "string",
+            "title": "Phoneme",
+            "description": "Phoneme symbol"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score",
+            "description": "Pronunciation score (0.0-1.0)"
+          },
+          "difficulty": {
+            "type": "integer",
+            "title": "Difficulty",
+            "description": "Phoneme difficulty level (1-4)"
+          },
+          "start_time": {
+            "type": "number",
+            "title": "Start Time",
+            "description": "Start time in seconds"
+          },
+          "end_time": {
+            "type": "number",
+            "title": "End Time",
+            "description": "End time in seconds"
+          },
+          "ipa": {
+            "type": "string",
+            "title": "Ipa",
+            "description": "IPA representation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phoneme",
+          "score",
+          "difficulty",
+          "start_time",
+          "end_time",
+          "ipa"
+        ],
+        "title": "PhonemeScore",
+        "description": "Phoneme-level pronunciation score"
+      },
+      "PracticeWordsRequest": {
+        "properties": {
+          "phoneme": {
+            "type": "string",
+            "title": "Phoneme",
+            "description": "Target phoneme to practice"
+          },
+          "difficulty_level": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Difficulty Level",
+            "description": "Difficulty level (1-4)",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "phoneme"
+        ],
+        "title": "PracticeWordsRequest",
+        "description": "Request for practice words for a specific phoneme"
+      },
+      "PracticeWordsResponse": {
+        "properties": {
+          "phoneme": {
+            "type": "string",
+            "title": "Phoneme",
+            "description": "Target phoneme"
+          },
+          "practice_words": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Practice Words",
+            "description": "Recommended practice words"
+          },
+          "difficulty_level": {
+            "type": "integer",
+            "title": "Difficulty Level",
+            "description": "Requested difficulty level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phoneme",
+          "practice_words",
+          "difficulty_level"
+        ],
+        "title": "PracticeWordsResponse",
+        "description": "Practice words for phoneme training"
+      },
+      "PronunciationAnalysis": {
+        "properties": {
+          "overall_score": {
+            "type": "number",
+            "title": "Overall Score",
+            "description": "Overall pronunciation score (0.0-1.0)"
+          },
+          "word_scores": {
+            "items": {
+              "$ref": "#/components/schemas/WordScore"
+            },
+            "type": "array",
+            "title": "Word Scores",
+            "description": "Per-word pronunciation scores"
+          },
+          "phoneme_scores": {
+            "items": {
+              "$ref": "#/components/schemas/PhonemeScore"
+            },
+            "type": "array",
+            "title": "Phoneme Scores",
+            "description": "Per-phoneme scores"
+          },
+          "problem_phonemes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problem Phonemes",
+            "description": "Problematic phonemes identified"
+          },
+          "transcribed_text": {
+            "type": "string",
+            "title": "Transcribed Text",
+            "description": "What was actually transcribed"
+          },
+          "reference_text": {
+            "type": "string",
+            "title": "Reference Text",
+            "description": "Expected reference text"
+          },
+          "visual_feedback": {
+            "$ref": "#/components/schemas/VisualFeedback",
+            "description": "Data for visual components"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions",
+            "description": "Improvement suggestions"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "Analysis confidence level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overall_score",
+          "word_scores",
+          "phoneme_scores",
+          "problem_phonemes",
+          "transcribed_text",
+          "reference_text",
+          "visual_feedback",
+          "suggestions",
+          "confidence"
+        ],
+        "title": "PronunciationAnalysis",
+        "description": "Complete pronunciation analysis results"
+      },
+      "PronunciationRequest": {
+        "properties": {
+          "audio_data": {
+            "type": "string",
+            "title": "Audio Data",
+            "description": "Base64 encoded audio data (16kHz, mono)"
+          },
+          "reference_text": {
+            "type": "string",
+            "title": "Reference Text",
+            "description": "Expected text for comparison"
+          },
+          "sample_rate": {
+            "type": "integer",
+            "title": "Sample Rate",
+            "description": "Audio sample rate",
+            "default": 16000
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_data",
+          "reference_text"
+        ],
+        "title": "PronunciationRequest",
+        "description": "Request for pronunciation analysis"
+      },
       "TTSProfilesResponse": {
         "properties": {
           "profiles": {
@@ -1045,6 +1428,131 @@
         ],
         "title": "UserProgress",
         "description": "User progress data for SRS calculation"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VisualFeedback": {
+        "properties": {
+          "timeline": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Timeline",
+            "description": "Timeline visualization data"
+          },
+          "phoneme_heatmap": {
+            "additionalProperties": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Phoneme Heatmap",
+            "description": "Phoneme difficulty heatmap"
+          },
+          "audio_length": {
+            "type": "number",
+            "title": "Audio Length",
+            "description": "Total audio length in seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timeline",
+          "phoneme_heatmap",
+          "audio_length"
+        ],
+        "title": "VisualFeedback",
+        "description": "Visual feedback data for pronunciation display"
+      },
+      "WordScore": {
+        "properties": {
+          "word": {
+            "type": "string",
+            "title": "Word",
+            "description": "The word"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score",
+            "description": "Overall word score (0.0-1.0)"
+          },
+          "start_time": {
+            "type": "number",
+            "title": "Start Time",
+            "description": "Start time in seconds"
+          },
+          "end_time": {
+            "type": "number",
+            "title": "End Time",
+            "description": "End time in seconds"
+          },
+          "phonemes": {
+            "items": {
+              "$ref": "#/components/schemas/PhonemeScore"
+            },
+            "type": "array",
+            "title": "Phonemes",
+            "description": "Phoneme-level scores"
+          },
+          "problem_phonemes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problem Phonemes",
+            "description": "Problematic phonemes"
+          },
+          "difficulty": {
+            "type": "integer",
+            "title": "Difficulty",
+            "description": "Overall word difficulty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "word",
+          "score",
+          "start_time",
+          "end_time",
+          "phonemes",
+          "problem_phonemes",
+          "difficulty"
+        ],
+        "title": "WordScore",
+        "description": "Word-level pronunciation score"
       }
     }
   },
@@ -1056,6 +1564,10 @@
     {
       "name": "tts",
       "description": "Text-to-speech operations"
+    },
+    {
+      "name": "pronunciation",
+      "description": "Pronunciation analysis and feedback"
     },
     {
       "name": "content",
