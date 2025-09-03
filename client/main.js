@@ -6,6 +6,7 @@ import { l1LanguageService } from './services/L1LanguageService.js';
 import LocalProgressService from './services/LocalProgressService.js';
 import PerformanceMonitor from './services/PerformanceMonitor.js';
 import { ProgressiveAudioPlayer } from './services/ProgressiveAudioPlayer.js';
+import { pronunciationVisualizer } from './services/PronunciationVisualizerService.js';
 import { TranscriptDisplay } from './services/TranscriptDisplay.js';
 
 class BulgarianVoiceCoach {
@@ -75,6 +76,12 @@ class BulgarianVoiceCoach {
     // Performance monitoring
     this.performanceMonitor = new PerformanceMonitor();
 
+    // Pronunciation scoring
+    this.isPronunciationMode = false;
+    this.lastTranscriptForAnalysis = '';
+    this.pronunciationModeButton = document.getElementById('pronunciation-mode-btn');
+    this.pronunciationVisualization = document.getElementById('pronunciation-visualization');
+
     // Initialize enhanced transcript display
     this.transcriptDisplay.init(this.transcriptArea);
 
@@ -82,6 +89,7 @@ class BulgarianVoiceCoach {
     this.initializeEventListeners();
     this.initializeWebSocket();
     this.initializeL1Language();
+    this.initializePronunciationMode();
     this.loadWarmupDrills();
   }
 
@@ -150,6 +158,13 @@ class BulgarianVoiceCoach {
     this.stopBtn.addEventListener('click', () => {
       this.stopAudio();
     });
+
+    // Pronunciation mode button
+    if (this.pronunciationModeButton) {
+      this.pronunciationModeButton.addEventListener('click', () => {
+        this.togglePronunciationMode();
+      });
+    }
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (event) => {
@@ -346,6 +361,288 @@ class BulgarianVoiceCoach {
       }
     } catch (error) {
       console.error('Failed to update grammar chip contrast:', error);
+    }
+  }
+
+  async initializePronunciationMode() {
+    try {
+      // Check if pronunciation scoring is available
+      const response = await fetch('/pronunciation/status');
+      if (response.ok) {
+        const status = await response.json();
+
+        if (status.enabled) {
+          // Initialize pronunciation visualizer if canvas is available
+          const canvas = document.getElementById('pronunciation-canvas');
+          if (canvas) {
+            pronunciationVisualizer.initialize(canvas);
+          }
+
+          // Enable pronunciation mode UI
+          if (this.pronunciationModeButton) {
+            this.pronunciationModeButton.style.display = 'block';
+          }
+
+          console.log('Pronunciation mode available');
+        } else {
+          console.log('Pronunciation mode not enabled on server');
+          if (this.pronunciationModeButton) {
+            this.pronunciationModeButton.style.display = 'none';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to initialize pronunciation mode:', error);
+      if (this.pronunciationModeButton) {
+        this.pronunciationModeButton.style.display = 'none';
+      }
+    }
+  }
+
+  togglePronunciationMode() {
+    this.isPronunciationMode = !this.isPronunciationMode;
+
+    // Update UI
+    if (this.pronunciationModeButton) {
+      if (this.isPronunciationMode) {
+        this.pronunciationModeButton.textContent = '🎯 Exit Pronunciation Mode';
+        this.pronunciationModeButton.classList.add('active');
+      } else {
+        this.pronunciationModeButton.textContent = '🎯 Pronunciation Mode';
+        this.pronunciationModeButton.classList.remove('active');
+      }
+    }
+
+    // Show/hide pronunciation visualization
+    if (this.pronunciationVisualization) {
+      this.pronunciationVisualization.style.display = this.isPronunciationMode ? 'block' : 'none';
+    }
+
+    // Clear previous analysis when switching modes
+    if (!this.isPronunciationMode) {
+      pronunciationVisualizer.cleanup();
+    }
+
+    this.showInfo(
+      this.isPronunciationMode
+        ? '🎯 Pronunciation mode enabled - Your speech will be analyzed for pronunciation quality'
+        : '💬 Returned to normal conversation mode'
+    );
+  }
+
+  async analyzePronunciation(transcriptText, audioData) {
+    if (!this.isPronunciationMode || !transcriptText.trim()) {
+      return;
+    }
+
+    try {
+      // Convert audio data to base64 for API
+      const audioBuffer = new ArrayBuffer(audioData.length * 2);
+      const audioView = new Int16Array(audioBuffer);
+
+      for (let i = 0; i < audioData.length; i++) {
+        const sample = Math.max(-1, Math.min(1, audioData[i]));
+        audioView[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+      }
+
+      const audioBase64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+
+      // Send analysis request
+      const response = await fetch('/pronunciation/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          audio_data: audioBase64,
+          reference_text: transcriptText,
+          sample_rate: 16000,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Pronunciation analysis failed');
+      }
+
+      const analysis = await response.json();
+
+      // Display pronunciation analysis
+      this.displayPronunciationAnalysis(analysis);
+    } catch (error) {
+      console.error('Pronunciation analysis failed:', error);
+      this.showError(`Pronunciation analysis failed: ${error.message}`);
+    }
+  }
+
+  displayPronunciationAnalysis(analysis) {
+    // Show pronunciation visualization
+    pronunciationVisualizer.displayAnalysis(analysis);
+
+    // Add pronunciation feedback to transcript
+    this.addPronunciationFeedback(analysis);
+
+    // Show practice suggestions if there are problem phonemes
+    if (analysis.problem_phonemes && analysis.problem_phonemes.length > 0) {
+      this.showPhonemePracticeOptions(analysis.problem_phonemes);
+    }
+  }
+
+  addPronunciationFeedback(analysis) {
+    if (!this.transcriptArea) return;
+
+    // Create pronunciation feedback container
+    const feedbackContainer = document.createElement('div');
+    feedbackContainer.className = 'pronunciation-feedback';
+
+    // Overall score display
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.className = 'pronunciation-score-display';
+    scoreDisplay.innerHTML = `
+      <div class="score-label">Pronunciation Score:</div>
+      <div class="score-value" id="pronunciation-score">${(analysis.overall_score * 100).toFixed(0)}%</div>
+      <div class="score-confidence">Confidence: ${(analysis.confidence * 100).toFixed(0)}%</div>
+    `;
+    feedbackContainer.appendChild(scoreDisplay);
+
+    // Suggestions display
+    if (analysis.suggestions && analysis.suggestions.length > 0) {
+      const suggestionsContainer = document.createElement('div');
+      suggestionsContainer.id = 'pronunciation-suggestions';
+      suggestionsContainer.className = 'pronunciation-suggestions';
+      feedbackContainer.appendChild(suggestionsContainer);
+    }
+
+    // Problem phonemes practice
+    if (analysis.problem_phonemes && analysis.problem_phonemes.length > 0) {
+      const practiceDisplay = pronunciationVisualizer.createPhonemePracticeDisplay(
+        analysis.problem_phonemes
+      );
+      feedbackContainer.appendChild(practiceDisplay);
+    }
+
+    // Add to transcript area
+    this.transcriptArea.appendChild(feedbackContainer);
+    this.scrollToBottom();
+  }
+
+  showPhonemePracticeOptions(problemPhonemes) {
+    // This method can be called from the pronunciation visualizer
+    const practiceContainer = document.createElement('div');
+    practiceContainer.className = 'phoneme-practice-options';
+    practiceContainer.innerHTML = `
+      <h4>Practice These Sounds:</h4>
+      <div class="phoneme-buttons">
+        ${problemPhonemes
+          .map(
+            (phoneme) =>
+              `<button class="btn btn-phoneme" onclick="window.startPhonemePractice('${phoneme}')">${phoneme}</button>`
+          )
+          .join('')}
+      </div>
+    `;
+
+    // Show in a modal or add to transcript area
+    this.transcriptArea.appendChild(practiceContainer);
+    this.scrollToBottom();
+  }
+
+  showPhonemePractice(phoneme, practiceWords) {
+    // Create practice interface for specific phoneme
+    const practiceContainer = document.createElement('div');
+    practiceContainer.className = 'phoneme-practice-session';
+    practiceContainer.innerHTML = `
+      <div class="practice-header">
+        <h3>Practice: ${phoneme}</h3>
+        <button class="btn btn-close" onclick="this.parentElement.parentElement.remove()">✖</button>
+      </div>
+      <div class="practice-words">
+        <h4>Practice Words:</h4>
+        <ul>
+          ${practiceWords
+            .map(
+              (word) =>
+                `<li class="practice-word">
+              <span class="word">${word}</span>
+              <button class="btn btn-sm" onclick="window.speakPracticeWord('${word}')">🔊</button>
+            </li>`
+            )
+            .join('')}
+        </ul>
+      </div>
+      <div class="practice-instructions">
+        <p>💡 Try saying each word clearly, then use the microphone to practice in pronunciation mode!</p>
+      </div>
+    `;
+
+    this.transcriptArea.appendChild(practiceContainer);
+    this.scrollToBottom();
+  }
+
+  showPhonemeExamples(phoneme) {
+    // Show examples and explanation for the phoneme
+    const examplesContainer = document.createElement('div');
+    examplesContainer.className = 'phoneme-examples';
+    examplesContainer.innerHTML = `
+      <div class="examples-header">
+        <h3>Bulgarian Sound: ${phoneme}</h3>
+        <button class="btn btn-close" onclick="this.parentElement.parentElement.remove()">✖</button>
+      </div>
+      <div class="phoneme-info">
+        <p>This sound is ${this.getPhonemeDescription(phoneme)}</p>
+        <div class="pronunciation-tip">
+          ${this.getPronunciationTip(phoneme)}
+        </div>
+      </div>
+    `;
+
+    this.transcriptArea.appendChild(examplesContainer);
+    this.scrollToBottom();
+  }
+
+  getPhonemeDescription(phoneme) {
+    const descriptions = {
+      ɤ: 'unique to Bulgarian - the "ъ" vowel sound, similar to "uh" but more closed',
+      r: 'a rolled consonant - trill your tongue against the roof of your mouth',
+      ʃ: 'like "sh" in English but softer',
+      ʒ: 'like "s" in "measure" but softer',
+      tʃ: 'like "ch" in "church"',
+      x: 'like "ch" in German "ach" - from the back of the throat',
+    };
+    return descriptions[phoneme] || 'an important Bulgarian sound';
+  }
+
+  getPronunciationTip(phoneme) {
+    const tips = {
+      ɤ: '💡 Try saying "uh" while keeping your mouth less open - this is Bulgarian "ъ"',
+      r: '💡 Put your tongue tip behind your front teeth and let it vibrate with air flow',
+      ʃ: '💡 Softer than English "sh" - let your tongue relax more',
+      ʒ: '💡 Like "s" in "measure" but with Bulgarian softness',
+      tʃ: '💡 Quick "t" followed by "sh" sound',
+      x: '💡 Breathe out while constricting the back of your throat',
+    };
+    return tips[phoneme] || '💡 Practice slowly and listen to native speakers';
+  }
+
+  triggerPronunciationAnalysis(text) {
+    // We need the raw audio data that was just processed
+    // Store the request to analyze when audio data becomes available
+    this.pendingPronunciationAnalysis = {
+      text: text,
+      timestamp: Date.now(),
+    };
+  }
+
+  async performPronunciationAnalysis(audioData, text) {
+    // This method is called when we have both audio data and text
+    if (!this.isPronunciationMode || !text || !audioData) {
+      return;
+    }
+
+    try {
+      await this.analyzePronunciation(text, audioData);
+    } catch (error) {
+      console.error('Failed to perform pronunciation analysis:', error);
     }
   }
 
@@ -759,6 +1056,16 @@ class BulgarianVoiceCoach {
     // Use enhanced transcript display with bubbles and confidence
     const confidence = this.lastConfidenceScore || 0.85;
     this.transcriptDisplay.addFinalTranscript(text, confidence, this.lastDetectedErrors);
+
+    // Store transcript for pronunciation analysis
+    this.lastTranscriptForAnalysis = text;
+
+    // Trigger pronunciation analysis if in pronunciation mode
+    if (this.isPronunciationMode && text.trim()) {
+      // We need access to the raw audio data for analysis
+      // This will be called after we have the speech frames
+      this.triggerPronunciationAnalysis(text);
+    }
   }
 
   addCoachResponse(payload) {
@@ -1585,6 +1892,27 @@ window.addEventListener('blur', () => {
 if (typeof window !== 'undefined') {
   window.BulgarianVoiceCoach = BulgarianVoiceCoach;
 }
+
+// Global function for TTS playback of practice words
+window.speakPracticeWord = async (word) => {
+  try {
+    const ttsUrl = `/tts?text=${encodeURIComponent(word)}&profile=clear`;
+    const response = await fetch(ttsUrl);
+    if (!response.ok) throw new Error('TTS request failed');
+
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    const audio = new Audio(audioUrl);
+    audio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+    };
+
+    await audio.play();
+  } catch (error) {
+    console.error('Failed to speak practice word:', error);
+  }
+};
 
 // ES6 export for modules
 export default BulgarianVoiceCoach;

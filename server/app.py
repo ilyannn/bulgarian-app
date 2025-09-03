@@ -273,6 +273,85 @@ class TTSProfilesResponse(BaseModel):
     )
 
 
+# Pronunciation scoring models
+class PronunciationRequest(BaseModel):
+    """Request for pronunciation analysis"""
+
+    audio_data: str = Field(..., description="Base64 encoded audio data (16kHz, mono)")
+    reference_text: str = Field(..., description="Expected text for comparison")
+    sample_rate: int = Field(16000, description="Audio sample rate")
+
+
+class PhonemeScore(BaseModel):
+    """Phoneme-level pronunciation score"""
+
+    phoneme: str = Field(..., description="Phoneme symbol")
+    score: float = Field(..., description="Pronunciation score (0.0-1.0)")
+    difficulty: int = Field(..., description="Phoneme difficulty level (1-4)")
+    start_time: float = Field(..., description="Start time in seconds")
+    end_time: float = Field(..., description="End time in seconds")
+    ipa: str = Field(..., description="IPA representation")
+
+
+class WordScore(BaseModel):
+    """Word-level pronunciation score"""
+
+    word: str = Field(..., description="The word")
+    score: float = Field(..., description="Overall word score (0.0-1.0)")
+    start_time: float = Field(..., description="Start time in seconds")
+    end_time: float = Field(..., description="End time in seconds")
+    phonemes: list[PhonemeScore] = Field(..., description="Phoneme-level scores")
+    problem_phonemes: list[str] = Field(..., description="Problematic phonemes")
+    difficulty: int = Field(..., description="Overall word difficulty")
+
+
+class VisualFeedback(BaseModel):
+    """Visual feedback data for pronunciation display"""
+
+    timeline: list[dict] = Field(..., description="Timeline visualization data")
+    phoneme_heatmap: dict[str, dict] = Field(
+        ..., description="Phoneme difficulty heatmap"
+    )
+    audio_length: float = Field(..., description="Total audio length in seconds")
+
+
+class PronunciationAnalysis(BaseModel):
+    """Complete pronunciation analysis results"""
+
+    overall_score: float = Field(
+        ..., description="Overall pronunciation score (0.0-1.0)"
+    )
+    word_scores: list[WordScore] = Field(
+        ..., description="Per-word pronunciation scores"
+    )
+    phoneme_scores: list[PhonemeScore] = Field(..., description="Per-phoneme scores")
+    problem_phonemes: list[str] = Field(
+        ..., description="Problematic phonemes identified"
+    )
+    transcribed_text: str = Field(..., description="What was actually transcribed")
+    reference_text: str = Field(..., description="Expected reference text")
+    visual_feedback: VisualFeedback = Field(
+        ..., description="Data for visual components"
+    )
+    suggestions: list[str] = Field(..., description="Improvement suggestions")
+    confidence: float = Field(..., description="Analysis confidence level")
+
+
+class PracticeWordsRequest(BaseModel):
+    """Request for practice words for a specific phoneme"""
+
+    phoneme: str = Field(..., description="Target phoneme to practice")
+    difficulty_level: int = Field(1, ge=1, le=4, description="Difficulty level (1-4)")
+
+
+class PracticeWordsResponse(BaseModel):
+    """Practice words for phoneme training"""
+
+    phoneme: str = Field(..., description="Target phoneme")
+    practice_words: list[str] = Field(..., description="Recommended practice words")
+    difficulty_level: int = Field(..., description="Requested difficulty level")
+
+
 app = FastAPI(
     title="Bulgarian Voice Coach",
     version="0.1.0",
@@ -291,6 +370,7 @@ app = FastAPI(
     openapi_tags=[
         {"name": "health", "description": "Health check endpoints"},
         {"name": "tts", "description": "Text-to-speech operations"},
+        {"name": "pronunciation", "description": "Pronunciation analysis and feedback"},
         {"name": "content", "description": "Grammar and scenario content"},
         {"name": "config", "description": "Application configuration"},
         {"name": "websocket", "description": "WebSocket connections"},
@@ -855,6 +935,203 @@ async def analyze_text(request: AnalyzeTextRequest):
         drill_suggestions=drill_suggestions,
         l1_language=l1,
     )
+
+
+# Pronunciation scoring endpoints
+@app.post(
+    "/pronunciation/analyze",
+    tags=["pronunciation"],
+    response_model=PronunciationAnalysis,
+    responses={422: {"model": ErrorResponse}, 503: {"model": ErrorResponse}},
+)
+async def analyze_pronunciation(request: PronunciationRequest):
+    """
+    Analyze pronunciation quality of audio against reference text.
+
+    This endpoint provides phoneme-level pronunciation assessment using WhisperX
+    for word-level timestamps and phoneme alignment. Returns detailed scoring
+    with visual feedback data for the frontend.
+    """
+    if not asr_processor.is_pronunciation_scoring_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="Pronunciation scoring is not enabled. Please enable it in configuration.",
+        )
+
+    try:
+        import base64
+
+        import numpy as np
+
+        # Decode base64 audio data
+        try:
+            audio_bytes = base64.b64decode(request.audio_data)
+            audio_array = np.frombuffer(audio_bytes, dtype=np.int16)
+            # Convert to float32 and normalize
+            audio_data = audio_array.astype(np.float32) / 32768.0
+        except Exception as e:
+            raise HTTPException(
+                status_code=422, detail=f"Invalid audio data: {str(e)}"
+            ) from e
+
+        # Analyze pronunciation
+        analysis = await asr_processor.analyze_pronunciation(
+            audio_data, request.reference_text, request.sample_rate
+        )
+
+        if analysis is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Pronunciation analysis failed. Please try again.",
+            )
+
+        # Convert to Pydantic models for response validation
+        word_scores = [
+            WordScore(
+                word=word.get("word", ""),
+                score=word.get("score", 0.0),
+                start_time=word.get("start_time", 0.0),
+                end_time=word.get("end_time", 0.0),
+                phonemes=[
+                    PhonemeScore(
+                        phoneme=p.get("phoneme", ""),
+                        score=p.get("score", 0.0),
+                        difficulty=p.get("difficulty", 1),
+                        start_time=p.get("start_time", 0.0),
+                        end_time=p.get("end_time", 0.0),
+                        ipa=p.get("ipa", ""),
+                    )
+                    for p in word.get("phonemes", [])
+                ],
+                problem_phonemes=word.get("problem_phonemes", []),
+                difficulty=word.get("difficulty", 1),
+            )
+            for word in analysis.get("word_scores", [])
+        ]
+
+        phoneme_scores = [
+            PhonemeScore(
+                phoneme=p.get("phoneme", ""),
+                score=p.get("score", 0.0),
+                difficulty=p.get("difficulty", 1),
+                start_time=p.get("start_time", 0.0),
+                end_time=p.get("end_time", 0.0),
+                ipa=p.get("ipa", ""),
+            )
+            for p in analysis.get("phoneme_scores", [])
+        ]
+
+        visual_feedback_data = analysis.get("visual_feedback", {})
+        visual_feedback = VisualFeedback(
+            timeline=visual_feedback_data.get("timeline", []),
+            phoneme_heatmap=visual_feedback_data.get("phoneme_heatmap", {}),
+            audio_length=visual_feedback_data.get("audio_length", 0.0),
+        )
+
+        return PronunciationAnalysis(
+            overall_score=analysis.get("overall_score", 0.0),
+            word_scores=word_scores,
+            phoneme_scores=phoneme_scores,
+            problem_phonemes=analysis.get("problem_phonemes", []),
+            transcribed_text=analysis.get("transcribed_text", ""),
+            reference_text=analysis.get("reference_text", request.reference_text),
+            visual_feedback=visual_feedback,
+            suggestions=analysis.get("suggestions", []),
+            confidence=analysis.get("confidence", 0.0),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Pronunciation analysis error: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal analysis error: {str(e)}"
+        ) from e
+
+
+@app.get(
+    "/pronunciation/practice-words/{phoneme}",
+    tags=["pronunciation"],
+    response_model=PracticeWordsResponse,
+)
+async def get_practice_words(phoneme: str, difficulty_level: int = 1):
+    """
+    Get practice words for a specific Bulgarian phoneme.
+
+    Returns a list of Bulgarian words that contain the target phoneme,
+    suitable for pronunciation practice at the specified difficulty level.
+    """
+    if difficulty_level < 1 or difficulty_level > 4:
+        raise HTTPException(
+            status_code=422, detail="Difficulty level must be between 1 and 4"
+        )
+
+    practice_words = asr_processor.get_pronunciation_practice_words(
+        phoneme, difficulty_level
+    )
+
+    return PracticeWordsResponse(
+        phoneme=phoneme,
+        practice_words=practice_words,
+        difficulty_level=difficulty_level,
+    )
+
+
+@app.post(
+    "/pronunciation/practice-words",
+    tags=["pronunciation"],
+    response_model=PracticeWordsResponse,
+)
+async def get_practice_words_post(request: PracticeWordsRequest):
+    """
+    Get practice words for a specific Bulgarian phoneme (POST version).
+
+    Alternative endpoint that accepts a JSON request body for more complex
+    practice word selection logic.
+    """
+    practice_words = asr_processor.get_pronunciation_practice_words(
+        request.phoneme, request.difficulty_level
+    )
+
+    return PracticeWordsResponse(
+        phoneme=request.phoneme,
+        practice_words=practice_words,
+        difficulty_level=request.difficulty_level,
+    )
+
+
+@app.get(
+    "/pronunciation/status",
+    tags=["pronunciation"],
+    response_model=dict,
+)
+async def get_pronunciation_status():
+    """
+    Get pronunciation scoring system status.
+
+    Returns information about whether pronunciation scoring is enabled
+    and what features are available.
+    """
+    is_enabled = asr_processor.is_pronunciation_scoring_enabled()
+
+    status = {
+        "enabled": is_enabled,
+        "features": {
+            "phoneme_analysis": is_enabled,
+            "word_scoring": is_enabled,
+            "visual_feedback": is_enabled,
+            "practice_words": True,  # Always available
+        },
+    }
+
+    if is_enabled and asr_processor.pronunciation_scorer:
+        # Add more detailed status if scorer is available
+        status["scorer_initialized"] = asr_processor.pronunciation_scorer.is_initialized
+        status["supported_phonemes"] = list(
+            asr_processor.pronunciation_scorer.bulgarian_phonemes.keys()
+        )
+
+    return status
 
 
 # Serve static files in production

@@ -145,10 +145,6 @@ Most recently completed items have been moved to [DONE.md](./DONE.md)
 
 ### Learning Features
 
-- [ ] Add pronunciation scoring
-  - Phoneme-level analysis
-  - Visual feedback for pronunciation
-  - Practice mode for difficult sounds
 - [ ] Implement conversation scenarios
   - Role-playing exercises
   - Situational dialogues

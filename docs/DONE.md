@@ -2546,3 +2546,46 @@ export const base64 = (str: string): string => {
 - ✅ **Developer experience improved**: Local SDK generation matches CI expectations
 - ✅ **Code quality maintained**: Handwritten code still follows strict TypeScript linting rules
 - ✅ **Automation reliability**: SDK regeneration works consistently across environments
+
+## 26) Comprehensive Pronunciation Scoring System ✅ (2025-09-03)
+
+### Phoneme-Level Pronunciation Analysis
+
+- [x] **WhisperX integration**: Added WhisperX for detailed phoneme-level alignment and analysis
+- [x] **Hybrid ASR architecture**: Maintained faster-whisper for real-time transcription, added WhisperX for
+      pronunciation analysis
+- [x] **GOP scoring implementation**: Implemented Goodness of Pronunciation (GOP) algorithm for Bulgarian phonemes
+- [x] **Bulgarian phoneme database**: Created comprehensive mapping of 29 Bulgarian phonemes with difficulty weighting
+- [x] **Pronunciation analysis pipeline**: Complete audio processing pipeline from real-time capture to phoneme scoring
+
+### Interactive Pronunciation Mode
+
+- [x] **Pronunciation mode toggle**: Added interactive UI button to switch between conversation and pronunciation modes
+- [x] **Real-time analysis**: Integrated pronunciation analysis into the existing audio processing workflow
+- [x] **Visual feedback system**: Canvas-based visualization showing pronunciation timeline and phoneme heatmaps
+- [x] **Score display**: Color-coded pronunciation scoring with confidence indicators
+- [x] **Practice suggestions**: Automated generation of improvement suggestions based on problematic phonemes
+
+### Pronunciation Practice Features
+
+- [x] **Targeted practice words**: Database of Bulgarian practice words organized by phoneme difficulty
+- [x] **Phoneme practice sessions**: Interactive practice mode for specific difficult sounds
+- [x] **Practice word TTS playback**: Integrated eSpeak NG playback for pronunciation examples
+- [x] **Progress visualization**: Canvas-based rendering of pronunciation analysis results
+- [x] **Responsive UI design**: Complete CSS styling for pronunciation components with mobile support
+
+### Technical Implementation
+
+- [x] **4 new REST API endpoints**: `/pronunciation/analyze`, `/pronunciation/practice-words/*`, `/pronunciation/status`
+- [x] **PronunciationScorer class**: New backend module with Bulgarian-specific phoneme analysis
+- [x] **PronunciationVisualizerService**: Frontend service for canvas-based audio visualization
+- [x] **Dependency integration**: Added WhisperX, torch, torchaudio, transformers to pronunciation stack
+- [x] **Type safety**: Complete Pydantic models for pronunciation API requests/responses
+
+### User Experience Enhancements
+
+- [x] **Seamless mode switching**: Toggle between normal conversation and pronunciation analysis modes
+- [x] **Progressive feedback**: Visual pronunciation feedback integrated into existing transcript display
+- [x] **Practice recommendations**: Automated identification of problem phonemes with targeted exercises
+- [x] **Bulgarian-specific insights**: Pronunciation tips tailored to Bulgarian language characteristics
+- [x] **Accessibility features**: Clear visual indicators and responsive design for pronunciation feedback

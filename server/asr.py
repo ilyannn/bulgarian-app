@@ -3,11 +3,13 @@ import logging
 import os
 import threading
 from collections import deque
+from typing import Any
 
 import numpy as np
 import webrtcvad
 from bg_normalization import normalize_bulgarian
 from faster_whisper import WhisperModel
+from pronunciation_scorer import PronunciationScorer
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,7 @@ class ASRProcessor:
                 - beam_size_final: Beam size for final transcription (default: 2)
                 - no_speech_threshold: Threshold for detecting non-speech (default: 0.6)
                 - temperature: Temperature for decoding (default: 0.0)
+                - enable_pronunciation_scoring: Enable pronunciation analysis (default: False)
         """
         # Load configuration with defaults
         config = config or {}
@@ -35,6 +38,9 @@ class ASRProcessor:
         self.beam_size_final = config.get("beam_size_final", 2)
         self.no_speech_threshold = config.get("no_speech_threshold", 0.6)
         self.temperature = config.get("temperature", 0.0)
+        self.enable_pronunciation_scoring = config.get(
+            "enable_pronunciation_scoring", False
+        )
 
         self.sample_rate = 16000
         self.frame_duration = 20  # ms
@@ -74,6 +80,16 @@ class ASRProcessor:
         self.transcription_cache = {}
         self.cache_max_size = 100  # Maximum number of cached transcriptions
 
+        # Pronunciation scorer (initialized lazily)
+        self.pronunciation_scorer = None
+        if self.enable_pronunciation_scoring:
+            self.pronunciation_scorer = PronunciationScorer(
+                {
+                    "device": "cpu",  # Use same device as faster-whisper
+                    "compute_type": "float32",
+                }
+            )
+
     def _warmup_model(self):
         """Warm up the Whisper model to avoid first-use delay"""
         try:
@@ -92,6 +108,20 @@ class ASRProcessor:
             )
 
             logger.info("✅ Model warm-up complete")
+
+            # Warm up pronunciation scorer if enabled
+            if hasattr(self, "pronunciation_scorer") and self.pronunciation_scorer:
+                try:
+                    logger.info("🎯 Warming up pronunciation scorer...")
+                    # Initialize in background to avoid blocking
+                    import asyncio
+
+                    asyncio.create_task(self.pronunciation_scorer.initialize())
+                except Exception as e:
+                    logger.warning(
+                        f"⚠️ Pronunciation scorer warm-up failed (non-critical): {e}"
+                    )
+
         except Exception as e:
             logger.warning(f"⚠️ Model warm-up failed (non-critical): {e}")
 
@@ -438,6 +468,58 @@ class ASRProcessor:
         except Exception as e:
             print(f"Error in process_audio: {e}")
             return {"text": "", "confidence": 0.0, "language": "bg"}
+
+    async def analyze_pronunciation(
+        self, audio_data: np.ndarray, reference_text: str, sample_rate: int = 16000
+    ) -> dict[str, Any] | None:
+        """
+        Analyze pronunciation quality of audio against reference text.
+
+        Args:
+            audio_data: Audio data as numpy array (float32, normalized)
+            reference_text: Expected text for comparison
+            sample_rate: Audio sample rate (default: 16000)
+
+        Returns:
+            Pronunciation analysis results or None if scorer unavailable
+        """
+        if not self.pronunciation_scorer:
+            logger.warning("Pronunciation scorer not enabled")
+            return None
+
+        try:
+            # Ensure pronunciation scorer is initialized
+            if not self.pronunciation_scorer.is_initialized:
+                await self.pronunciation_scorer.initialize()
+
+            # Analyze pronunciation
+            analysis = await self.pronunciation_scorer.analyze_pronunciation(
+                audio_data, reference_text, sample_rate
+            )
+
+            logger.info(
+                f"Pronunciation analysis completed: score={analysis.get('overall_score', 0.0):.2f}"
+            )
+            return analysis
+
+        except Exception as e:
+            logger.error(f"Pronunciation analysis failed: {e}")
+            return None
+
+    def get_pronunciation_practice_words(
+        self, phoneme: str, difficulty_level: int = 1
+    ) -> list[str]:
+        """Get practice words for a specific phoneme."""
+        if not self.pronunciation_scorer:
+            return []
+
+        return self.pronunciation_scorer.get_pronunciation_practice_words(
+            phoneme, difficulty_level
+        )
+
+    def is_pronunciation_scoring_enabled(self) -> bool:
+        """Check if pronunciation scoring is available."""
+        return self.pronunciation_scorer is not None
 
     def reset(self):
         """Reset ASR state"""
