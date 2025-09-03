@@ -306,6 +306,56 @@ export class DarkModeSystem {
         color: #66bb6a;
       }
 
+      /* Dark mode voice selector */
+      [data-theme="dark"] .voice-selector {
+        background: rgba(66, 165, 245, 0.1);
+        border-color: rgba(66, 165, 245, 0.3);
+      }
+
+      [data-theme="dark"] .voice-selector label {
+        color: #64b5f6;
+      }
+
+      [data-theme="dark"] .voice-select {
+        background: #2a2a2a;
+        color: #e0e0e0;
+        border-color: rgba(66, 165, 245, 0.3);
+      }
+
+      [data-theme="dark"] .voice-select:hover {
+        border-color: #64b5f6;
+        box-shadow: 0 2px 8px rgba(66, 165, 245, 0.3);
+      }
+
+      [data-theme="dark"] .voice-select:focus {
+        border-color: #64b5f6;
+        box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
+      }
+
+      /* Dark mode mic level bar */
+      [data-theme="dark"] .mic-level {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      [data-theme="dark"] .mic-level-bar {
+        box-shadow: 0 0 6px rgba(100, 181, 246, 0.5);
+      }
+
+      /* Dark mode error highlighting */
+      [data-theme="dark"] .error-highlight {
+        filter: brightness(1.2);
+      }
+
+      [data-theme="dark"] .error-tooltip {
+        background-color: #424242;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      [data-theme="dark"] .error-tooltip::after {
+        border-color: #424242 transparent transparent transparent;
+      }
+
       /* Dark mode toast notifications */
       [data-theme="dark"] .toast-notification {
         background: #333333;

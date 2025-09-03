@@ -48,14 +48,29 @@
 }
 
 /* Dark mode support */
-.dark-mode .l1-language-selector {
-  background: var(--surface-dark, #2a2a2a);
+[data-theme="dark"] .l1-language-selector {
+  background: rgba(66, 165, 245, 0.1);
+  border: 1px solid rgba(66, 165, 245, 0.2);
 }
 
-.dark-mode .l1-select {
-  background: var(--input-dark, #1a1a1a);
-  border-color: var(--border-dark, #444);
-  color: var(--text-dark, #e0e0e0);
+[data-theme="dark"] .l1-language-selector label {
+  color: #64b5f6;
+}
+
+[data-theme="dark"] .l1-select {
+  background: #2a2a2a;
+  border-color: rgba(66, 165, 245, 0.3);
+  color: #e0e0e0;
+}
+
+[data-theme="dark"] .l1-select:hover {
+  border-color: #64b5f6;
+  box-shadow: 0 2px 8px rgba(66, 165, 245, 0.3);
+}
+
+[data-theme="dark"] .l1-select:focus {
+  border-color: #64b5f6;
+  box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
 }
 
 /* ===========================
@@ -113,6 +128,12 @@
 .contrast-note::before {
   content: "💡 ";
   font-style: normal;
+}
+
+/* Dark mode contrast notes */
+[data-theme="dark"] .contrast-note {
+  background: rgba(var(--contrast-bg, 108, 117, 125), 0.2);
+  filter: brightness(1.2);
 }
 
 /* Polish speakers (Latin script for UI) */
