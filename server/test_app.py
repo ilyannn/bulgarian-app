@@ -2,8 +2,10 @@
 Unit tests for the Bulgarian Voice Coach FastAPI application.
 """
 
+import base64
 from unittest.mock import AsyncMock, Mock, patch
 
+import numpy as np
 import pytest
 from app import CoachResponse, app
 from fastapi.testclient import TestClient
@@ -222,6 +224,252 @@ class TestStartupEvent:
         # Verify content was loaded
         mock_load_grammar.assert_called_once()
         mock_load_scenarios.assert_called_once()
+
+
+class TestPronunciationEndpoints:
+    """Test pronunciation analysis endpoints."""
+
+    @pytest.fixture
+    def mock_asr_with_pronunciation(self):
+        """Mock ASR processor with pronunciation scoring enabled."""
+        with patch("app.asr_processor") as mock_asr:
+            mock_asr.is_pronunciation_scoring_enabled.return_value = True
+            mock_asr.analyze_pronunciation = AsyncMock()
+            mock_asr.get_pronunciation_practice_words.return_value = [
+                {
+                    "word": "шапка",
+                    "phonemes": ["ʃ", "a", "p", "k", "a"],
+                    "difficulty": 3,
+                    "ipa": "ʃapka",
+                }
+            ]
+            mock_asr.pronunciation_scorer = Mock()
+            mock_asr.pronunciation_scorer.is_initialized = True
+            mock_asr.pronunciation_scorer.bulgarian_phonemes = {
+                "a": {"ipa": "a", "description": "Open central vowel"},
+                "ʃ": {"ipa": "ʃ", "description": "Voiceless postalveolar fricative"},
+            }
+            mock_asr.pronunciation_scorer.get_phoneme_difficulties.return_value = {
+                "ʃ": 4,
+                "tʃ": 5,
+                "ʒ": 3,
+            }
+            yield mock_asr
+
+    def test_pronunciation_analyze_success(self, client, mock_asr_with_pronunciation):
+        """Test successful pronunciation analysis."""
+        # Mock successful analysis
+        mock_analysis = {
+            "overall_score": 0.85,
+            "phoneme_scores": [
+                {
+                    "phoneme": "ʃ",
+                    "score": 0.8,
+                    "start": 0.0,
+                    "end": 0.2,
+                    "difficulty": 4,
+                    "feedback": "Good pronunciation",
+                }
+            ],
+            "timing": {"total_duration": 1.0, "processing_time": 0.3},
+            "transcription": "шапка",
+            "reference_text": "шапка",
+        }
+        mock_asr_with_pronunciation.analyze_pronunciation.return_value = mock_analysis
+
+        # Create mock audio data (16-bit PCM)
+        audio_array = np.random.randint(-32768, 32767, 16000, dtype=np.int16)
+        audio_base64 = base64.b64encode(audio_array.tobytes()).decode("utf-8")
+
+        response = client.post(
+            "/pronunciation/analyze",
+            json={
+                "audio_data": audio_base64,
+                "reference_text": "шапка",
+                "sample_rate": 16000,
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["overall_score"] == 0.85
+        assert len(data["phoneme_scores"]) == 1
+        assert data["phoneme_scores"][0]["phoneme"] == "ʃ"
+        assert data["reference_text"] == "шапка"
+
+    def test_pronunciation_analyze_not_enabled(self, client):
+        """Test pronunciation analysis when not enabled."""
+        with patch("app.asr_processor") as mock_asr:
+            mock_asr.is_pronunciation_scoring_enabled.return_value = False
+
+            audio_array = np.random.randint(-32768, 32767, 16000, dtype=np.int16)
+            audio_base64 = base64.b64encode(audio_array.tobytes()).decode("utf-8")
+
+            response = client.post(
+                "/pronunciation/analyze",
+                json={
+                    "audio_data": audio_base64,
+                    "reference_text": "тест",
+                    "sample_rate": 16000,
+                },
+            )
+
+            assert response.status_code == 503
+            assert "not enabled" in response.json()["detail"].lower()
+
+    def test_pronunciation_analyze_invalid_audio(
+        self, client, mock_asr_with_pronunciation
+    ):
+        """Test pronunciation analysis with invalid audio data."""
+        response = client.post(
+            "/pronunciation/analyze",
+            json={
+                "audio_data": "invalid_base64",
+                "reference_text": "тест",
+                "sample_rate": 16000,
+            },
+        )
+
+        assert response.status_code == 422
+        assert "Invalid audio data" in response.json()["detail"]
+
+    def test_pronunciation_analyze_processing_error(
+        self, client, mock_asr_with_pronunciation
+    ):
+        """Test pronunciation analysis with processing error."""
+        mock_asr_with_pronunciation.analyze_pronunciation.return_value = None
+
+        audio_array = np.random.randint(-32768, 32767, 16000, dtype=np.int16)
+        audio_base64 = base64.b64encode(audio_array.tobytes()).decode("utf-8")
+
+        response = client.post(
+            "/pronunciation/analyze",
+            json={
+                "audio_data": audio_base64,
+                "reference_text": "тест",
+                "sample_rate": 16000,
+            },
+        )
+
+        assert response.status_code == 500
+        assert "Failed to analyze" in response.json()["detail"]
+
+    def test_get_phonemes_success(self, client, mock_asr_with_pronunciation):
+        """Test getting Bulgarian phonemes."""
+        response = client.get("/pronunciation/phonemes")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "phonemes" in data
+        assert len(data["phonemes"]) == 2
+        assert "a" in data["phonemes"]
+        assert "ʃ" in data["phonemes"]
+        assert data["phonemes"]["ʃ"]["ipa"] == "ʃ"
+
+    def test_get_phonemes_not_enabled(self, client):
+        """Test getting phonemes when pronunciation scoring not enabled."""
+        with patch("app.asr_processor") as mock_asr:
+            mock_asr.is_pronunciation_scoring_enabled.return_value = False
+
+            response = client.get("/pronunciation/phonemes")
+
+            assert response.status_code == 503
+            assert "not enabled" in response.json()["detail"].lower()
+
+    def test_get_difficulties_success(self, client, mock_asr_with_pronunciation):
+        """Test getting phoneme difficulties for L1 language."""
+        response = client.get(
+            "/pronunciation/difficulties", params={"l1_language": "polish"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "l1_language" in data
+        assert data["l1_language"] == "polish"
+        assert "difficulties" in data
+        assert len(data["difficulties"]) == 3
+
+    def test_get_difficulties_invalid_language(
+        self, client, mock_asr_with_pronunciation
+    ):
+        """Test getting difficulties for invalid L1 language."""
+        mock_asr_with_pronunciation.pronunciation_scorer.get_phoneme_difficulties.return_value = {}
+
+        response = client.get(
+            "/pronunciation/difficulties", params={"l1_language": "invalid"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["l1_language"] == "invalid"
+        assert len(data["difficulties"]) == 0
+
+    def test_get_practice_words_success(self, client, mock_asr_with_pronunciation):
+        """Test getting practice words for phoneme."""
+        response = client.get(
+            "/pronunciation/practice", params={"phoneme": "ʃ", "difficulty_level": 3}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "phoneme" in data
+        assert data["phoneme"] == "ʃ"
+        assert "difficulty_level" in data
+        assert data["difficulty_level"] == 3
+        assert "practice_words" in data
+        assert len(data["practice_words"]) == 1
+        assert data["practice_words"][0]["word"] == "шапка"
+
+    def test_get_practice_words_not_enabled(self, client):
+        """Test getting practice words when not enabled."""
+        with patch("app.asr_processor") as mock_asr:
+            mock_asr.is_pronunciation_scoring_enabled.return_value = False
+
+            response = client.get(
+                "/pronunciation/practice",
+                params={"phoneme": "ʃ", "difficulty_level": 3},
+            )
+
+            assert response.status_code == 503
+            assert "not enabled" in response.json()["detail"].lower()
+
+    def test_pronunciation_practice_with_request_body(
+        self, client, mock_asr_with_pronunciation
+    ):
+        """Test pronunciation practice endpoint with request body."""
+        response = client.post(
+            "/pronunciation/practice", json={"phoneme": "ʃ", "difficulty_level": 4}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["phoneme"] == "ʃ"
+        assert data["difficulty_level"] == 4
+        assert "practice_words" in data
+
+    def test_pronunciation_status_enabled(self, client, mock_asr_with_pronunciation):
+        """Test pronunciation status when enabled."""
+        response = client.get("/pronunciation/status")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["pronunciation_scoring_enabled"] is True
+        assert data["scorer_initialized"] is True
+        assert "supported_phonemes" in data
+        assert len(data["supported_phonemes"]) == 2
+
+    def test_pronunciation_status_not_enabled(self, client):
+        """Test pronunciation status when not enabled."""
+        with patch("app.asr_processor") as mock_asr:
+            mock_asr.is_pronunciation_scoring_enabled.return_value = False
+
+            response = client.get("/pronunciation/status")
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["pronunciation_scoring_enabled"] is False
+            assert "scorer_initialized" in data
+            assert "supported_phonemes" in data
 
 
 class TestIntegration:

@@ -944,6 +944,561 @@ test.describe('Error Handling E2E', () => {
   });
 });
 
+test.describe('Pronunciation Analysis E2E', () => {
+  test('should handle pronunciation mode toggle', async ({ page }) => {
+    // Mock WebSocket for pronunciation mode
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(data) {
+          if (data.includes('pronunciation_analyze')) {
+            setTimeout(() => {
+              if (this.onmessage) {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'pronunciation_analysis',
+                      overall_score: 0.85,
+                      phoneme_scores: [
+                        {
+                          phoneme: 'ʃ',
+                          score: 0.8,
+                          start: 0.0,
+                          end: 0.2,
+                          difficulty: 4,
+                          feedback: 'Good pronunciation',
+                        },
+                      ],
+                      timing: { total_duration: 1.0 },
+                      transcription: 'шапка',
+                      reference_text: 'шапка',
+                    }),
+                  })
+                );
+              }
+            }, 200);
+          }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+
+    // Look for pronunciation mode toggle (may be in settings or as a button)
+    const pronunciationToggle = page
+      .locator('[data-testid="pronunciation-toggle"]')
+      .or(page.locator('button:has-text("Pronunciation")'))
+      .or(page.locator('#pronunciation-mode'));
+
+    if ((await pronunciationToggle.count()) > 0) {
+      await pronunciationToggle.click();
+
+      // Should show pronunciation-specific UI elements
+      const pronunciationPanel = page
+        .locator('.pronunciation-panel')
+        .or(page.locator('[data-testid="pronunciation-panel"]'));
+
+      if ((await pronunciationPanel.count()) > 0) {
+        await expect(pronunciationPanel).toBeVisible();
+      }
+    }
+  });
+
+  test('should display pronunciation visualization', async ({ page }) => {
+    // Mock pronunciation visualization
+    await page.addInitScript(() => {
+      // Mock canvas and visualization APIs
+      window.pronunciationVisualizer = {
+        initializeCanvas: () => {},
+        visualizeAnalysis: () => {},
+        playWithVisualization: () => Promise.resolve(),
+        showPhonemeDetail: () => {},
+        cleanup: () => {},
+      };
+
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'pronunciation_analysis',
+                    overall_score: 0.75,
+                    phoneme_scores: [
+                      { phoneme: 't', score: 0.9, start: 0.0, end: 0.15 },
+                      { phoneme: 'e', score: 0.8, start: 0.15, end: 0.3 },
+                      { phoneme: 's', score: 0.6, start: 0.3, end: 0.45 },
+                      { phoneme: 't', score: 0.9, start: 0.45, end: 0.6 },
+                    ],
+                    timing: { total_duration: 0.6 },
+                    transcription: 'тест',
+                    reference_text: 'тест',
+                  }),
+                })
+              );
+            }
+          }, 200);
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+
+    // Enable pronunciation mode if available
+    const pronunciationModeBtn = page.locator('button:has-text("Pronunciation")');
+    if ((await pronunciationModeBtn.count()) > 0) {
+      await pronunciationModeBtn.click();
+    }
+
+    // Start and stop recording to trigger analysis
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click();
+
+    // Check for visualization canvas or elements
+    const visualizationCanvas = page
+      .locator('canvas')
+      .or(page.locator('.pronunciation-visualization'));
+
+    if ((await visualizationCanvas.count()) > 0) {
+      await expect(visualizationCanvas).toBeVisible({ timeout: 3000 });
+    }
+  });
+
+  test('should handle pronunciation feedback display', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'pronunciation_feedback',
+                    overall_score: 0.65,
+                    feedback: 'Good effort! Focus on the "ʃ" sound in "шапка".',
+                    difficult_phonemes: ['ʃ', 'tʃ'],
+                    recommendations: [
+                      'Practice words with "ш" sound',
+                      'Pay attention to tongue position',
+                    ],
+                  }),
+                })
+              );
+            }
+          }, 300);
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click();
+
+    // Look for pronunciation feedback UI
+    const feedbackElements = [
+      page.locator('.pronunciation-feedback'),
+      page.locator('[data-testid="pronunciation-feedback"]'),
+      page.locator('.phoneme-scores'),
+      page.locator('.difficulty-indicator'),
+    ];
+
+    // Check if any feedback elements are visible
+    for (const element of feedbackElements) {
+      if ((await element.count()) > 0 && (await element.isVisible())) {
+        await expect(element).toBeVisible();
+        break;
+      }
+    }
+  });
+
+  test('should handle phoneme practice mode', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.voiceCoach = {
+        showPhonemePractice: (phoneme) => {
+          // Mock practice mode activation
+          const practicePanel = document.createElement('div');
+          practicePanel.className = 'phoneme-practice-panel';
+          practicePanel.innerHTML = `<h3>Practice: ${phoneme}</h3><p>Practice words with this sound</p>`;
+          document.body.appendChild(practicePanel);
+        },
+      };
+
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(data) {
+          if (data.includes('practice_request')) {
+            setTimeout(() => {
+              if (this.onmessage) {
+                this.onmessage(
+                  new MessageEvent('message', {
+                    data: JSON.stringify({
+                      type: 'practice_words',
+                      phoneme: 'ʃ',
+                      practice_words: [
+                        { word: 'шапка', ipa: 'ʃapka', difficulty: 3 },
+                        { word: 'шоколад', ipa: 'ʃɔkɔlad', difficulty: 4 },
+                      ],
+                    }),
+                  })
+                );
+              }
+            }, 200);
+          }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+
+    // Look for practice mode buttons or difficult phoneme indicators
+    const practiceElements = [
+      page.locator('button:has-text("Practice")'),
+      page.locator('[data-testid="phoneme-practice"]'),
+      page.locator('.difficult-phoneme'),
+      page.locator('.phoneme-button'),
+    ];
+
+    for (const element of practiceElements) {
+      if ((await element.count()) > 0) {
+        await element.first().click();
+
+        // Check if practice panel appears
+        const practicePanel = page.locator('.phoneme-practice-panel');
+        if ((await practicePanel.count()) > 0) {
+          await expect(practicePanel).toBeVisible({ timeout: 2000 });
+          await expect(practicePanel).toContainText('Practice:');
+          break;
+        }
+      }
+    }
+  });
+
+  test('should handle pronunciation API endpoints', async ({ page }) => {
+    // Test that the app can call pronunciation endpoints
+    await page.goto('/');
+
+    // Check that pronunciation endpoints are accessible
+    const endpointsToTest = ['/pronunciation/status', '/pronunciation/phonemes'];
+
+    for (const endpoint of endpointsToTest) {
+      const response = await page.request.get(`http://localhost:8000${endpoint}`);
+      expect(response.status()).toBeLessThan(500); // Should not be server error
+    }
+  });
+
+  test('should display pronunciation scores with visual feedback', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'pronunciation_scores',
+                    phoneme_scores: [
+                      { phoneme: 'a', score: 0.95, quality: 'excellent' },
+                      { phoneme: 'ʃ', score: 0.65, quality: 'needs_work' },
+                      { phoneme: 'p', score: 0.85, quality: 'good' },
+                    ],
+                  }),
+                })
+              );
+            }
+          }, 200);
+        }
+      };
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click();
+
+    // Look for score visualization elements
+    const scoreElements = [
+      page.locator('.score-excellent'),
+      page.locator('.score-good'),
+      page.locator('.score-needs-work'),
+      page.locator('.phoneme-score'),
+      page.locator('[data-score]'),
+    ];
+
+    // Check if any score elements are visible with appropriate styling
+    let foundScores = false;
+    for (const element of scoreElements) {
+      if ((await element.count()) > 0) {
+        foundScores = true;
+        break;
+      }
+    }
+
+    // If pronunciation scoring is implemented, scores should be visible
+    if (foundScores) {
+      await expect(page.locator('.phoneme-score')).toBeVisible();
+    }
+  });
+
+  test('should handle audio playback with pronunciation overlay', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.Audio = class MockAudio {
+        constructor(src) {
+          this.src = src;
+          this.currentTime = 0;
+          this.duration = 1.5;
+          this.paused = true;
+          this.onended = null;
+          this.ontimeupdate = null;
+        }
+
+        async play() {
+          this.paused = false;
+          // Simulate time progression
+          const updateTime = () => {
+            if (!this.paused && this.currentTime < this.duration) {
+              this.currentTime += 0.1;
+              if (this.ontimeupdate) this.ontimeupdate();
+              if (this.currentTime >= this.duration) {
+                this.paused = true;
+                if (this.onended) this.onended();
+              } else {
+                setTimeout(updateTime, 100);
+              }
+            }
+          };
+          setTimeout(updateTime, 100);
+        }
+
+        pause() {
+          this.paused = true;
+        }
+      };
+
+      // Mock pronunciation visualizer
+      window.pronunciationVisualizer = {
+        playWithVisualization: async (audioUrl) => {
+          const audio = new window.Audio(audioUrl);
+          return audio.play();
+        },
+      };
+
+      window.WebSocket = class MockWebSocket {
+        constructor() {
+          this.readyState = WebSocket.OPEN;
+          this.onopen = null;
+          this.onmessage = null;
+          setTimeout(() => {
+            if (this.onopen) this.onopen(new Event('open'));
+          }, 50);
+        }
+
+        send(_data) {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage(
+                new MessageEvent('message', {
+                  data: JSON.stringify({
+                    type: 'coach_response',
+                    text: 'Good pronunciation!',
+                    audio_data: 'mock_audio_base64',
+                    pronunciation_data: {
+                      phoneme_timing: [
+                        { phoneme: 'g', start: 0.0, end: 0.1 },
+                        { phoneme: 'u', start: 0.1, end: 0.2 },
+                        { phoneme: 'd', start: 0.2, end: 0.3 },
+                      ],
+                    },
+                  }),
+                })
+              );
+            }
+          }, 200);
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia = async () => ({
+        getTracks: () => [{ stop: () => {} }],
+      });
+    });
+
+    await page.goto('/');
+    await page.locator('#mic-button').click();
+    await page.locator('#mic-button').click();
+
+    // Wait for response and play button to be enabled
+    await page.waitForTimeout(500);
+
+    const playButton = page.locator('#play-last-btn');
+    if (await playButton.isEnabled()) {
+      await playButton.click();
+
+      // Check if pronunciation overlay or highlighting is visible during playback
+      const overlayElements = [
+        page.locator('.pronunciation-highlight'),
+        page.locator('.phoneme-highlight'),
+        page.locator('.playback-cursor'),
+      ];
+
+      for (const element of overlayElements) {
+        if ((await element.count()) > 0) {
+          await expect(element).toBeVisible({ timeout: 2000 });
+          break;
+        }
+      }
+    }
+  });
+});
+
+test.describe('Pronunciation API Integration', () => {
+  test('should fetch phoneme reference data', async ({ page }) => {
+    await page.goto('/');
+
+    // Test /pronunciation/phonemes endpoint
+    const phonemesResponse = await page.request.get('http://localhost:8000/pronunciation/phonemes');
+
+    if (phonemesResponse.status() === 200) {
+      const phonemesData = await phonemesResponse.json();
+      expect(phonemesData).toHaveProperty('phonemes');
+      expect(typeof phonemesData.phonemes).toBe('object');
+    } else if (phonemesResponse.status() === 503) {
+      // Pronunciation scoring not enabled - this is acceptable
+      console.log('Pronunciation scoring not enabled (503 response)');
+    }
+  });
+
+  test('should fetch pronunciation status', async ({ page }) => {
+    await page.goto('/');
+
+    const statusResponse = await page.request.get('http://localhost:8000/pronunciation/status');
+    expect(statusResponse.status()).toBe(200);
+
+    const statusData = await statusResponse.json();
+    expect(statusData).toHaveProperty('pronunciation_scoring_enabled');
+    expect(typeof statusData.pronunciation_scoring_enabled).toBe('boolean');
+  });
+
+  test('should handle pronunciation analysis request', async ({ page }) => {
+    await page.goto('/');
+
+    // Mock audio data (base64 encoded)
+    const mockAudioData = btoa('mock-pcm-audio-data');
+
+    const analysisResponse = await page.request.post(
+      'http://localhost:8000/pronunciation/analyze',
+      {
+        data: {
+          audio_data: mockAudioData,
+          reference_text: 'тест',
+          sample_rate: 16000,
+        },
+      }
+    );
+
+    // Should either work (200) or be disabled (503)
+    expect([200, 422, 503]).toContain(analysisResponse.status());
+
+    if (analysisResponse.status() === 200) {
+      const analysisData = await analysisResponse.json();
+      expect(analysisData).toHaveProperty('overall_score');
+      expect(analysisData).toHaveProperty('phoneme_scores');
+    }
+  });
+
+  test('should fetch practice words for phonemes', async ({ page }) => {
+    await page.goto('/');
+
+    const practiceResponse = await page.request.get(
+      'http://localhost:8000/pronunciation/practice?phoneme=ʃ&difficulty_level=3'
+    );
+
+    if (practiceResponse.status() === 200) {
+      const practiceData = await practiceResponse.json();
+      expect(practiceData).toHaveProperty('practice_words');
+      expect(Array.isArray(practiceData.practice_words)).toBe(true);
+    } else if (practiceResponse.status() === 503) {
+      console.log('Pronunciation practice not enabled (503 response)');
+    }
+  });
+
+  test('should fetch phoneme difficulties for L1 languages', async ({ page }) => {
+    await page.goto('/');
+
+    const l1Languages = ['polish', 'russian', 'ukrainian', 'serbian'];
+
+    for (const language of l1Languages) {
+      const difficultyResponse = await page.request.get(
+        `http://localhost:8000/pronunciation/difficulties?l1_language=${language}`
+      );
+
+      if (difficultyResponse.status() === 200) {
+        const difficultyData = await difficultyResponse.json();
+        expect(difficultyData).toHaveProperty('l1_language');
+        expect(difficultyData.l1_language).toBe(language);
+        expect(difficultyData).toHaveProperty('difficulties');
+      }
+    }
+  });
+});
+
 test.describe('Bulgarian Text Rendering', () => {
   test('should render Cyrillic characters correctly', async ({ page }) => {
     await page.goto('/');

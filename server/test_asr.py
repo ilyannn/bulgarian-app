@@ -558,6 +558,220 @@ class TestErrorHandling:
         assert result["text"].lower() == "very long audio processed"
 
 
+class TestPronunciationMethods:
+    """Test pronunciation analysis methods in ASRProcessor."""
+
+    @patch("asr.WhisperModel")
+    def test_is_pronunciation_scoring_enabled_false_by_default(
+        self, mock_whisper_model
+    ):
+        """Test that pronunciation scoring is disabled by default."""
+        processor = ASRProcessor()
+        assert not processor.is_pronunciation_scoring_enabled()
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_is_pronunciation_scoring_enabled_with_scorer(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test pronunciation scoring enabled when scorer is initialized."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = True
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        assert processor.is_pronunciation_scoring_enabled()
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_is_pronunciation_scoring_enabled_scorer_not_initialized(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test pronunciation scoring disabled when scorer not initialized."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = False
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        assert not processor.is_pronunciation_scoring_enabled()
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    async def test_analyze_pronunciation_success(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test successful pronunciation analysis."""
+        # Setup mocks
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = True
+        mock_analysis = {
+            "overall_score": 0.85,
+            "phoneme_scores": [
+                {
+                    "phoneme": "t",
+                    "score": 0.9,
+                    "start": 0.0,
+                    "end": 0.2,
+                    "difficulty": 2,
+                }
+            ],
+            "timing": {"total_duration": 1.0},
+            "transcription": "тест",
+            "reference_text": "тест",
+        }
+        mock_scorer.analyze_pronunciation.return_value = mock_analysis
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        audio_data = np.random.random(16000).astype(np.float32)
+        result = await processor.analyze_pronunciation(audio_data, "тест", 16000)
+
+        assert result == mock_analysis
+        mock_scorer.analyze_pronunciation.assert_called_once_with(
+            audio_data, "тест", 16000
+        )
+
+    @patch("asr.WhisperModel")
+    async def test_analyze_pronunciation_no_scorer(self, mock_whisper_model):
+        """Test pronunciation analysis when no scorer is available."""
+        processor = ASRProcessor()
+
+        audio_data = np.random.random(16000).astype(np.float32)
+        result = await processor.analyze_pronunciation(audio_data, "тест", 16000)
+
+        assert result is None
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    async def test_analyze_pronunciation_scorer_not_initialized(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test pronunciation analysis when scorer not initialized."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = False
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        audio_data = np.random.random(16000).astype(np.float32)
+        result = await processor.analyze_pronunciation(audio_data, "тест", 16000)
+
+        assert result is None
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    async def test_analyze_pronunciation_exception_handling(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test pronunciation analysis exception handling."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = True
+        mock_scorer.analyze_pronunciation.side_effect = Exception("Analysis failed")
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        audio_data = np.random.random(16000).astype(np.float32)
+        result = await processor.analyze_pronunciation(audio_data, "тест", 16000)
+
+        assert result is None
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_get_pronunciation_practice_words_success(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test getting practice words for pronunciation."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = True
+        mock_practice_words = [
+            {
+                "word": "шапка",
+                "phonemes": ["ʃ", "a", "p", "k", "a"],
+                "difficulty": 3,
+                "ipa": "ʃapka",
+            }
+        ]
+        mock_scorer.get_practice_words.return_value = mock_practice_words
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        result = processor.get_pronunciation_practice_words("ʃ", 3)
+
+        assert result == mock_practice_words
+        mock_scorer.get_practice_words.assert_called_once_with("ʃ", 3)
+
+    @patch("asr.WhisperModel")
+    def test_get_pronunciation_practice_words_no_scorer(self, mock_whisper_model):
+        """Test getting practice words when no scorer is available."""
+        processor = ASRProcessor()
+
+        result = processor.get_pronunciation_practice_words("ʃ", 3)
+
+        assert result == []
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_get_pronunciation_practice_words_scorer_not_initialized(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test getting practice words when scorer not initialized."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = False
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        result = processor.get_pronunciation_practice_words("ʃ", 3)
+
+        assert result == []
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_get_pronunciation_practice_words_exception_handling(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test practice words exception handling."""
+        mock_scorer = Mock()
+        mock_scorer.is_initialized = True
+        mock_scorer.get_practice_words.side_effect = Exception(
+            "Failed to get practice words"
+        )
+        mock_scorer_class.return_value = mock_scorer
+
+        processor = ASRProcessor()
+        processor.pronunciation_scorer = mock_scorer
+
+        result = processor.get_pronunciation_practice_words("ʃ", 3)
+
+        assert result == []
+
+    @patch("asr.WhisperModel")
+    @patch("asr.PronunciationScorer")
+    def test_pronunciation_scorer_lazy_initialization(
+        self, mock_scorer_class, mock_whisper_model
+    ):
+        """Test that pronunciation scorer is lazily initialized."""
+        processor = ASRProcessor()
+
+        # Should not have scorer initially
+        assert processor.pronunciation_scorer is None
+
+        # Should create scorer when needed
+        assert not processor.is_pronunciation_scoring_enabled()
+
+
 class TestIntegration:
     """Integration tests for ASR module."""
 
