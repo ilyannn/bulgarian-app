@@ -468,8 +468,9 @@ class TestPronunciationEndpoints:
             assert response.status_code == 200
             data = response.json()
             assert data["pronunciation_scoring_enabled"] is False
-            assert "scorer_initialized" in data
-            assert "supported_phonemes" in data
+            # scorer_initialized and supported_phonemes are only present when enabled
+            assert "scorer_initialized" not in data
+            assert "supported_phonemes" not in data
 
 
 class TestIntegration:

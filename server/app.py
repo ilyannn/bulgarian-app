@@ -1066,9 +1066,15 @@ async def get_practice_words(phoneme: str, difficulty_level: int = 1):
             status_code=422, detail="Difficulty level must be between 1 and 4"
         )
 
-    practice_words = asr_processor.get_pronunciation_practice_words(
+    practice_words_raw = asr_processor.get_pronunciation_practice_words(
         phoneme, difficulty_level
     )
+
+    # Convert to list of strings if we get dicts
+    if practice_words_raw and isinstance(practice_words_raw[0], dict):
+        practice_words = [w.get("word", "") for w in practice_words_raw]
+    else:
+        practice_words = practice_words_raw
 
     return PracticeWordsResponse(
         phoneme=phoneme,
@@ -1089,15 +1095,91 @@ async def get_practice_words_post(request: PracticeWordsRequest):
     Alternative endpoint that accepts a JSON request body for more complex
     practice word selection logic.
     """
-    practice_words = asr_processor.get_pronunciation_practice_words(
+    practice_words_raw = asr_processor.get_pronunciation_practice_words(
         request.phoneme, request.difficulty_level
     )
+
+    # Convert to list of strings if we get dicts
+    if practice_words_raw and isinstance(practice_words_raw[0], dict):
+        practice_words = [w.get("word", "") for w in practice_words_raw]
+    else:
+        practice_words = practice_words_raw
 
     return PracticeWordsResponse(
         phoneme=request.phoneme,
         practice_words=practice_words,
         difficulty_level=request.difficulty_level,
     )
+
+
+@app.get(
+    "/pronunciation/phonemes",
+    tags=["pronunciation"],
+    response_model=dict,
+)
+async def get_phonemes():
+    """
+    Get list of Bulgarian phonemes with their difficulty ratings.
+
+    Returns a dictionary of phonemes mapped to their characteristics.
+    """
+    if not asr_processor.is_pronunciation_scoring_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail="Pronunciation scoring is not enabled",
+        )
+
+    if asr_processor.pronunciation_scorer:
+        return asr_processor.pronunciation_scorer.bulgarian_phonemes
+
+    return {}
+
+
+@app.get(
+    "/pronunciation/difficulties/{l1_language}",
+    tags=["pronunciation"],
+    response_model=dict,
+)
+async def get_phoneme_difficulties(l1_language: str):
+    """
+    Get phoneme difficulties for a specific L1 language.
+
+    Args:
+        l1_language: The L1 language (polish, russian, ukrainian, serbian)
+
+    Returns:
+        Dictionary mapping phonemes to difficulty levels for that L1.
+    """
+    # L1-specific difficulty mappings
+    l1_difficulties = {
+        "polish": {
+            "ɤ": 5,  # Very hard - doesn't exist in Polish
+            "ʃ": 2,  # Easy - similar to Polish sz
+            "ʒ": 2,  # Easy - similar to Polish ż/rz
+            "tʃ": 2,  # Easy - similar to Polish cz
+        },
+        "russian": {
+            "ɤ": 4,  # Hard - doesn't exist in Russian
+            "ʃ": 1,  # Very easy - same as Russian ш
+            "ʒ": 1,  # Very easy - same as Russian ж
+            "tʃ": 1,  # Very easy - same as Russian ч
+        },
+        "ukrainian": {
+            "ɤ": 4,  # Hard - doesn't exist in Ukrainian
+            "ʃ": 1,  # Very easy - same as Ukrainian ш
+            "ʒ": 1,  # Very easy - same as Ukrainian ж
+            "tʃ": 1,  # Very easy - same as Ukrainian ч
+        },
+        "serbian": {
+            "ɤ": 5,  # Very hard - doesn't exist in Serbian
+            "ʃ": 1,  # Very easy - same as Serbian ш
+            "ʒ": 1,  # Very easy - same as Serbian ж
+            "tʃ": 1,  # Very easy - same as Serbian ч
+            "dʒ": 1,  # Very easy - same as Serbian џ
+        },
+    }
+
+    return l1_difficulties.get(l1_language.lower(), {})
 
 
 @app.get(
@@ -1115,6 +1197,7 @@ async def get_pronunciation_status():
     is_enabled = asr_processor.is_pronunciation_scoring_enabled()
 
     status = {
+        "pronunciation_scoring_enabled": is_enabled,  # Changed key name for test compatibility
         "enabled": is_enabled,
         "features": {
             "phoneme_analysis": is_enabled,

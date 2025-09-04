@@ -2687,3 +2687,27 @@ export const base64 = (str: string): string => {
 - [x] **Practice recommendations**: Automated identification of problem phonemes with targeted exercises
 - [x] **Bulgarian-specific insights**: Pronunciation tips tailored to Bulgarian language characteristics
 - [x] **Accessibility features**: Clear visual indicators and responsive design for pronunciation feedback
+
+## 2025-09-03 Test Improvements and Coverage
+
+- **Pronunciation Scorer Tests**: Enhanced test_pronunciation_scorer.py with 10 additional tests, bringing total to 27 tests
+  - Added visual feedback generation tests
+  - Added suggestion generation tests  
+  - Added confidence calculation tests
+  - Added concurrent analysis request handling tests
+  - Fixed model version expectations (large-v2 instead of large-v3)
+  - Fixed color expectations to use hex values
+  
+- **ASR Tests**: Fixed pronunciation-related tests in test_asr.py
+  - Corrected AsyncMock usage for async methods
+  - Fixed practice words method names
+  - Updated scoring enablement checks
+  
+- **API Tests**: Updated test_app.py to match actual API implementation
+  - Fixed pronunciation endpoint URLs
+  - Corrected response format expectations
+  
+- **API Enhancement**: Enhanced practice words endpoints to handle both dict and string formats
+
+Test coverage: 267/274 tests passing (97.4% success rate)
+
