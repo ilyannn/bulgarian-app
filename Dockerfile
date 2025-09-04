@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Build stage for frontend using official Bun Alpine image
-FROM oven/bun:1.1.22-alpine AS frontend-builder
+FROM oven/bun:1.1.38-alpine AS frontend-builder
 
 WORKDIR /app/client
 
@@ -21,11 +21,11 @@ COPY client/ .
 RUN bun run build
 
 # =============================================================================
-# Production stage using Chainguard's Python image (Wolfi-based)
-FROM cgr.dev/chainguard/python:3.11-dev AS production
+# Production stage using Python slim image (Debian-based for better compatibility)
+FROM python:3.11-slim AS production
 
 # Set shell with pipefail
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -33,21 +33,18 @@ ENV PYTHONUNBUFFERED=1 \
     PATH="/app/.venv/bin:$PATH" \
     UV_SYSTEM_PYTHON=1
 
-# Switch to root for package installation
-USER root
-
 # Install system dependencies
-# hadolint ignore=DL3018
-RUN apk add --no-cache \
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
     espeak-ng \
-    alsa-lib \
+    libasound2 \
     curl \
-    bash
+    && rm -rf /var/lib/apt/lists/*
 
 # Install uv for Python package management (specific version)
 RUN curl -LsSf https://astral.sh/uv/0.4.18/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/ && \
-    rm -rf /root/.local
+    mv /root/.cargo/bin/uv /usr/local/bin/ && \
+    rm -rf /root/.cargo
 
 # Create app directory and set up virtual environment
 WORKDIR /app
@@ -57,7 +54,7 @@ COPY pyproject.toml uv.lock* ./
 
 # Install Python dependencies in virtual environment
 RUN uv venv .venv && \
-    uv sync --locked --no-dev
+    uv sync --no-dev
 
 # Copy server code
 COPY server/ ./server/
@@ -67,7 +64,7 @@ COPY content/ ./content/
 COPY --from=frontend-builder /app/client/dist ./client/dist
 
 # Create non-root user and set permissions
-RUN adduser -D -h /app -s /bin/ash app && \
+RUN useradd -m -d /app -s /bin/bash app && \
     chown -R app:app /app
 
 # Switch to non-root user
@@ -83,12 +80,15 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
+# Set Python path for module imports
+ENV PYTHONPATH="/app/server:${PYTHONPATH}"
+
 # Default command
 CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # =============================================================================
 # Development stage using official Bun image with Python
-FROM oven/bun:1.1.22-debian AS development
+FROM oven/bun:1.1.38-debian AS development
 
 # Set shell with pipefail for better error handling
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -115,14 +115,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install uv for Python package management
 RUN curl -LsSf https://astral.sh/uv/0.4.18/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/ && \
-    rm -rf /root/.local
+    mv /root/.cargo/bin/uv /usr/local/bin/ && \
+    rm -rf /root/.cargo
 
 WORKDIR /app
 
 # Copy dependency files
 COPY pyproject.toml uv.lock* ./
-COPY client/package.json client/bun.lockb ./client/
+COPY client/package.json client/bun.lock ./client/
 
 # Install Python dependencies with dev packages
 RUN uv venv .venv && \

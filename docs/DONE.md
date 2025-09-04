@@ -2719,3 +2719,15 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Regenerated TypeScript SDK from OpenAPI spec
   - Fixed justfile api-docs recipe with uv run shebang
   - Synchronized SDK with backend API changes
+
+## 2025-09-04 Docker Build Fixes
+
+- **Docker Configuration**: Fixed production Docker image build issues
+  - Switched from Chainguard cgr.dev/chainguard/python:3.11-dev to python:3.11-slim for better package availability
+  - Updated Bun version from 1.1.22 to 1.1.38 to resolve Vite build compatibility issues
+  - Fixed uv installation path from ~/.local/bin to ~/.cargo/bin to match actual installer behavior
+  - Migrated from Alpine Linux (musl) to Debian (glibc) for ctranslate2 wheel compatibility
+  - Added PYTHONPATH environment variable for proper module imports
+  - Fixed bun lockfile name from bun.lockb to bun.lock in development stage
+  - Removed --locked flag from uv sync to handle lockfile updates
+  - Successfully built production Docker image (3.79GB) with all dependencies
