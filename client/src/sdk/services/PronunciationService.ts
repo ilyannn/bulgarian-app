@@ -89,6 +89,47 @@ export class PronunciationService {
     });
   }
   /**
+   * Get Phonemes
+   * Get list of Bulgarian phonemes with their difficulty ratings.
+   *
+   * Returns a dictionary of phonemes mapped to their characteristics.
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public static getPhonemesPronunciationPhonemesGet(): CancelablePromise<Record<string, any>> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/pronunciation/phonemes',
+    });
+  }
+  /**
+   * Get Phoneme Difficulties
+   * Get phoneme difficulties for a specific L1 language.
+   *
+   * Args:
+   * l1_language: The L1 language (polish, russian, ukrainian, serbian)
+   *
+   * Returns:
+   * Dictionary mapping phonemes to difficulty levels for that L1.
+   * @param l1Language
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public static getPhonemeDifficultiesPronunciationDifficultiesL1LanguageGet(
+    l1Language: string
+  ): CancelablePromise<Record<string, any>> {
+    return __request(OpenAPI, {
+      method: 'GET',
+      url: '/pronunciation/difficulties/{l1_language}',
+      path: {
+        l1_language: l1Language,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+  /**
    * Get Pronunciation Status
    * Get pronunciation scoring system status.
    *

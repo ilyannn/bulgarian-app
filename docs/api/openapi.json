@@ -700,6 +700,75 @@
         }
       }
     },
+    "/pronunciation/phonemes": {
+      "get": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Get Phonemes",
+        "description": "Get list of Bulgarian phonemes with their difficulty ratings.\n\nReturns a dictionary of phonemes mapped to their characteristics.",
+        "operationId": "get_phonemes_pronunciation_phonemes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Phonemes Pronunciation Phonemes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pronunciation/difficulties/{l1_language}": {
+      "get": {
+        "tags": [
+          "pronunciation"
+        ],
+        "summary": "Get Phoneme Difficulties",
+        "description": "Get phoneme difficulties for a specific L1 language.\n\nArgs:\n    l1_language: The L1 language (polish, russian, ukrainian, serbian)\n\nReturns:\n    Dictionary mapping phonemes to difficulty levels for that L1.",
+        "operationId": "get_phoneme_difficulties_pronunciation_difficulties__l1_language__get",
+        "parameters": [
+          {
+            "name": "l1_language",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "L1 Language"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Phoneme Difficulties Pronunciation Difficulties  L1 Language  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/pronunciation/status": {
       "get": {
         "tags": [
