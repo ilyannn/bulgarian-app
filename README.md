@@ -3,6 +3,22 @@
 A voice-enabled web application for teaching Bulgarian to Slavic speakers, featuring real-time speech recognition,
 grammar correction, and text-to-speech feedback.
 
+## 🎯 See It In Action
+
+Watch the complete workflow from speech input to personalized coaching:
+
+| Step | Feature | Description |
+|------|---------|-------------|
+| 1️⃣ | **Speech Input** | Click microphone and speak in Bulgarian |
+| 2️⃣ | **Transcription** | Real-time speech-to-text with faster-whisper |
+| 3️⃣ | **Grammar Check** | Automatic error detection with corrections |
+| 4️⃣ | **AI Feedback** | Contextual explanations from the coach |
+| 5️⃣ | **Pronunciation** | Phoneme-level scoring and analysis |
+| 6️⃣ | **Practice Drills** | Interactive exercises for problem areas |
+| 7️⃣ | **Progress Track** | Session summaries and improvement metrics |
+
+📸 [Jump to full workflow screenshots](#end-to-end-workflow)
+
 ## Features
 
 ### Core Features
@@ -136,21 +152,49 @@ const analysis = await response.json();
 // Returns phoneme scores, timing, and practice suggestions
 ```
 
-### Live Application Interface
+### End-to-End Workflow
 
-The complete voice coaching workflow integrating speech recognition, grammar detection, pronunciation scoring, and
-interactive learning components.
+Complete user journey from speech input to personalized coaching:
 
-![Main Interface](screenshots/main-interface.png) _Main voice coaching interface with pronunciation scoring toggle and
-microphone controls_
+#### 1. Starting a Session
 
-![Pronunciation Mode Active](screenshots/pronunciation-mode-active.png) _Interface with pronunciation scoring mode
-activated_
+![Initial State](screenshots/01-initial-state.png) _Application ready to begin - click the microphone to start speaking_
 
-![Voice Coaching Workflow](screenshots/voice-coaching-workflow.png) _Complete workflow from speech input to grammar
-correction and practice_
+#### 2. Speech Recognition
 
-![Dark Mode Interface](screenshots/dark-mode-pronunciation.png) _Pronunciation scoring interface in dark mode_
+![User Speech](screenshots/02-user-speech.png) _User's Bulgarian speech is transcribed in real-time_
+
+#### 3. Grammar Analysis
+
+![Grammar Correction](screenshots/03-grammar-correction.png) _Grammar errors are automatically detected and corrections suggested_
+
+#### 4. AI Coaching
+
+![Coach Response](screenshots/04-coach-response.png) _AI coach provides contextual feedback and explanations_
+
+#### 5. Pronunciation Practice
+
+![Pronunciation Scoring](screenshots/05-pronunciation-scoring.png) _Detailed phoneme-level pronunciation analysis with
+visual scores_
+
+#### 6. Interactive Drills
+
+![Practice Drill](screenshots/06-practice-drill.png) _Quick grammar drills reinforce correct usage patterns_
+
+#### 7. Conversational Flow
+
+![Complete Conversation](screenshots/07-complete-conversation.png) _Natural conversation flow with real-time corrections
+and feedback_
+
+#### 8. Progress Tracking
+
+![Session Summary](screenshots/08-session-summary.png) _Session summary shows progress and areas for improvement_
+
+### Additional Screenshots
+
+![Main Interface](screenshots/main-interface.png) _Main interface with pronunciation toggle and controls_
+
+![Dark Mode](screenshots/dark-mode-pronunciation.png) _Dark mode interface for comfortable night learning_
 
 ### API Documentation
 
