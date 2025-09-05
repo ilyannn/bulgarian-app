@@ -36,6 +36,7 @@ log_warning() {
 }
 
 # Clean up function
+# shellcheck disable=SC2329,SC2317
 cleanup() {
     log_info "Cleaning up containers and images..."
     docker stop bulgarian-test-prod bulgarian-test-dev 2>/dev/null || true
