@@ -2725,9 +2725,33 @@ Test coverage: 274/274 tests passing (100% success rate)
 - **Docker Configuration**: Fixed production Docker image build issues
   - Switched from Chainguard cgr.dev/chainguard/python:3.11-dev to python:3.11-slim for better package availability
   - Updated Bun version from 1.1.22 to 1.1.38 to resolve Vite build compatibility issues
-  - Fixed uv installation path from ~/.local/bin to ~/.cargo/bin to match actual installer behavior
+  - Fixed uv installation path from .local/bin to .cargo/bin to match actual installer behavior
   - Migrated from Alpine Linux (musl) to Debian (glibc) for ctranslate2 wheel compatibility
   - Added PYTHONPATH environment variable for proper module imports
   - Fixed bun lockfile name from bun.lockb to bun.lock in development stage
   - Removed --locked flag from uv sync to handle lockfile updates
   - Successfully built production Docker image (3.79GB) with all dependencies
+
+## 2025-09-05 Docker Containerization Complete
+
+- **Docker Testing Infrastructure**: Created comprehensive Docker validation
+  - Added `scripts/test-docker.sh` for local Docker testing (build, run, health checks)
+  - Fixed development Dockerfile to use python3 instead of python3.11 (not in Debian Bullseye)
+  - Created GitHub Actions workflow for automated Docker CI/CD with matrix builds
+  - Updated docker-compose.yml with production and development profiles
+  - Added volume mounts for Whisper model persistence
+  - Implemented security scanning with Trivy and SBOM generation
+  
+- **Testing Results**:
+  - Production container: ✅ Builds successfully (3.79GB)
+  - Production health: ✅ All services pass health checks at /health endpoint
+  - Development container: ✅ Fixed Python installation for Debian compatibility
+  - Docker Compose: ✅ Configuration validated with both profiles
+  - Module imports: ✅ All Python modules import correctly with PYTHONPATH
+  - Security: ✅ Runs as non-root user 'app', no hardcoded secrets exposed
+  
+- **Documentation Updates**:
+  - Added comprehensive Docker deployment section to README.md
+  - Documented Docker quick start commands
+  - Listed all environment variables and configuration options
+  - Included CI/CD workflow description for GitHub Actions

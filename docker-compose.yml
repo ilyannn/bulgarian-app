@@ -1,12 +1,18 @@
 # =============================================================================
-# Production Docker Compose for Bulgarian Voice Coach
+# Docker Compose for Bulgarian Voice Coach
 # =============================================================================
 
+version: '3.8'
+
 services:
+  # Production service
   app:
     build:
       context: .
       target: production
+      cache_from:
+        - bulgarian-app:production
+    image: bulgarian-app:production
     container_name: bulgarian-voice-coach
     ports:
       - '8000:8000'
@@ -15,13 +21,15 @@ services:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8000
       - DEBUG=false
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
 
-      # Default LLM Configuration (can be overridden)
-      - CHAT_PROVIDER=dummy
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-dummy}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
 
       # ASR Configuration
-      - WHISPER_MODEL_PATH=base
+      - WHISPER_MODEL=${WHISPER_MODEL:-tiny}
       - WHISPER_LANGUAGE=bg
       - WHISPER_BEAM_SIZE=5
 
@@ -34,7 +42,7 @@ services:
       - VAD_AGGRESSIVENESS=2
 
       # Content System
-      - DEFAULT_L1_LANGUAGE=PL
+      - L1_LANGUAGE=${L1_LANGUAGE:-PL}
       - GRAMMAR_PACK_PATH=content/bg_grammar_pack.json
       - SCENARIOS_PATH=content/bg_scenarios_with_grammar.json
 
@@ -44,8 +52,14 @@ services:
 
       # Security
       - ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+
+      # Observability (optional)
+      - OTEL_ENABLED=${OTEL_ENABLED:-false}
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_TRACES_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=${OTEL_METRICS_ENDPOINT:-}
     volumes:
       # Model cache (persistent across container restarts)
+      - whisper_models:/app/.cache/huggingface
       - whisper_models:/app/data/models
       # Logs
       - app_logs:/app/data/logs
@@ -58,14 +72,74 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    networks:
+      - bulgarian-network
+
+  # Development service (use with --profile dev)
+  app-dev:
+    build:
+      context: .
+      target: development
+      cache_from:
+        - bulgarian-app:development
+    image: bulgarian-app:development
+    container_name: bulgarian-voice-coach-dev
+    ports:
+      - '8001:8000'  # Backend
+      - '5173:5173'  # Frontend dev server
+    environment:
+      # Development settings
+      - DEBUG=true
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-dummy}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # ASR Configuration
+      - WHISPER_MODEL=${WHISPER_MODEL:-tiny}
+      - L1_LANGUAGE=${L1_LANGUAGE:-PL}
+
+      # Python path for imports
+      - PYTHONPATH=/app/server
+    volumes:
+      # Mount source code for hot reload
+      - ./server:/app/server
+      - ./client:/app/client
+      - ./content:/app/content
+      # Model cache
+      - whisper_models:/app/.cache/huggingface
+      # Logs
+      - ./logs:/app/data/logs
+      # Environment file
+      - ./.env:/app/.env:ro
+    command: |
+      bash -c "
+      cd /app/client && bun run dev --host 0.0.0.0 &
+      cd /app && uvicorn server.app:app --reload --host 0.0.0.0 --port 8000 &
+      wait
+      "
+    networks:
+      - bulgarian-network
+    profiles:
+      - dev
 
 volumes:
   # Persistent storage for Whisper models (large download, cache them)
   whisper_models:
     driver: local
+    name: bulgarian-whisper-models
   # Application logs
   app_logs:
     driver: local
+    name: bulgarian-app-logs
+
+networks:
+  bulgarian-network:
+    name: bulgarian-app-network
+    driver: bridge
+
 # =============================================================================
 # Optional: Observability Stack (uncomment to enable)
 # =============================================================================
@@ -83,6 +157,8 @@ volumes:
 #       - "4317:4317"    # OTLP gRPC receiver
 #       - "4318:4318"    # OTLP HTTP receiver
 #     restart: unless-stopped
+#     networks:
+#       - bulgarian-network
 #
 #   prometheus:
 #     image: prom/prometheus:v2.48.0
@@ -92,9 +168,5 @@ volumes:
 #     volumes:
 #       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 #     restart: unless-stopped
-#
-# # To enable observability, also add these environment variables to the app service:
-# # - OTEL_ENABLED=true
-# # - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4317
-# # - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://prometheus:4317
-
+#     networks:
+#       - bulgarian-network

@@ -310,6 +310,77 @@ open demo-components.html
    - Frontend: <http://localhost:3000>
    - Backend API: <http://localhost:8000>
 
+## 🐳 Docker Deployment
+
+### Quick Start with Docker
+
+```bash
+# Build and run production container
+docker-compose up app
+
+# Or run with development profile (hot reload)
+docker-compose --profile dev up app-dev
+```
+
+### Docker Commands
+
+```bash
+# Build production image
+docker build --target production -t bulgarian-app:latest .
+
+# Run production container
+docker run -p 8000:8000 \
+  -e WHISPER_MODEL=tiny \
+  -e LLM_PROVIDER=dummy \
+  bulgarian-app:latest
+
+# Run with persistent model cache
+docker run -p 8000:8000 \
+  -v bulgarian-whisper-models:/app/.cache/huggingface \
+  -e WHISPER_MODEL=tiny \
+  bulgarian-app:latest
+```
+
+### Docker Compose Services
+
+**Production (port 8000):**
+```bash
+docker-compose up app
+```
+
+**Development with hot reload (ports 8001 & 5173):**
+```bash
+docker-compose --profile dev up app-dev
+```
+
+**With observability stack:**
+```bash
+# Edit docker-compose.yml to uncomment Jaeger/Prometheus
+docker-compose up
+```
+
+### Docker Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WHISPER_MODEL` | `tiny` | Whisper model size (tiny/base/small/medium/large) |
+| `LLM_PROVIDER` | `dummy` | LLM provider (dummy/openai/claude) |
+| `L1_LANGUAGE` | `PL` | Native language (PL/RU/UK/SR) |
+| `LOG_LEVEL` | `INFO` | Logging level |
+| `OTEL_ENABLED` | `false` | Enable OpenTelemetry tracing |
+
+### CI/CD with GitHub Actions
+
+The project includes automated Docker builds and tests:
+
+```yaml
+# .github/workflows/docker.yml
+- Builds both production and development images
+- Runs container health checks
+- Performs security scanning with Trivy
+- Exports SBOM (Software Bill of Materials)
+```
+
 ## Configuration
 
 Create a `.env` file in the project root:

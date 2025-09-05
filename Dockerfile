@@ -102,8 +102,8 @@ ENV PYTHONUNBUFFERED=1 \
 # Install Python and system dependencies
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
+    python3 \
+    python3-venv \
     python3-pip \
     espeak-ng \
     espeak-ng-data \

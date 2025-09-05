@@ -1,0 +1,148 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'server/**'
+      - 'client/**'
+      - '.github/workflows/docker.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'server/**'
+      - 'client/**'
+      - '.github/workflows/docker.yml'
+
+env:
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  docker-build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [production, development]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      - name: Log Docker version
+        run: docker version
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          tags: bulgarian-app:${{ matrix.target }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Test Docker image - Basic Python
+        run: |
+          docker run --rm bulgarian-app:${{ matrix.target }} python -c "print('✅ Python works')"
+
+      - name: Test Docker image - Module imports
+        run: |
+          docker run --rm bulgarian-app:${{ matrix.target }} python -c "
+          import sys
+          sys.path.insert(0, '/app/server')
+          from config import get_config
+          from bg_rules import detect_grammar_errors
+          print('✅ Modules import successfully')
+          "
+
+      - name: Test Docker image - Check dependencies
+        run: |
+          docker run --rm bulgarian-app:${{ matrix.target }} python -c "
+          import fastapi
+          import uvicorn
+          import torch
+          import faster_whisper
+          print('✅ Core dependencies installed')
+          "
+
+      - name: Test Docker image - eSpeak NG
+        run: |
+          docker run --rm bulgarian-app:${{ matrix.target }} bash -c "
+          espeak-ng --version && echo '✅ eSpeak NG installed'
+          "
+
+      - name: Test production server startup (dry run)
+        if: matrix.target == 'production'
+        run: |
+          # Start the server in background with a timeout
+          timeout 10s docker run --rm \
+            -e WHISPER_MODEL=tiny \
+            -e LLM_PROVIDER=dummy \
+            -p 8000:8000 \
+            bulgarian-app:production || CODE=$?
+
+          # Check if it exited due to timeout (124) which means it started successfully
+          if [ "${CODE:-0}" -eq 124 ]; then
+            echo "✅ Server started successfully (timed out as expected)"
+          else
+            echo "❌ Server failed to start properly"
+            exit 1
+          fi
+
+      - name: Test development image tools
+        if: matrix.target == 'development'
+        run: |
+          docker run --rm bulgarian-app:development bash -c "
+          bun --version && echo '✅ Bun installed' &&
+          uv --version && echo '✅ uv installed' &&
+          git --version && echo '✅ Git installed'
+          "
+
+      - name: Check image size
+        run: |
+          docker images bulgarian-app:${{ matrix.target }} --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}"
+
+          # Get size in bytes for comparison
+          SIZE=$(docker images bulgarian-app:${{ matrix.target }} --format "{{.Size}}" | \
+            sed 's/GB/*1000000000/;s/MB/*1000000/;s/KB/*1000/' | bc | cut -d. -f1)
+
+          # Warn if image is larger than 4GB
+          if [ "$SIZE" -gt 4000000000 ]; then
+            echo "⚠️ Warning: Docker image is larger than 4GB"
+          fi
+
+      - name: Security scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: bulgarian-app:${{ matrix.target }}
+          format: 'table'
+          exit-code: '0'  # Don't fail on vulnerabilities, just report
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Export SBOM
+        if: matrix.target == 'production'
+        run: |
+          docker run --rm \
+            -v "$PWD:/output" \
+            aquasec/trivy image \
+            --format cyclonedx \
+            --output /output/sbom-${{ matrix.target }}.json \
+            bulgarian-app:${{ matrix.target }}
+
+          echo "📦 SBOM exported to sbom-${{ matrix.target }}.json"
+
+      - name: Upload SBOM artifact
+        if: matrix.target == 'production'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.target }}
+          path: sbom-${{ matrix.target }}.json
+          retention-days: 30
