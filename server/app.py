@@ -952,7 +952,7 @@ async def analyze_pronunciation(request: PronunciationRequest):
     for word-level timestamps and phoneme alignment. Returns detailed scoring
     with visual feedback data for the frontend.
     """
-    if not asr_processor.is_pronunciation_scoring_enabled():
+    if not asr_processor or not asr_processor.is_pronunciation_scoring_enabled():
         raise HTTPException(
             status_code=503,
             detail="Pronunciation scoring is not enabled. Please enable it in configuration.",
@@ -975,6 +975,8 @@ async def analyze_pronunciation(request: PronunciationRequest):
             ) from e
 
         # Analyze pronunciation
+        if not asr_processor:
+            raise HTTPException(status_code=503, detail="ASR processor not initialized")
         analysis = await asr_processor.analyze_pronunciation(
             audio_data, request.reference_text, request.sample_rate
         )
@@ -1066,13 +1068,16 @@ async def get_practice_words(phoneme: str, difficulty_level: int = 1):
             status_code=422, detail="Difficulty level must be between 1 and 4"
         )
 
+    if not asr_processor:
+        raise HTTPException(status_code=503, detail="ASR processor not initialized")
+
     practice_words_raw = asr_processor.get_pronunciation_practice_words(
         phoneme, difficulty_level
     )
 
     # Convert to list of strings if we get dicts
     if practice_words_raw and isinstance(practice_words_raw[0], dict):
-        practice_words = [w.get("word", "") for w in practice_words_raw]
+        practice_words = [w.get("word", "") for w in practice_words_raw]  # type: ignore
     else:
         practice_words = practice_words_raw
 
@@ -1095,13 +1100,16 @@ async def get_practice_words_post(request: PracticeWordsRequest):
     Alternative endpoint that accepts a JSON request body for more complex
     practice word selection logic.
     """
+    if not asr_processor:
+        raise HTTPException(status_code=503, detail="ASR processor not initialized")
+
     practice_words_raw = asr_processor.get_pronunciation_practice_words(
         request.phoneme, request.difficulty_level
     )
 
     # Convert to list of strings if we get dicts
     if practice_words_raw and isinstance(practice_words_raw[0], dict):
-        practice_words = [w.get("word", "") for w in practice_words_raw]
+        practice_words = [w.get("word", "") for w in practice_words_raw]  # type: ignore
     else:
         practice_words = practice_words_raw
 
@@ -1123,13 +1131,13 @@ async def get_phonemes():
 
     Returns a dictionary of phonemes mapped to their characteristics.
     """
-    if not asr_processor.is_pronunciation_scoring_enabled():
+    if not asr_processor or not asr_processor.is_pronunciation_scoring_enabled():
         raise HTTPException(
             status_code=503,
             detail="Pronunciation scoring is not enabled",
         )
 
-    if asr_processor.pronunciation_scorer:
+    if asr_processor and asr_processor.pronunciation_scorer:
         return asr_processor.pronunciation_scorer.bulgarian_phonemes
 
     return {}
@@ -1194,7 +1202,9 @@ async def get_pronunciation_status():
     Returns information about whether pronunciation scoring is enabled
     and what features are available.
     """
-    is_enabled = asr_processor.is_pronunciation_scoring_enabled()
+    is_enabled = (
+        asr_processor.is_pronunciation_scoring_enabled() if asr_processor else False
+    )
 
     status = {
         "pronunciation_scoring_enabled": is_enabled,  # Changed key name for test compatibility
@@ -1207,7 +1217,7 @@ async def get_pronunciation_status():
         },
     }
 
-    if is_enabled and asr_processor.pronunciation_scorer:
+    if is_enabled and asr_processor and asr_processor.pronunciation_scorer:
         # Add more detailed status if scorer is available
         status["scorer_initialized"] = asr_processor.pronunciation_scorer.is_initialized
         status["supported_phonemes"] = list(

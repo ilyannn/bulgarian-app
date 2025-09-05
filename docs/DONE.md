@@ -2755,3 +2755,22 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Documented Docker quick start commands
   - Listed all environment variables and configuration options
   - Included CI/CD workflow description for GitHub Actions
+
+## 2025-09-05 Type Safety Improvements
+
+- **Type Checking Fixes**: Resolved all Python type checking issues
+  - Fixed 13 type warnings in `server/app.py` for pronunciation scoring endpoints
+  - Added proper null checks for optional `asr_processor` parameter
+  - Ensured type safety when ASR processor is not initialized or pronunciation scoring disabled
+  - All affected endpoints now properly handle HTTPException with 503 status when service unavailable
+  
+- **Type Checking Enforcement**: Made `ty` type checker required in lint process
+  - Updated `just lint` to enforce type checking (previously non-failing)
+  - Modified `py-typecheck` command to fail on type errors
+  - Rationale: Now that all issues are fixed, maintain type safety going forward
+  - Note: Using Astral's `ty` (experimental) over `pyright` due to cleaner output and fewer false positives
+  
+- **CI/CD Shellcheck Fixes**: Resolved shellcheck warnings in Docker test script
+  - Added SC2317 to shellcheck disable directive in `scripts/test-docker.sh`
+  - Fixed "unreachable code" warnings for cleanup function (false positive)
+  - Ensures CI pipeline passes all linting checks

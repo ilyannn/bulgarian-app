@@ -74,8 +74,8 @@ py-typecheck:
     #!/usr/bin/env bash
     set -euo pipefail
     # Note: ty is still in early development, may have breaking changes
-    # Allow ty to fail without stopping the build (experimental tool)
-    uvx ty check server || echo "ty type checking completed with issues (experimental tool)"
+    # Now required since all type issues have been resolved
+    uvx ty check server
 
 # Build Python package (sdist + wheel) with uv
 [group('build')]
@@ -710,8 +710,9 @@ lint: py-lint web-lint web-typecheck markdown-lint yaml-lint json-lint shell-lin
     echo "   ✅ YAML (yamllint) ✅ JSON (Biome) ✅ Shell (shellcheck)"
     echo "   ✅ Docker (hadolint) ✅ TOML (taplo) ✅ Docs (prettier)"
     echo ""
-    # Optional type checking (may have experimental issues)
-    uvx ty check server/ || echo "⚠️  ty type checking completed (experimental tool may have issues)"
+    # Type checking with ty (Astral's fast experimental type checker) 
+    # Now required since all issues have been resolved
+    uvx ty check server/
     # Justfile format checking
     just --fmt --check --unstable
     echo ""
