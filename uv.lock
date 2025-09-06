@@ -236,21 +236,11 @@ dependencies = [
     { name = "faster-whisper" },
     { name = "numpy" },
     { name = "openai" },
-    { name = "opentelemetry-api" },
-    { name = "opentelemetry-exporter-otlp" },
-    { name = "opentelemetry-instrumentation-fastapi" },
-    { name = "opentelemetry-instrumentation-httpx" },
-    { name = "opentelemetry-instrumentation-logging" },
-    { name = "opentelemetry-sdk" },
     { name = "pydantic" },
     { name = "python-dotenv" },
-    { name = "torch" },
-    { name = "torchaudio" },
-    { name = "transformers" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "webrtcvad-wheels" },
     { name = "websockets" },
-    { name = "whisperx" },
 ]
 
 [package.optional-dependencies]
@@ -260,6 +250,32 @@ dev = [
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
+]
+full = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp" },
+    { name = "opentelemetry-instrumentation-fastapi" },
+    { name = "opentelemetry-instrumentation-httpx" },
+    { name = "opentelemetry-instrumentation-logging" },
+    { name = "opentelemetry-sdk" },
+    { name = "torch" },
+    { name = "torchaudio" },
+    { name = "transformers" },
+    { name = "whisperx" },
+]
+pronunciation = [
+    { name = "torch" },
+    { name = "torchaudio" },
+    { name = "transformers" },
+    { name = "whisperx" },
+]
+telemetry = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp" },
+    { name = "opentelemetry-instrumentation-fastapi" },
+    { name = "opentelemetry-instrumentation-httpx" },
+    { name = "opentelemetry-instrumentation-logging" },
+    { name = "opentelemetry-sdk" },
 ]
 
 [package.dev-dependencies]
@@ -273,33 +289,34 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=0.64.0" },
+    { name = "bulgarian-voice-coach", extras = ["pronunciation", "telemetry"], marker = "extra == 'full'" },
     { name = "ctranslate2", specifier = ">=4.0.0" },
     { name = "fastapi", specifier = ">=0.110.0" },
     { name = "faster-whisper", specifier = ">=1.0.0" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27.0" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "openai", specifier = ">=1.101.0" },
-    { name = "opentelemetry-api", specifier = ">=1.20.0" },
-    { name = "opentelemetry-exporter-otlp", specifier = ">=1.20.0" },
-    { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.41b0" },
-    { name = "opentelemetry-instrumentation-httpx", specifier = ">=0.41b0" },
-    { name = "opentelemetry-instrumentation-logging", specifier = ">=0.41b0" },
-    { name = "opentelemetry-sdk", specifier = ">=1.20.0" },
+    { name = "opentelemetry-api", marker = "extra == 'telemetry'", specifier = ">=1.20.0" },
+    { name = "opentelemetry-exporter-otlp", marker = "extra == 'telemetry'", specifier = ">=1.20.0" },
+    { name = "opentelemetry-instrumentation-fastapi", marker = "extra == 'telemetry'", specifier = ">=0.41b0" },
+    { name = "opentelemetry-instrumentation-httpx", marker = "extra == 'telemetry'", specifier = ">=0.41b0" },
+    { name = "opentelemetry-instrumentation-logging", marker = "extra == 'telemetry'", specifier = ">=0.41b0" },
+    { name = "opentelemetry-sdk", marker = "extra == 'telemetry'", specifier = ">=1.20.0" },
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "torch", specifier = ">=2.0.0" },
-    { name = "torchaudio", specifier = ">=2.0.0" },
-    { name = "transformers", specifier = ">=4.30.0" },
+    { name = "torch", marker = "extra == 'pronunciation'", specifier = ">=2.0.0" },
+    { name = "torchaudio", marker = "extra == 'pronunciation'", specifier = ">=2.0.0" },
+    { name = "transformers", marker = "extra == 'pronunciation'", specifier = ">=4.30.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.27.0" },
     { name = "webrtcvad-wheels", specifier = ">=2.0.0" },
     { name = "websockets", specifier = ">=12.0" },
-    { name = "whisperx", specifier = ">=3.1.0" },
+    { name = "whisperx", marker = "extra == 'pronunciation'", specifier = ">=3.1.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "pronunciation", "telemetry", "full"]
 
 [package.metadata.requires-dev]
 dev = [

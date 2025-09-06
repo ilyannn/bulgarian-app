@@ -712,7 +712,8 @@ lint: py-lint web-lint web-typecheck markdown-lint yaml-lint json-lint shell-lin
     echo ""
     # Type checking with ty (Astral's fast experimental type checker) 
     # Now required since all issues have been resolved
-    uvx ty check server/
+    # Ignore unresolved imports for optional dependencies (torch, whisperx, opentelemetry)
+    uvx ty check server/ --ignore unresolved-import
     # Justfile format checking
     just --fmt --check --unstable
     echo ""

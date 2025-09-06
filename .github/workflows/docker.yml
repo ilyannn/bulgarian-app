@@ -86,13 +86,24 @@ jobs:
 
       - name: Test Docker image - Check dependencies
         run: |
-          docker run --rm bulgarian-app:${{ matrix.target }} python -c "
-          import fastapi
-          import uvicorn
-          import torch
-          import faster_whisper
-          print('✅ Core dependencies installed')
-          "
+          if [[ "${{ matrix.target }}" == "production" ]]; then
+            # Test core dependencies only for lean production
+            docker run --rm bulgarian-app:${{ matrix.target }} python -c "
+            import fastapi
+            import uvicorn
+            import faster_whisper
+            print('✅ Core dependencies installed')
+            "
+          else
+            # Test full dependencies for scoring/development
+            docker run --rm bulgarian-app:${{ matrix.target }} python -c "
+            import fastapi
+            import uvicorn
+            import torch
+            import faster_whisper
+            print('✅ Full dependencies installed')
+            "
+          fi
 
       - name: Test Docker image - eSpeak NG
         run: |

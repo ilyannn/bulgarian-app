@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Optional telemetry dependencies - only import if telemetry is enabled
 TELEMETRY_AVAILABLE = False
+Resource = None  # Fallback type for when telemetry is disabled
 
 if os.getenv("ENABLE_TELEMETRY", "false").lower() == "true":
     try:
@@ -89,7 +90,7 @@ def setup_telemetry(service_name: str = "bulgarian-voice-coach") -> bool:
         return False
 
 
-def setup_tracing(resource: Resource):
+def setup_tracing(resource):
     """Setup distributed tracing"""
     # Create tracer provider
     tracer_provider = TracerProvider(resource=resource)
@@ -114,7 +115,7 @@ def setup_tracing(resource: Resource):
         logger.info("📊 Console trace export enabled")
 
 
-def setup_metrics(resource: Resource):
+def setup_metrics(resource):
     """Setup metrics collection"""
     otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT")
     console_export = os.getenv("OTEL_CONSOLE_EXPORT", "false").lower() == "true"

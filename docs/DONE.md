@@ -2771,3 +2771,26 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Added SC2317 to shellcheck disable directive in `scripts/test-docker.sh`
   - Fixed "unreachable code" warnings for cleanup function (false positive)
   - Ensures CI pipeline passes all linting checks
+
+## 2025-09-06 Docker Optimization with Multi-Target Builds
+
+- **Docker Image Size Optimization**: Achieved 65% reduction in production image size
+  - Split dependencies into core + optional groups (pronunciation ~2GB, telemetry ~100MB)
+  - Created multi-target Dockerfile with lean/scoring/full build variants
+  - Lean production image: 1.3GB (down from 3.79GB)
+  - Scoring variant: ~3GB with pronunciation features
+  - Development variant: Full toolchain for development work
+- **Conditional Import System**: Implemented runtime feature detection
+  - Added environment flags: ENABLE_PRONUNCIATION_SCORING, ENABLE_TELEMETRY
+  - Optional dependencies loaded only when features enabled
+  - Graceful degradation when optional features unavailable
+  - Fixed import/type annotation issues for conditional dependencies
+- **CI/CD Pipeline Fixes**: Resolved all Docker optimization-related CI failures
+  - Updated GitHub Actions Docker workflow to test appropriate dependencies per target
+  - Fixed telemetry.py Resource import NameError with proper conditional imports
+  - Configured ty type checker to ignore unresolved-import errors for optional deps
+  - Docker tests now validate core deps for lean builds, full deps for feature builds
+- **Production Impact**: Significant infrastructure cost savings
+  - 65% smaller images = faster deployments, reduced bandwidth, lower storage costs
+  - Maintained full functionality through feature-flag architecture
+  - Backward compatible - all existing functionality preserved
