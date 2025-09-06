@@ -6,13 +6,30 @@ focusing on phoneme-level accuracy scoring and visual feedback generation.
 """
 
 import logging
+import os
 import threading
 
 import numpy as np
-import torch
-import whisperx
 
 logger = logging.getLogger(__name__)
+
+# Optional dependencies - only import if pronunciation scoring is enabled
+PRONUNCIATION_AVAILABLE = False
+torch = None
+whisperx = None
+
+if os.getenv("ENABLE_PRONUNCIATION_SCORING", "false").lower() == "true":
+    try:
+        import torch
+        import whisperx
+
+        PRONUNCIATION_AVAILABLE = True
+        logger.info("Pronunciation scoring dependencies loaded successfully")
+    except ImportError as e:
+        logger.warning(f"Pronunciation scoring dependencies not available: {e}")
+        logger.info(
+            "Run with ENABLE_PRONUNCIATION_SCORING=true and install 'pronunciation' extras to enable this feature"
+        )
 
 
 class PronunciationScorer:
@@ -38,6 +55,17 @@ class PronunciationScorer:
         """
         config = config or {}
 
+        # Check if pronunciation scoring dependencies are available
+        if not PRONUNCIATION_AVAILABLE:
+            logger.warning(
+                "Pronunciation scoring not available - torch/whisperx dependencies missing"
+            )
+            self.is_initialized = False
+            self.is_available = False
+            return
+
+        self.is_available = True
+
         # Configuration
         self.device = config.get("device", "cpu")
         self.compute_type = config.get("compute_type", "float32")
@@ -61,6 +89,10 @@ class PronunciationScorer:
         # Cache for common phrases
         self.pronunciation_cache = {}
         self.cache_max_size = 50
+
+    def is_pronunciation_scoring_available(self) -> bool:
+        """Check if pronunciation scoring is available and initialized."""
+        return getattr(self, "is_available", False) and self.is_initialized
 
     def _init_bulgarian_phonemes(self) -> dict[str, dict]:
         """Initialize Bulgarian phoneme information.

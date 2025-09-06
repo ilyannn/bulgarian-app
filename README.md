@@ -7,15 +7,15 @@ grammar correction, and text-to-speech feedback.
 
 Watch the complete workflow from speech input to personalized coaching:
 
-| Step | Feature | Description |
-|------|---------|-------------|
-| 1️⃣ | **Speech Input** | Click microphone and speak in Bulgarian |
-| 2️⃣ | **Transcription** | Real-time speech-to-text with faster-whisper |
-| 3️⃣ | **Grammar Check** | Automatic error detection with corrections |
-| 4️⃣ | **AI Feedback** | Contextual explanations from the coach |
-| 5️⃣ | **Pronunciation** | Phoneme-level scoring and analysis |
-| 6️⃣ | **Practice Drills** | Interactive exercises for problem areas |
-| 7️⃣ | **Progress Track** | Session summaries and improvement metrics |
+| Step | Feature             | Description                                  |
+| ---- | ------------------- | -------------------------------------------- |
+| 1️⃣   | **Speech Input**    | Click microphone and speak in Bulgarian      |
+| 2️⃣   | **Transcription**   | Real-time speech-to-text with faster-whisper |
+| 3️⃣   | **Grammar Check**   | Automatic error detection with corrections   |
+| 4️⃣   | **AI Feedback**     | Contextual explanations from the coach       |
+| 5️⃣   | **Pronunciation**   | Phoneme-level scoring and analysis           |
+| 6️⃣   | **Practice Drills** | Interactive exercises for problem areas      |
+| 7️⃣   | **Progress Track**  | Session summaries and improvement metrics    |
 
 📸 [Jump to full workflow screenshots](#end-to-end-workflow)
 
@@ -134,18 +134,18 @@ difficult sounds_
 
 ```javascript
 // Enable pronunciation mode
-const pronunciationToggle = document.getElementById('pronunciation-mode-toggle');
+const pronunciationToggle = document.getElementById("pronunciation-mode-toggle");
 pronunciationToggle.checked = true;
 
 // Analyze pronunciation
-const response = await fetch('/pronunciation/analyze', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/pronunciation/analyze", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     audio_base64: audioData,
-    reference_text: 'шапка',
-    sample_rate: 16000
-  })
+    reference_text: "шапка",
+    sample_rate: 16000,
+  }),
 });
 
 const analysis = await response.json();
@@ -166,7 +166,8 @@ Complete user journey from speech input to personalized coaching:
 
 #### 3. Grammar Analysis
 
-![Grammar Correction](screenshots/03-grammar-correction.png) _Grammar errors are automatically detected and corrections suggested_
+![Grammar Correction](screenshots/03-grammar-correction.png) _Grammar errors are automatically detected and corrections
+suggested_
 
 #### 4. AI Coaching
 
@@ -344,16 +345,19 @@ docker run -p 8000:8000 \
 ### Docker Compose Services
 
 **Production (port 8000):**
+
 ```bash
 docker-compose up app
 ```
 
 **Development with hot reload (ports 8001 & 5173):**
+
 ```bash
 docker-compose --profile dev up app-dev
 ```
 
 **With observability stack:**
+
 ```bash
 # Edit docker-compose.yml to uncomment Jaeger/Prometheus
 docker-compose up
@@ -361,13 +365,13 @@ docker-compose up
 
 ### Docker Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `WHISPER_MODEL` | `tiny` | Whisper model size (tiny/base/small/medium/large) |
-| `LLM_PROVIDER` | `dummy` | LLM provider (dummy/openai/claude) |
-| `L1_LANGUAGE` | `PL` | Native language (PL/RU/UK/SR) |
-| `LOG_LEVEL` | `INFO` | Logging level |
-| `OTEL_ENABLED` | `false` | Enable OpenTelemetry tracing |
+| Variable        | Default | Description                                       |
+| --------------- | ------- | ------------------------------------------------- |
+| `WHISPER_MODEL` | `tiny`  | Whisper model size (tiny/base/small/medium/large) |
+| `LLM_PROVIDER`  | `dummy` | LLM provider (dummy/openai/claude)                |
+| `L1_LANGUAGE`   | `PL`    | Native language (PL/RU/UK/SR)                     |
+| `LOG_LEVEL`     | `INFO`  | Logging level                                     |
+| `OTEL_ENABLED`  | `false` | Enable OpenTelemetry tracing                      |
 
 ### CI/CD with GitHub Actions
 

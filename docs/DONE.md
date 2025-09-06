@@ -2689,7 +2689,8 @@ export const base64 = (str: string): string => {
 
 ## 2025-09-03 Test Improvements and Coverage
 
-- **Pronunciation Scorer Tests**: Enhanced test_pronunciation_scorer.py with 10 additional tests, bringing total to 27 tests
+- **Pronunciation Scorer Tests**: Enhanced test_pronunciation_scorer.py with 10 additional tests, bringing total to 27
+  tests
   - Added visual feedback generation tests
   - Added suggestion generation tests
   - Added confidence calculation tests
@@ -2741,7 +2742,6 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Updated docker-compose.yml with production and development profiles
   - Added volume mounts for Whisper model persistence
   - Implemented security scanning with Trivy and SBOM generation
-  
 - **Testing Results**:
   - Production container: ✅ Builds successfully (3.79GB)
   - Production health: ✅ All services pass health checks at /health endpoint
@@ -2749,7 +2749,6 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Docker Compose: ✅ Configuration validated with both profiles
   - Module imports: ✅ All Python modules import correctly with PYTHONPATH
   - Security: ✅ Runs as non-root user 'app', no hardcoded secrets exposed
-  
 - **Documentation Updates**:
   - Added comprehensive Docker deployment section to README.md
   - Documented Docker quick start commands
@@ -2763,13 +2762,11 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Added proper null checks for optional `asr_processor` parameter
   - Ensured type safety when ASR processor is not initialized or pronunciation scoring disabled
   - All affected endpoints now properly handle HTTPException with 503 status when service unavailable
-  
 - **Type Checking Enforcement**: Made `ty` type checker required in lint process
   - Updated `just lint` to enforce type checking (previously non-failing)
   - Modified `py-typecheck` command to fail on type errors
   - Rationale: Now that all issues are fixed, maintain type safety going forward
   - Note: Using Astral's `ty` (experimental) over `pyright` due to cleaner output and fewer false positives
-  
 - **CI/CD Shellcheck Fixes**: Resolved shellcheck warnings in Docker test script
   - Added SC2317 to shellcheck disable directive in `scripts/test-docker.sh`
   - Fixed "unreachable code" warnings for cleanup function (false positive)

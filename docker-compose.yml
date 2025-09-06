@@ -5,7 +5,7 @@
 version: '3.8'
 
 services:
-  # Production service
+  # Lean production service (default - core functionality only)
   app:
     build:
       context: .
@@ -75,6 +75,157 @@ services:
     networks:
       - bulgarian-network
 
+  # Production service with pronunciation scoring (use with --profile scoring)
+  app-scoring:
+    build:
+      context: .
+      target: production-scoring
+      cache_from:
+        - bulgarian-app:production-scoring
+    image: bulgarian-app:production-scoring
+    container_name: bulgarian-voice-coach-scoring
+    ports:
+      - '8002:8000'
+    environment:
+      # Server Configuration
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DEBUG=false
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # Feature flags
+      - ENABLE_PRONUNCIATION_SCORING=true
+
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-dummy}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # ASR Configuration
+      - WHISPER_MODEL=${WHISPER_MODEL:-tiny}
+      - WHISPER_LANGUAGE=bg
+      - WHISPER_BEAM_SIZE=5
+
+      # TTS Configuration
+      - ESPEAK_VOICE=bg
+      - ESPEAK_SPEED=160
+
+      # Audio Processing
+      - SAMPLE_RATE=16000
+      - VAD_AGGRESSIVENESS=2
+
+      # Content System
+      - L1_LANGUAGE=${L1_LANGUAGE:-PL}
+      - GRAMMAR_PACK_PATH=content/bg_grammar_pack.json
+      - SCENARIOS_PATH=content/bg_scenarios_with_grammar.json
+
+      # Performance
+      - ENABLE_METRICS=true
+      - LOG_REQUESTS=false
+
+      # Security
+      - ALLOWED_ORIGINS=http://localhost:8002,http://127.0.0.1:8002
+
+      # Observability (optional)
+      - OTEL_ENABLED=${OTEL_ENABLED:-false}
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_TRACES_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=${OTEL_METRICS_ENDPOINT:-}
+    volumes:
+      # Model cache (persistent across container restarts)
+      - whisper_models:/app/.cache/huggingface
+      - whisper_models:/app/data/models
+      # Logs
+      - app_logs:/app/data/logs
+      # Environment file (optional - for API keys)
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - bulgarian-network
+    profiles:
+      - scoring
+
+  # Full production service with all features (use with --profile full)
+  app-full:
+    build:
+      context: .
+      target: production-full
+      cache_from:
+        - bulgarian-app:production-full
+    image: bulgarian-app:production-full
+    container_name: bulgarian-voice-coach-full
+    ports:
+      - '8003:8000'
+    environment:
+      # Server Configuration
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DEBUG=false
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # Feature flags
+      - ENABLE_PRONUNCIATION_SCORING=true
+      - ENABLE_TELEMETRY=true
+
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-dummy}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+
+      # ASR Configuration
+      - WHISPER_MODEL=${WHISPER_MODEL:-tiny}
+      - WHISPER_LANGUAGE=bg
+      - WHISPER_BEAM_SIZE=5
+
+      # TTS Configuration
+      - ESPEAK_VOICE=bg
+      - ESPEAK_SPEED=160
+
+      # Audio Processing
+      - SAMPLE_RATE=16000
+      - VAD_AGGRESSIVENESS=2
+
+      # Content System
+      - L1_LANGUAGE=${L1_LANGUAGE:-PL}
+      - GRAMMAR_PACK_PATH=content/bg_grammar_pack.json
+      - SCENARIOS_PATH=content/bg_scenarios_with_grammar.json
+
+      # Performance
+      - ENABLE_METRICS=true
+      - LOG_REQUESTS=false
+
+      # Security
+      - ALLOWED_ORIGINS=http://localhost:8003,http://127.0.0.1:8003
+
+      # Observability (enabled)
+      - OTEL_ENABLED=true
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_TRACES_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=${OTEL_METRICS_ENDPOINT:-}
+    volumes:
+      # Model cache (persistent across container restarts)
+      - whisper_models:/app/.cache/huggingface
+      - whisper_models:/app/data/models
+      # Logs
+      - app_logs:/app/data/logs
+      # Environment file (optional - for API keys)
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - bulgarian-network
+    profiles:
+      - full
+
   # Development service (use with --profile dev)
   app-dev:
     build:
@@ -85,8 +236,8 @@ services:
     image: bulgarian-app:development
     container_name: bulgarian-voice-coach-dev
     ports:
-      - '8001:8000'  # Backend
-      - '5173:5173'  # Frontend dev server
+      - '8001:8000' # Backend
+      - '5173:5173' # Frontend dev server
     environment:
       # Development settings
       - DEBUG=true
@@ -139,7 +290,6 @@ networks:
   bulgarian-network:
     name: bulgarian-app-network
     driver: bridge
-
 # =============================================================================
 # Optional: Observability Stack (uncomment to enable)
 # =============================================================================

@@ -5,22 +5,42 @@ OpenTelemetry instrumentation setup for Bulgarian Voice Coach
 import logging
 import os
 
-from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.metrics.export import (
-    ConsoleMetricExporter,
-    PeriodicExportingMetricReader,
-)
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-
 logger = logging.getLogger(__name__)
+
+# Optional telemetry dependencies - only import if telemetry is enabled
+TELEMETRY_AVAILABLE = False
+
+if os.getenv("ENABLE_TELEMETRY", "false").lower() == "true":
+    try:
+        from opentelemetry import metrics, trace
+        from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+            OTLPMetricExporter,
+        )
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+            OTLPSpanExporter,
+        )
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+        from opentelemetry.instrumentation.logging import LoggingInstrumentor
+        from opentelemetry.sdk.metrics import MeterProvider
+        from opentelemetry.sdk.metrics.export import (
+            ConsoleMetricExporter,
+            PeriodicExportingMetricReader,
+        )
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import (
+            BatchSpanProcessor,
+            ConsoleSpanExporter,
+        )
+
+        TELEMETRY_AVAILABLE = True
+        logger.info("Telemetry dependencies loaded successfully")
+    except ImportError as e:
+        logger.warning(f"Telemetry dependencies not available: {e}")
+        logger.info(
+            "Run with ENABLE_TELEMETRY=true and install 'telemetry' extras to enable this feature"
+        )
 
 
 def setup_telemetry(service_name: str = "bulgarian-voice-coach") -> bool:
@@ -31,6 +51,11 @@ def setup_telemetry(service_name: str = "bulgarian-voice-coach") -> bool:
         bool: True if setup was successful, False otherwise
     """
     try:
+        # Check if telemetry dependencies are available
+        if not TELEMETRY_AVAILABLE:
+            logger.info("OpenTelemetry not available - dependencies not installed")
+            return False
+
         # Check if telemetry is enabled
         if not os.getenv("OTEL_ENABLED", "false").lower() == "true":
             logger.info("OpenTelemetry disabled (OTEL_ENABLED=false)")

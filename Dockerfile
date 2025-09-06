@@ -21,8 +21,8 @@ COPY client/ .
 RUN bun run build
 
 # =============================================================================
-# Production stage using Python slim image (Debian-based for better compatibility)
-FROM python:3.11-slim AS production
+# Base production stage - common setup for all production variants
+FROM python:3.11-slim AS production-base
 
 # Set shell with pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -46,15 +46,20 @@ RUN curl -LsSf https://astral.sh/uv/0.4.18/install.sh | sh && \
     mv /root/.cargo/bin/uv /usr/local/bin/ && \
     rm -rf /root/.cargo
 
-# Create app directory and set up virtual environment
+# Create app directory
 WORKDIR /app
 
 # Copy Python dependencies
 COPY pyproject.toml uv.lock* ./
 
-# Install Python dependencies in virtual environment
+# =============================================================================
+# Lean production image - core functionality only (~500MB)
+FROM production-base AS production
+
+# Install only core dependencies (no optional features)
 RUN uv venv .venv && \
-    uv sync --no-dev
+    uv sync --no-dev && \
+    uv cache clean
 
 # Copy server code
 COPY server/ ./server/
@@ -82,6 +87,87 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
 
 # Set Python path for module imports
 ENV PYTHONPATH="/app/server:${PYTHONPATH}"
+
+# Default command
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# =============================================================================
+# Production image with pronunciation scoring (~2.5GB)
+FROM production-base AS production-scoring
+
+# Install core + pronunciation scoring dependencies
+RUN uv venv .venv && \
+    uv sync --no-dev --extra pronunciation && \
+    uv cache clean
+
+# Copy server code
+COPY server/ ./server/
+COPY content/ ./content/
+
+# Copy built frontend from build stage
+COPY --from=frontend-builder /app/client/dist ./client/dist
+
+# Create non-root user and set permissions
+RUN useradd -m -d /app -s /bin/bash app && \
+    chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Create directories for models and data
+RUN mkdir -p /app/data/models /app/data/logs
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Set Python path for module imports
+ENV PYTHONPATH="/app/server:${PYTHONPATH}" \
+    ENABLE_PRONUNCIATION_SCORING=true
+
+# Default command
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# =============================================================================
+# Full production image with all features (~3.5GB)
+FROM production-base AS production-full
+
+# Install all dependencies (core + pronunciation + telemetry)
+RUN uv venv .venv && \
+    uv sync --no-dev --extra full && \
+    uv cache clean
+
+# Copy server code
+COPY server/ ./server/
+COPY content/ ./content/
+
+# Copy built frontend from build stage
+COPY --from=frontend-builder /app/client/dist ./client/dist
+
+# Create non-root user and set permissions
+RUN useradd -m -d /app -s /bin/bash app && \
+    chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Create directories for models and data
+RUN mkdir -p /app/data/models /app/data/logs
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Set Python path for module imports
+ENV PYTHONPATH="/app/server:${PYTHONPATH}" \
+    ENABLE_PRONUNCIATION_SCORING=true \
+    ENABLE_TELEMETRY=true
 
 # Default command
 CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]

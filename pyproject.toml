@@ -9,6 +9,7 @@ description = "Voice-enabled web app for teaching Bulgarian to Slavic speakers"
 readme = "README.md"
 requires-python = ">=3.11"
 
+# Core dependencies - minimal set for basic functionality
 dependencies = [
   "fastapi>=0.110.0",
   "uvicorn[standard]>=0.27.0",
@@ -21,12 +22,28 @@ dependencies = [
   "python-dotenv>=1.0.0",
   "openai>=1.101.0",
   "anthropic>=0.64.0",
-  # Pronunciation scoring dependencies
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+  "ruff>=0.1.0",
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+  "pytest-cov>=4.0.0",
+  "httpx>=0.27.0",
+]
+
+# Pronunciation scoring feature - adds ~2GB to image
+pronunciation = [
   "whisperx>=3.1.0",
   "torch>=2.0.0",
   "torchaudio>=2.0.0",
   "transformers>=4.30.0",
-  # OpenTelemetry instrumentation
+]
+
+# OpenTelemetry instrumentation - adds ~100MB to image
+telemetry = [
   "opentelemetry-api>=1.20.0",
   "opentelemetry-sdk>=1.20.0",
   "opentelemetry-exporter-otlp>=1.20.0",
@@ -35,13 +52,9 @@ dependencies = [
   "opentelemetry-instrumentation-logging>=0.41b0",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "ruff>=0.1.0",
-  "pytest>=8.0.0",
-  "pytest-asyncio>=0.23.0",
-  "pytest-cov>=4.0.0",
-  "httpx>=0.27.0",
+# Full feature set - includes all optional dependencies
+full = [
+  "bulgarian-voice-coach[pronunciation,telemetry]",
 ]
 
 [tool.ruff]
