@@ -2772,6 +2772,17 @@ Test coverage: 274/274 tests passing (100% success rate)
   - Fixed "unreachable code" warnings for cleanup function (false positive)
   - Ensures CI pipeline passes all linting checks
 
+## 2025-09-07 CI Pipeline Fixes
+
+### Docker and Test Workflow Improvements
+
+- Fixed Docker workflow Python command indentation issues that caused CI failures
+- Added proper line continuations for long Docker run commands to meet yamllint requirements
+- Implemented pytest.mark.skipif for pronunciation scorer tests with missing dependencies
+- Tests now properly skip when optional dependencies (torch/whisperx) not installed
+- Used importlib.util.find_spec for robust dependency detection instead of try/except imports
+- Applied ruff formatting to ensure consistent code style
+
 ## 2025-09-06 Docker Optimization with Multi-Target Builds
 
 - **Docker Image Size Optimization**: Achieved 65% reduction in production image size

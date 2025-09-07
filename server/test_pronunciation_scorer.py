@@ -3,9 +3,26 @@ Unit tests for PronunciationScorer module.
 """
 
 import asyncio
+import importlib.util
 from unittest.mock import Mock, patch
 
 import numpy as np
+import pytest
+
+# Check if pronunciation dependencies are available
+DEPS_AVAILABLE = (
+    importlib.util.find_spec("torch") is not None
+    and importlib.util.find_spec("whisperx") is not None
+)
+
+# Skip all tests if dependencies are not available
+pytestmark = pytest.mark.skipif(
+    not DEPS_AVAILABLE,
+    reason="Pronunciation scoring dependencies (torch, whisperx) not installed",
+)
+
+# Import after checking dependencies
+# ruff: noqa: E402
 from pronunciation_scorer import PronunciationScorer
 
 
