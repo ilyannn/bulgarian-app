@@ -86,12 +86,12 @@ jobs:
 
       - name: Test Docker image - Check dependencies
         run: |
-          if [[ "${{ matrix.target }}" == "production" ]]; then
-            # Test core dependencies only for lean production
+          if [[ "${{ matrix.target }}" == "production" || "${{ matrix.target }}" == "development" ]]; then
+            # Test core dependencies only for lean production and development
             docker run --rm bulgarian-app:${{ matrix.target }} python -c \
               "import fastapi; import uvicorn; import faster_whisper; print('✅ Core dependencies installed')"
           else
-            # Test full dependencies for scoring/development
+            # Test full dependencies for scoring variant
             docker run --rm bulgarian-app:${{ matrix.target }} python -c \
               "import fastapi; import uvicorn; import torch; import faster_whisper; print('✅ Full deps OK')"
           fi
