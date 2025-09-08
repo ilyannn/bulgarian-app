@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     espeak-ng \
     libasound2 \
     curl \
+    patchelf \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv for Python package management (specific version)
@@ -60,6 +61,9 @@ FROM production-base AS production
 RUN uv venv .venv && \
     uv sync --no-dev && \
     uv cache clean
+
+# Fix ctranslate2 executable stack issue for glibc 2.41+
+RUN find /app/.venv -name "*.so*" -path "*ctranslate2*" -exec patchelf --clear-flags execstack {} \; 2>/dev/null || true
 
 # Copy server code
 COPY server/ ./server/
@@ -99,6 +103,9 @@ FROM production-base AS production-scoring
 RUN uv venv .venv && \
     uv sync --no-dev --extra pronunciation && \
     uv cache clean
+
+# Fix ctranslate2 executable stack issue for glibc 2.41+
+RUN find /app/.venv -name "*.so*" -path "*ctranslate2*" -exec patchelf --clear-flags execstack {} \; 2>/dev/null || true
 
 # Copy server code
 COPY server/ ./server/
