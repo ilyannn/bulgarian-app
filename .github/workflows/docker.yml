@@ -166,20 +166,32 @@ jobs:
 
       - name: Export SBOM
         if: matrix.target == 'production'
+        continue-on-error: true  # Don't fail workflow if SBOM export fails
         run: |
+          # Try to export SBOM using BuildKit image
           docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
             -v "$PWD:/output" \
             aquasec/trivy image \
             --format cyclonedx \
             --output /output/sbom-${{ matrix.target }}.json \
-            bulgarian-app:${{ matrix.target }}
+            --scanners none \
+            --cache-dir /tmp/.trivy \
+            bulgarian-app:${{ matrix.target }} || \
+          echo "⚠️ SBOM export failed (non-critical) - image may only exist in BuildKit cache"
 
-          echo "📦 SBOM exported to sbom-${{ matrix.target }}.json"
+          if [ -f "sbom-${{ matrix.target }}.json" ]; then
+            echo "📦 SBOM successfully exported to sbom-${{ matrix.target }}.json"
+          else
+            echo "⚠️ SBOM file not created, skipping upload"
+          fi
 
       - name: Upload SBOM artifact
-        if: matrix.target == 'production'
+        if: matrix.target == 'production' && success()
+        continue-on-error: true  # Don't fail if SBOM doesn't exist
         uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.target }}
           path: sbom-${{ matrix.target }}.json
           retention-days: 30
+          if-no-files-found: warn  # Just warn if SBOM file doesn't exist
