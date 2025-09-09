@@ -23,7 +23,7 @@ cp client/.env.example client/.env.local
 
 ### File Structure
 
-```
+```text
 bulgarian-app/
 ├── .env                    # Backend configuration
 ├── .env.example           # Backend template

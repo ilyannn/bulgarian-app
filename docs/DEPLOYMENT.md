@@ -38,7 +38,7 @@ az --version             # Azure CLI 2.40+
 1. Register a domain (e.g., `bulgarian-voice.com`)
 2. Configure DNS with your provider
 3. Set up these records:
-   ```
+   ```dns
    A     @              → Your server IP
    A     api            → Your server IP
    CNAME www            → @
@@ -516,13 +516,13 @@ aws cloudfront create-distribution \
 
 1. Enable CloudFlare proxy (orange cloud)
 2. Configure caching rules:
-   ```
+   ```text
    Cache Level: Standard
    Browser Cache TTL: 1 month
    Edge Cache TTL: 1 month
    ```
 3. Create page rules:
-   ```
+   ```text
    *.bulgarian-voice.com/api/* - Cache Level: Bypass
    *.bulgarian-voice.com/ws/* - Cache Level: Bypass
    *.bulgarian-voice.com/static/* - Cache Level: Cache Everything
