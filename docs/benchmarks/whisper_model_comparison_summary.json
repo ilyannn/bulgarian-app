@@ -1,0 +1,116 @@
+{
+  "benchmark_info": {
+    "timestamp": "2025-01-09",
+    "target_latency_ms": 2000,
+    "test_environment": "macOS ARM64, Python 3.12, faster-whisper CPU/int8",
+    "audio_samples": 8,
+    "sample_type": "synthetic_bulgarian_espeak"
+  },
+  "models": {
+    "small": {
+      "average_latency_ms": 1180.0,
+      "average_accuracy": 0.50,
+      "average_memory_mb": 417.7,
+      "initialization_time_s": 0.8,
+      "meets_target": true,
+      "configurations": [
+        {
+          "name": "small_baseline",
+          "latency_ms": 1160.7,
+          "beam_size": 5,
+          "description": "Baseline configuration"
+        },
+        {
+          "name": "small_fast",
+          "latency_ms": 1187.5,
+          "beam_size": 1,
+          "description": "Speed-optimized"
+        },
+        {
+          "name": "small_accurate",
+          "latency_ms": 1191.6,
+          "beam_size": 10,
+          "description": "Accuracy-optimized"
+        }
+      ]
+    },
+    "medium": {
+      "average_latency_ms": 3522.8,
+      "average_accuracy": 0.50,
+      "average_memory_mb": 746.7,
+      "initialization_time_s": 1.7,
+      "meets_target": false,
+      "target_overage_percent": 76.14,
+      "configurations": [
+        {
+          "name": "medium_baseline",
+          "latency_ms": 3525.5,
+          "beam_size": 5,
+          "description": "Baseline configuration"
+        },
+        {
+          "name": "medium_fast",
+          "latency_ms": 3510.2,
+          "beam_size": 1,
+          "description": "Speed-optimized"
+        },
+        {
+          "name": "medium_accurate",
+          "latency_ms": 3532.7,
+          "beam_size": 10,
+          "description": "Accuracy-optimized"
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "latency_improvement": {
+      "small_vs_medium": "3x faster",
+      "percentage": 66.5
+    },
+    "memory_improvement": {
+      "small_vs_medium": "44% less memory",
+      "difference_mb": 329.0
+    }
+  },
+  "recommendations": {
+    "production_model": "small",
+    "reasoning": [
+      "Meets 2000ms latency target (1180ms average)",
+      "3x faster than medium model",
+      "44% lower memory usage",
+      "Consistent performance across beam sizes",
+      "Medium model exceeds target by 76%"
+    ],
+    "suggested_config": {
+      "model": "small",
+      "beam_size": 5,
+      "temperature": 0.0,
+      "no_speech_threshold": 0.6,
+      "vad_tail_ms": 300
+    }
+  },
+  "sample_transcriptions": {
+    "small_model": {
+      "Здравей!": "бравей!",
+      "Довиждане!": "то мисляме!",
+      "Благодаря!": "платотаря!",
+      "Как се казвате?": "каксиказмати!",
+      "Къде е гарата?": "къде дарата!"
+    },
+    "medium_model": {
+      "Здравей!": "",
+      "Довиждане!": "доби стане!",
+      "Благодаря!": "",
+      "Как се казвате?": "как се казвате?",
+      "Къде е гарата?": "клюди да раца"
+    }
+  },
+  "notes": [
+    "Tests used synthetic eSpeak NG audio, real human speech may perform better",
+    "Both models struggled with synthetic audio quality",
+    "Medium model showed some better accuracy on longer phrases",
+    "Small model provides more consistent (though imperfect) transcriptions",
+    "Performance gap between models is significant enough to clearly favor small model"
+  ]
+}

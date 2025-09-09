@@ -107,3 +107,4 @@ jspm_packages/
 # Test files and generated audio
 test_*.wav
 test_*.html
+test_audio_samples/
