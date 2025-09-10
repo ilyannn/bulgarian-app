@@ -93,13 +93,28 @@ ENV PYTHONPATH="/app/server:${PYTHONPATH}"
 CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # =============================================================================
-# Production image with pronunciation scoring (~2.5GB)
+# Production image with pronunciation scoring - optimized for disk space
 FROM production-base AS production-scoring
 
-# Install core + pronunciation scoring dependencies
+# Install dependencies with aggressive space optimization
 RUN uv venv .venv && \
+    # Set pip to use no cache and minimal dependencies
+    uv pip install --no-cache-dir \
+        --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.0.1+cpu \
+        torchaudio==2.0.2+cpu && \
+    # Install other pronunciation dependencies
     uv sync --no-dev --extra pronunciation && \
-    uv cache clean
+    # Aggressive cleanup to save space
+    uv cache clean && \
+    rm -rf /root/.cache/pip /root/.cache/uv && \
+    rm -rf /tmp/* /var/tmp/* && \
+    # Remove Python cache files
+    find /app/.venv -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true && \
+    find /app/.venv -type f -name "*.pyc" -delete && \
+    # Clean up package build artifacts
+    find /app/.venv -type d -name "*.dist-info" -exec find {} -name "*.txt" -delete \; && \
+    find /app/.venv -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 
 # Copy server code
 COPY server/ ./server/

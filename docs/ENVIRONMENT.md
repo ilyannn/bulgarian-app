@@ -180,13 +180,13 @@ VITE_SENTRY_DSN=
 
 ```yaml
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
     build:
       context: .
-      target: production  # Options: production, production-scoring, development
+      target: production # Options: production, production-scoring, development
     environment:
       # Override any backend environment variables
       - HOST=0.0.0.0
@@ -196,12 +196,12 @@ services:
       - TTS_VOICE=bg
       - LLM_PROVIDER=openai
     env_file:
-      - .env  # Load from .env file
+      - .env # Load from .env file
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models  # Model cache directory
-      - ./logs:/app/logs      # Application logs
+      - ./models:/app/models # Model cache directory
+      - ./logs:/app/logs # Application logs
 ```
 
 ### Docker Build Arguments
@@ -293,13 +293,14 @@ HSTS_MAX_AGE=31536000
 
 1. **Never commit `.env` files** - Add to `.gitignore`
 2. **Use secrets management**:
+
    ```bash
    # AWS Secrets Manager
    AWS_SECRETS_MANAGER_SECRET_ID=bulgarian-app-secrets
-   
+
    # Google Secret Manager
    GCP_SECRET_NAME=bulgarian-app-secrets
-   
+
    # Azure Key Vault
    AZURE_KEY_VAULT_NAME=bulgarian-app-kv
    ```
@@ -318,34 +319,34 @@ from pydantic import BaseSettings, validator
 
 class Settings(BaseSettings):
     """Application settings with validation."""
-    
+
     # Server settings
     host: str = "0.0.0.0"
     port: int = 8000
     log_level: str = "info"
-    
+
     # API Keys
     openai_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
-    
+
     # ASR settings
     asr_model_size: str = "base"
     asr_device: str = "cpu"
-    
+
     @validator("log_level")
     def validate_log_level(cls, v):
         valid_levels = ["debug", "info", "warning", "error", "critical"]
         if v.lower() not in valid_levels:
             raise ValueError(f"Invalid log level. Must be one of: {valid_levels}")
         return v.lower()
-    
+
     @validator("asr_model_size")
     def validate_model_size(cls, v):
         valid_sizes = ["tiny", "base", "small", "medium", "large"]
         if v not in valid_sizes:
             raise ValueError(f"Invalid model size. Must be one of: {valid_sizes}")
         return v
-    
+
     class Config:
         env_file = ".env"
         case_sensitive = False
@@ -416,6 +417,7 @@ ENABLE_TELEMETRY=false     # Disable telemetry in tests
 ### Common Issues
 
 1. **Missing API Keys**
+
    ```bash
    # Check if keys are set
    echo $OPENAI_API_KEY
@@ -423,12 +425,14 @@ ENABLE_TELEMETRY=false     # Disable telemetry in tests
    ```
 
 2. **CORS Errors**
+
    ```bash
    # Ensure frontend URL is in CORS_ORIGINS
    CORS_ORIGINS=http://localhost:3000,http://localhost:5173
    ```
 
 3. **Model Download Issues**
+
    ```bash
    # Pre-download models
    python -c "from faster_whisper import WhisperModel; WhisperModel('base')"
@@ -457,4 +461,4 @@ uvicorn server.app:app --reload --log-level debug
 
 ---
 
-*Last updated: 2025-09-08*
+_Last updated: 2025-09-08_

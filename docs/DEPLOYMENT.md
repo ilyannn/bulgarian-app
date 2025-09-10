@@ -48,6 +48,7 @@ az --version             # Azure CLI 2.40+
 ### SSL Certificates
 
 Options:
+
 - **Let's Encrypt** (free, automated)
 - **CloudFlare** (free with proxy)
 - **AWS Certificate Manager** (free for AWS resources)
@@ -57,13 +58,13 @@ Options:
 
 ### Quick Comparison
 
-| Platform | Best For | Pros | Cons | Estimated Cost |
-|----------|----------|------|------|----------------|
-| **AWS ECS** | Enterprise scale | Auto-scaling, managed | Complex setup | $50-200/month |
-| **Google Cloud Run** | Serverless | Pay-per-use, simple | Cold starts | $10-100/month |
-| **Azure App Service** | Microsoft stack | Easy deploy, integrated | Limited customization | $30-150/month |
-| **VPS + Docker** | Full control | Flexible, cheap | Manual management | $10-50/month |
-| **Kubernetes** | Large scale | Scalable, resilient | Complex | $100-500/month |
+| Platform              | Best For         | Pros                    | Cons                  | Estimated Cost |
+| --------------------- | ---------------- | ----------------------- | --------------------- | -------------- |
+| **AWS ECS**           | Enterprise scale | Auto-scaling, managed   | Complex setup         | $50-200/month  |
+| **Google Cloud Run**  | Serverless       | Pay-per-use, simple     | Cold starts           | $10-100/month  |
+| **Azure App Service** | Microsoft stack  | Easy deploy, integrated | Limited customization | $30-150/month  |
+| **VPS + Docker**      | Full control     | Flexible, cheap         | Manual management     | $10-50/month   |
+| **Kubernetes**        | Large scale      | Scalable, resilient     | Complex               | $100-500/month |
 
 ## AWS Deployment
 
@@ -109,9 +110,9 @@ docker push [ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com/bulgarian-app:latest
         }
       ],
       "environment": [
-        {"name": "HOST", "value": "0.0.0.0"},
-        {"name": "PORT", "value": "8000"},
-        {"name": "LOG_LEVEL", "value": "info"}
+        { "name": "HOST", "value": "0.0.0.0" },
+        { "name": "PORT", "value": "8000" },
+        { "name": "LOG_LEVEL", "value": "info" }
       ],
       "secrets": [
         {
@@ -264,25 +265,25 @@ spec:
         app: bulgarian-app
     spec:
       containers:
-      - name: bulgarian-app
-        image: gcr.io/your-project-id/bulgarian-app:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: HOST
-          value: "0.0.0.0"
-        - name: PORT
-          value: "8000"
-        envFrom:
-        - secretRef:
-            name: bulgarian-app-secrets
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
+        - name: bulgarian-app
+          image: gcr.io/your-project-id/bulgarian-app:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8000"
+          envFrom:
+            - secretRef:
+                name: bulgarian-app-secrets
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
 ---
 apiVersion: v1
 kind: Service
@@ -292,8 +293,8 @@ spec:
   selector:
     app: bulgarian-app
   ports:
-  - port: 80
-    targetPort: 8000
+    - port: 80
+      targetPort: 8000
   type: LoadBalancer
 ```
 
@@ -375,7 +376,7 @@ az container create \
 
 ```yaml
 # docker-compose.prod.yml
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -539,7 +540,7 @@ docker-compose -f docker-compose.monitoring.yml up -d
 
 ```yaml
 # docker-compose.monitoring.yml
-version: '3.8'
+version: "3.8"
 
 services:
   prometheus:
@@ -714,10 +715,8 @@ async def get_grammar_item(item_id: str):
 ```javascript
 // client/vite.config.js
 export default {
-  base: process.env.NODE_ENV === 'production' 
-    ? 'https://cdn.bulgarian-voice.com/' 
-    : '/',
-}
+  base: process.env.NODE_ENV === "production" ? "https://cdn.bulgarian-voice.com/" : "/",
+};
 ```
 
 #### 3. Enable Compression
@@ -741,7 +740,7 @@ services:
       replicas: 3
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 2G
 ```
 
@@ -801,4 +800,4 @@ app.add_middleware(
 
 ---
 
-*Last updated: 2025-09-08*
+_Last updated: 2025-09-08_

@@ -71,12 +71,13 @@ Progress data structure in localStorage:
 **BENCHMARK RESULTS**: Comprehensive testing of Whisper model sizes for Bulgarian ASR determined optimal configuration:
 
 - **Production Model**: `small` Whisper model (changed from `medium`)
-- **Performance**: 1180ms average latency (3x faster than medium model)  
+- **Performance**: 1180ms average latency (3x faster than medium model)
 - **Target Compliance**: ✅ Meets 2000ms latency target (medium model exceeded by 76%)
 - **Memory Efficiency**: 418MB RAM usage (44% less than medium model)
 - **VAD Configuration**: 300ms tail timing remains optimal from previous benchmarks
 
-See `docs/benchmarks/whisper_model_comparison.md` for detailed analysis and `scripts/benchmark_whisper_models.py` for reproducible testing.
+See `docs/benchmarks/whisper_model_comparison.md` for detailed analysis and `scripts/benchmark_whisper_models.py` for
+reproducible testing.
 
 ## Build System (Justfile)
 

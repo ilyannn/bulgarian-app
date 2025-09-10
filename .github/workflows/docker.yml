@@ -22,32 +22,56 @@ env:
 jobs:
   docker-build-test:
     runs-on: ubuntu-latest
+    # Skip production-scoring builds on PRs to save CI resources
+    if: ${{ matrix.target != 'production-scoring' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     strategy:
       matrix:
-        target: [production, production-scoring, development]
+        target: [production, development]
+        include:
+          # Only build production-scoring on main branch pushes to save CI resources
+          - target: production-scoring
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Free disk space
+      - name: Free disk space (enhanced)
         run: |
           echo "Available disk space before cleanup:"
           df -h
 
-          # Remove unnecessary system packages and files
+          # More aggressive removal of unnecessary files for production-scoring builds
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/julia*
+          sudo rm -rf /opt/az
+          sudo rm -rf /usr/local/graalvm
+          sudo rm -rf /usr/local/sqlpackage
 
-          # Clean apt cache
+          # Clean package managers and caches
           sudo apt-get clean
-          sudo apt-get autoremove -y
+          sudo apt-get autoremove -y --purge
+          sudo apt-get autoclean
 
-          # Clear docker system (if any)
-          docker system prune -f || true
+          # Clean snap packages
+          sudo snap list --all | awk '/disabled/{print $1, $3}' | while read snapname revision; do
+              sudo snap remove "$snapname" --revision="$revision" || true
+          done 2>/dev/null || true
+
+          # Clean docker aggressively
+          docker system prune -af --volumes || true
+          docker builder prune -af || true
+
+          # Clean other system caches
+          sudo rm -rf /var/cache/apt/archives/*
+          sudo rm -rf /tmp/*
+          sudo rm -rf /var/tmp/*
+          sudo rm -rf /root/.cache/* 2>/dev/null || true
 
           echo "Available disk space after cleanup:"
           df -h
@@ -60,6 +84,13 @@ jobs:
       - name: Log Docker version
         run: docker version
 
+      - name: Monitor disk space before build
+        run: |
+          echo "Disk space before Docker build:"
+          df -h
+          echo "Docker system df:"
+          docker system df || true
+
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -69,6 +100,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           load: true
+          # Add verbose output for debugging large builds
+          platforms: linux/amd64
+        env:
+          BUILDKIT_PROGRESS: plain
 
       - name: Test Docker image - Basic Python
         run: |
@@ -166,7 +201,7 @@ jobs:
 
       - name: Export SBOM
         if: matrix.target == 'production'
-        continue-on-error: true  # Don't fail workflow if SBOM export fails
+        continue-on-error: true # Don't fail workflow if SBOM export fails
         run: |
           # Try to export SBOM using BuildKit image
           docker run --rm \
@@ -188,10 +223,10 @@ jobs:
 
       - name: Upload SBOM artifact
         if: matrix.target == 'production' && success()
-        continue-on-error: true  # Don't fail if SBOM doesn't exist
+        continue-on-error: true # Don't fail if SBOM doesn't exist
         uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.target }}
           path: sbom-${{ matrix.target }}.json
           retention-days: 30
-          if-no-files-found: warn  # Just warn if SBOM file doesn't exist
+          if-no-files-found: warn # Just warn if SBOM file doesn't exist
