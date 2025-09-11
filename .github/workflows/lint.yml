@@ -36,7 +36,8 @@ jobs:
 
       - name: Install just
         run: |
-          curl -L https://github.com/casey/just/releases/download/1.36.0/just-1.36.0-x86_64-unknown-linux-musl.tar.gz | tar xz
+          curl -L https://github.com/casey/just/releases/download/1.36.0/just-1.36.0-x86_64-unknown-linux-musl.tar.gz \
+            | tar xz
           chmod +x just
           mkdir -p ./bin
           mv just ./bin/
