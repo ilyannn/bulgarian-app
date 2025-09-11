@@ -1107,6 +1107,54 @@ docker-info:
     echo "  • Disk: 2-5GB (including Whisper models)"
     echo "  • CPU: 2+ cores recommended for real-time processing"
 
+# Validate Docker dependency resolution (lightweight pre-commit check)
+[group('docker')]
+[group('git-hooks')]
+docker-validate:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🐳 Validating Docker dependency resolution..."
+
+    # Quick dependency resolution test using temporary container
+    # This catches PyTorch dependency issues without full build
+    echo "   • Testing uv sync with production dependencies..."
+    docker run --rm -v $(pwd):/app -w /app \
+        python:3.11-slim-bookworm \
+        bash -c "curl -LsSf https://astral.sh/uv/0.4.18/install.sh | sh && \
+                  /root/.cargo/bin/uv venv /tmp/.venv && \
+                  /root/.cargo/bin/uv sync --no-dev" > /dev/null 2>&1
+
+    echo "   • Testing pronunciation dependencies resolution..."
+    docker run --rm -v $(pwd):/app -w /app \
+        python:3.11-slim-bookworm \
+        bash -c "curl -LsSf https://astral.sh/uv/0.4.18/install.sh | sh && \
+                  /root/.cargo/bin/uv venv /tmp/.venv && \
+                  /root/.cargo/bin/uv sync --no-dev --extra pronunciation" > /dev/null 2>&1
+
+    echo "✅ Docker dependency validation passed"
+
+# Full Docker build validation (thorough but slower)
+[group('docker')]
+docker-validate-full:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🐳 Running full Docker build validation..."
+
+    # Test all Docker targets
+    echo "   • Building production target..."
+    docker build --target production --tag bulgarian-app:validate-prod . > /dev/null 2>&1
+
+    echo "   • Building production-scoring target..."
+    docker build --target production-scoring --tag bulgarian-app:validate-scoring . > /dev/null 2>&1
+
+    echo "   • Building development target..."
+    docker build --target development --tag bulgarian-app:validate-dev . > /dev/null 2>&1
+
+    echo "✅ Full Docker build validation passed"
+
+    # Clean up validation images
+    docker rmi bulgarian-app:validate-prod bulgarian-app:validate-scoring bulgarian-app:validate-dev > /dev/null 2>&1 || true
+
 # Quick Docker deployment (production)
 [group('docker')]
 deploy: docker-build docker-serve

@@ -2897,3 +2897,20 @@ Test coverage: 274/274 tests passing (100% success rate)
 
 **PRODUCTION IMPACT**: These maintenance improvements ensure consistent code quality standards and reliable CI/CD
 pipeline execution across all development environments.
+
+### Docker Validation Recipes Added
+
+- [x] **docker-validate**: Lightweight dependency resolution testing using temporary containers
+- [x] **docker-validate-full**: Comprehensive build validation testing all Docker targets
+- [x] **Build System Enhancement**: Added pre-commit validation recipes to catch dependency issues early
+- [x] **CI/CD Integration**: New recipes integrate with git hooks for automated validation
+
+**NEW JUSTFILE RECIPES:**
+
+- `docker-validate` - Quick dependency resolution test (production + pronunciation extras)
+- `docker-validate-full` - Full build validation (production, production-scoring, development targets)
+- Automated cleanup of validation images to prevent disk space accumulation
+- Silent execution with proper error handling for CI/CD integration
+
+**DEVELOPMENT IMPACT**: Developers can now catch Docker dependency issues locally before pushing, reducing CI/CD
+failures and improving development velocity.
