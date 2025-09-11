@@ -38,11 +38,11 @@ dev = [
 # Pronunciation scoring feature - CPU-only PyTorch for smaller builds
 pronunciation = [
   "whisperx>=3.1.0",
-  "torch==2.0.1+cpu; platform_system != 'Darwin'",
+  "torch>=2.0.1; platform_system != 'Darwin'",
   "torch>=2.0.1; platform_system == 'Darwin'",
-  "torchaudio==2.0.2+cpu; platform_system != 'Darwin'",
+  "torchaudio>=2.0.2; platform_system != 'Darwin'",
   "torchaudio>=2.0.2; platform_system == 'Darwin'",
-  "transformers==4.30.2",                               # Pin version to avoid resolution conflicts
+  "transformers==4.30.2",                           # Pin version to avoid resolution conflicts
 ]
 
 # OpenTelemetry instrumentation - adds ~100MB to image
